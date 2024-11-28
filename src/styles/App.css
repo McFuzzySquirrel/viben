@@ -8,19 +8,21 @@ body {
     color: #f8f9fa; /* Light text color */
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
+    align-items: flex-start; /* Align items to the top */
+    height: 100vh;
+    width: 100vw;
+    overflow: auto; /* Allow scrolling if content overflows */
 }
 
 h1 {
-    font-size: 18pt;
+    font-size: 2.5em; /* Increased font size */
     margin-bottom: 20px;
     text-align: center;
     color: #f8f9fa; /* Light text color */
 }
 
 h2 {
-    font-size: 14pt
+    font-size: 14pt;
 }
 
 h3 {
@@ -68,46 +70,60 @@ h3 {
 
 .pitch-needle-container {
     position: relative;
-    width: 150px;
-    height: 150px;
-    border: 1px solid #ccc;
+    width: 200px; /* Increased width */
+    height: 200px; /* Increased height */
+    border: 2px solid #f8f9fa;
     border-radius: 50%;
     display: flex;
-    align-items: center;
     justify-content: center;
-    margin-top: 20px;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 .pitch-needle {
     position: absolute;
-    width: 3px;
-    height: 70px;
-    background-color: #007bff;
+    width: 4px; /* Increased width for better visibility */
+    height: 90px; /* Increased height */
+    background-color: gray;
     transform-origin: bottom center;
-    transition: transform 0.1s ease-in-out, background-color 0.1s ease-in-out;
 }
 
 .app-container {
-    width: auto;
-    max-width: auto;
-    margin: 40px auto;
-    background-color: #2C2C2C;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    width: 100%;
+    min-height: 100%;
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 20px;
+    justify-content: center;
+    align-items: flex-start; /* Align items to the top */
+    box-sizing: border-box;
+    overflow: auto; /* Allow scrolling if content overflows */
 }
 
 .app {
     width: 100%;
+    max-width: 1200px; /* Increased max-width for a wider layout */
+    margin: 20px auto; /* Add margin to the top and bottom */
+    background: #3a3a3a; /* Slightly lighter dark grey */
     padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow: auto; /* Allow scrolling within the app container */
+}
 
+.start-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+}
+
+.logo {
+    width: 600px; /* Increased logo size */
+    margin-bottom: 20px;
 }
 
 button {
@@ -132,6 +148,20 @@ button:focus {
 
 button:active {
     background-color: #0056b3;
+}
+
+button.settings-button {
+    background-color: #4a4a4a; /* Dark grey button */
+    color: #f8f9fa; /* Light text color */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+button.settings-button:hover {
+    background-color: #5a5a5a; /* Slightly lighter on hover */
 }
 
 .pitch-settings {
@@ -223,7 +253,7 @@ button:active {
 
 /* Styles for individual pitch bars */
 .pitch-bar {
-    width: 20px;
+    width: 100%;
     background-color: #007bff;
     border-radius: 5px 5px 0 0;
     transition: height 0.2s ease-out;
@@ -232,7 +262,30 @@ button:active {
 /* Styles for the pitch bars wrapper */
 .pitch-bars {
     width: 100%;
-    margin-top: 30px;
+    margin-top: 20px;
+}
+
+.pitch-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    background-color: #4a4a4a;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 30px; /* Increased height for better visibility */
+    position: relative;
+}
+
+.pitch-bar-fill {
+    height: 100%;
+    transition: width 0.1s ease-in-out;
+}
+
+.pitch-label {
+    position: absolute;
+    left: 10px;
+    color: #73767a;
+    font-weight: bold;
 }
 
 /* Styles for each pitch bar container */
@@ -277,13 +330,66 @@ button:active {
 }
 
 input, select {
-    background-color: transparent; /* Dark grey input fields */
+    background-color: #4a4a4a; /* Dark grey input fields */
     color: #f8f9fa; /* Light text color */
-    border: none;
+    border: 1px solid #5a5a5a;
     padding: 10px;
     border-radius: 4px;
+    margin-top: 10px;
+    width: calc(100% - 22px); /* Adjust width to fit container */
 }
 
 input::placeholder {
     color: #b0b0b0; /* Light grey placeholder text */
+}
+
+input[type="text"] {
+    background-color: #4a4a4a; /* Dark grey input fields */
+    color: #f8f9fa; /* Light text color */
+    border: 1px solid #5a5a5a;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    width: calc(100% - 22px); /* Adjust width to fit container */
+}
+
+input[type="text"]::placeholder {
+    color: #b0b0b0; /* Light grey placeholder text */
+}
+
+input[type="file"] {
+    margin-top: 10px;
+    color: #f8f9fa; /* Light text color */
+}
+
+.session {
+    margin-bottom: 20px;
+    background-color: #3a3a3a;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.session-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.scores-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.main-content {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.left-column, .right-column {
+    width: 48%;
 }

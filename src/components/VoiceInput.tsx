@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PitchNeedle from './PitchNeedle';
 import PitchDetector from 'pitchfinder';
 import PitchBars from './PitchBars';
 
 interface VoiceInputProps {
     pitchLevels: { [key: string]: { min: number, max: number, color: string } };
+    onBarChange: (bar: string) => void;
+    isListening: boolean;
+    stopListening: () => void;
 }
 
-const VoiceInput: React.FC<VoiceInputProps> = ({ pitchLevels }) => {
+const VoiceInput: React.FC<VoiceInputProps> = ({ pitchLevels, onBarChange, isListening, stopListening }) => {
     const [pitch, setPitch] = useState<number | null>(null);
     const [pitchStates, setPitchStates] = useState<{ [key: string]: { isActive: boolean; duration: number } }>(() => {
         const initialStates: { [key: string]: { isActive: boolean; duration: number } } = {};
@@ -16,6 +19,9 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ pitchLevels }) => {
         });
         return initialStates;
     });
+
+    const pitchRef = useRef<number | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
 
     const handleReset = () => {
         setPitchStates(prevStates => {
@@ -26,68 +32,78 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ pitchLevels }) => {
             });
             return resetStates;
         });
+        setPitch(null);
+        pitchRef.current = null;
     };
 
     useEffect(() => {
+        if (!isListening) return;
+
         const getMicrophoneInput = async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            streamRef.current = stream;
             const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
             const analyser = audioContext.createAnalyser();
             const source = audioContext.createMediaStreamSource(stream);
             source.connect(analyser);
 
-            const detector = PitchDetector.YIN();
-            const dataArray = new Float32Array(analyser.fftSize);
+            const detectPitch = PitchDetector.YIN();
+            const bufferLength = analyser.fftSize;
+            const buffer = new Float32Array(bufferLength);
 
-            const detectPitch = () => {
-                analyser.getFloatTimeDomainData(dataArray);
-                const pitch = detector(dataArray);
-                if (pitch && pitch >= 85 && pitch <= 1100) {
-                    setPitch(pitch);
-                    let matchedPitch: string | null = null;
-                    Object.entries(pitchLevels).forEach(([pitchName, { min, max }]) => {
-                        if (pitch >= min && pitch <= max) {
-                            matchedPitch = pitchName;
-                        }
+            const updatePitch = () => {
+                analyser.getFloatTimeDomainData(buffer);
+                const detectedPitch = detectPitch(buffer);
+                pitchRef.current = detectedPitch;
+                if (detectedPitch) {
+                    const activeBar = Object.keys(pitchLevels).find(bar => {
+                        const { min, max } = pitchLevels[bar];
+                        return detectedPitch >= min && detectedPitch <= max;
                     });
-
-                    setPitchStates(prevStates => {
-                        const newStates = { ...prevStates };
-                        Object.keys(newStates).forEach(pitchName => {
-                            if (pitchName === matchedPitch) {
-                                newStates[pitchName].isActive = true;
-                                newStates[pitchName].duration += 1 / 60; // Approximate frame duration
-                            } else {
-                                newStates[pitchName].isActive = false;
-                                newStates[pitchName].duration = 0;
-                            }
-                        });
-                        return newStates;
-                    });
-                } else {
-                    setPitch(null);
-                    setPitchStates(prevStates => {
-                        const newStates = { ...prevStates };
-                        Object.keys(newStates).forEach(pitchName => {
-                            newStates[pitchName].isActive = false;
-                            newStates[pitchName].duration = 0;
-                        });
-                        return newStates;
-                    });
+                    if (activeBar) {
+                        onBarChange(activeBar);
+                        setPitchStates(prevStates => ({
+                            ...prevStates,
+                            [activeBar]: {
+                                isActive: true,
+                                duration: prevStates[activeBar].duration + 1 / 60, // Increment duration more gradually
+                            },
+                        }));
+                    }
                 }
-                requestAnimationFrame(detectPitch);
+                requestAnimationFrame(updatePitch);
             };
 
-            detectPitch();
+            updatePitch();
+
+            return () => {
+                stream.getTracks().forEach(track => track.stop());
+            };
         };
 
         getMicrophoneInput();
-    }, [pitchLevels]);
+    }, [isListening, pitchLevels, onBarChange]);
+
+    useEffect(() => {
+        if (!isListening && streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+    }, [isListening]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (pitchRef.current !== pitch) {
+                setPitch(pitchRef.current);
+            }
+        }, 1000 / 60); // Update 60 times per second
+
+        return () => clearInterval(interval);
+    }, [pitch]);
 
     return (
-        <div className="voice-input">
+        <div>
             <h2>Voice Input</h2>
-            <p>Detected Pitch: {pitch ? `${pitch.toFixed(2)} Hz` : 'No pitch detected'}</p>
             <PitchNeedle pitch={pitch} pitchLevels={pitchLevels} />
             <PitchBars pitchLevels={pitchLevels} pitchStates={pitchStates} />
             <button onClick={handleReset}>Reset</button>
