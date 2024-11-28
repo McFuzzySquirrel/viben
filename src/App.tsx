@@ -27,6 +27,7 @@ const App: React.FC = () => {
     return (
         <div className="app-container">
             <div className="app">
+                <img src="viben-logo.png" width={100}/>
                 <h1>Viben Pitch Matcher</h1>
                 <UploadSong onUpload={handleSongUpload} />
                 {/* Show VibrationControl only if a song is uploaded */}

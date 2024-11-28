@@ -22,9 +22,9 @@ const PitchNeedle: React.FC<PitchNeedleProps> = ({ pitch, pitchLevels }) => {
     };
 
     return (
-        <div className="pitch-needle-container">
+        <center><div className="pitch-needle-container">
             <div className="pitch-needle" style={needleStyle}></div>
-        </div>
+        </div></center>
     );
 };
 
