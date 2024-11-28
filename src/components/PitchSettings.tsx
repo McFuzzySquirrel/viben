@@ -28,26 +28,26 @@ const PitchSettings: React.FC<PitchSettingsProps> = ({ pitchLevels, setPitchLeve
 
     return (
         <div className="pitch-settings">
-            <h2>Pitch Settings</h2>
+            <h2>Pitch Settings</h2><br/>
             {Object.entries(localPitchLevels).map(([pitch, { min, max, color }]) => (
                 <div key={pitch}>
                     <h3>{pitch}</h3>
                     <label>
-                        Min Frequency:
+                        Min Frequency: 
                         <input
                             type="number"
                             value={min}
                             onChange={(e) => handleChange(pitch, 'min', e.target.value)}
                         />
-                    </label>
+                    </label><br/>
                     <label>
-                        Max Frequency:
+                        Max Frequency: 
                         <input
                             type="number"
                             value={max}
                             onChange={(e) => handleChange(pitch, 'max', e.target.value)}
                         />
-                    </label>
+                    </label><br/>
                     <label>
                         Color:
                         <input
