@@ -2,6 +2,10 @@
 
 Vib'N is an app that allows users to practice holding musical notes and track their progress over multiple sessions. Users can compete with each other to see who can hold notes the longest.
 
+## Note
+
+This is just something I am playing with, still alot of work to be done, so take it as it is with all its defects (I have just been putting in some test frequencies).
+
 ## Features
 
 - **Voice Input**: Detect and display the pitch of the user's voice in real-time.
@@ -35,8 +39,6 @@ Vib'N is an app that allows users to practice holding musical notes and track th
    npm start
    ```
 2. Open your browser and go to `http://localhost:3000`.
-
-3. Upload a song file using the provided interface and start matching the pitch levels.
 
 ## Contributing
 
