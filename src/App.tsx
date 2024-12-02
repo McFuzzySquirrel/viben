@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import UploadSong from './components/UploadSong';
 import PitchDisplay from './components/PitchDisplay';
@@ -11,6 +11,19 @@ import './styles/App.css'; // Import the CSS file
 const App: React.FC = () => {
     const [uploadedSong, setUploadedSong] = useState<File | null>(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [octave, setOctave] = useState<number>(4); // Default octave is 4
+
+    // Base frequencies for one octave
+    const baseFrequencies = {
+        do: 16.35, // C0
+        re: 18.35, // D0
+        mi: 20.60, // E0
+        fa: 21.83, // F0
+        sol: 24.50, // G0
+        la: 27.50, // A0
+        ti: 30.87, // B0
+    };
+
     const [pitchLevels, setPitchLevels] = useState<{ [key: string]: { min: number, max: number, color: string } }>({
         do: { min: 261.63, max: 277.18, color: 'red' },
         re: { min: 293.66, max: 311.13, color: 'orange' },
@@ -20,6 +33,48 @@ const App: React.FC = () => {
         la: { min: 440.00, max: 466.16, color: 'indigo' },
         ti: { min: 493.88, max: 523.25, color: 'violet' },
     });
+
+    useEffect(() => {
+        // Update pitchLevels based on the selected octave
+        setPitchLevels({
+            do: {
+                min: baseFrequencies.do * Math.pow(2, octave),
+                max: baseFrequencies.do * Math.pow(2, octave + 1 / 12),
+                color: 'red',
+            },
+            re: {
+                min: baseFrequencies.re * Math.pow(2, octave),
+                max: baseFrequencies.re * Math.pow(2, octave + 1 / 12),
+                color: 'orange',
+            },
+            mi: {
+                min: baseFrequencies.mi * Math.pow(2, octave),
+                max: baseFrequencies.mi * Math.pow(2, octave + 1 / 12),
+                color: 'yellow',
+            },
+            fa: {
+                min: baseFrequencies.fa * Math.pow(2, octave),
+                max: baseFrequencies.fa * Math.pow(2, octave + 1 / 12),
+                color: 'green',
+            },
+            sol: {
+                min: baseFrequencies.sol * Math.pow(2, octave),
+                max: baseFrequencies.sol * Math.pow(2, octave + 1 / 12),
+                color: 'blue',
+            },
+            la: {
+                min: baseFrequencies.la * Math.pow(2, octave),
+                max: baseFrequencies.la * Math.pow(2, octave + 1 / 12),
+                color: 'indigo',
+            },
+            ti: {
+                min: baseFrequencies.ti * Math.pow(2, octave),
+                max: baseFrequencies.ti * Math.pow(2, octave + 1 / 12),
+                color: 'violet',
+            },
+        });
+    }, [octave, setPitchLevels]);
+
     const [timeSpent, setTimeSpent] = useState<{ [key: string]: number }>({
         do: 0,
         re: 0,
@@ -42,16 +97,21 @@ const App: React.FC = () => {
     };
 
     const handleBarChange = (bar: string) => {
-        if (currentBar) {
-            const endTime = Date.now();
-            const timeSpentOnBar = endTime - (startTime || endTime);
-            setTimeSpent(prev => ({
-                ...prev,
-                [currentBar]: prev[currentBar] + timeSpentOnBar,
-            }));
-        }
-        setCurrentBar(bar);
-        setStartTime(Date.now());
+        setCurrentBar(prevBar => {
+            if (prevBar !== bar) {
+                const currentTime = Date.now();
+                if (prevBar) {
+                    const timeSpentOnBar = currentTime - (startTime || currentTime);
+                    setTimeSpent(prev => ({
+                        ...prev,
+                        [prevBar]: prev[prevBar] + timeSpentOnBar,
+                    }));
+                }
+                setStartTime(currentTime);
+                return bar;
+            }
+            return prevBar;
+        });
     };
 
     const handleEndSession = () => {
@@ -91,6 +151,26 @@ const App: React.FC = () => {
         }
     };
 
+    const handleStartSession = () => {
+        if (!sessionName) {
+            alert('Please enter a session name before starting.');
+            return;
+        }
+        // Reset timeSpent, currentBar, startTime
+        setTimeSpent({
+            do: 0,
+            re: 0,
+            mi: 0,
+            fa: 0,
+            sol: 0,
+            la: 0,
+            ti: 0,
+        });
+        setCurrentBar(null);
+        setStartTime(null);
+        setIsListening(true);
+    };
+
     const clearSessions = () => {
         setSessions([]);
     };
@@ -103,7 +183,8 @@ const App: React.FC = () => {
                         <Route path="/" element={
                             <div className="start-page">
                                 <img src="/viben-logo.png" alt="Viben Logo" className="logo" />
-                                <h1>Viben Pitch Matcher</h1>
+                                <h1>Vib'N</h1>
+                                <p>Practice your vibe, see if you can hold a tone.</p>
                                 <Link to="/main">
                                     <button>Start</button>
                                 </Link>
@@ -121,7 +202,7 @@ const App: React.FC = () => {
                                     <button className="settings-button" onClick={() => setShowSettings(!showSettings)}>
                                         {showSettings ? 'Hide Advanced Settings' : 'Show Advanced Settings'}
                                     </button>
-                                    {showSettings && <PitchSettings pitchLevels={pitchLevels} setPitchLevels={setPitchLevels} />}
+                                    {showSettings && <PitchSettings pitchLevels={pitchLevels} setPitchLevels={setPitchLevels} octave={octave} setOctave={setOctave} />}
                                     <PitchDisplay pitchLevels={pitchLevels} />
                                     <input
                                         type="text"
@@ -134,8 +215,8 @@ const App: React.FC = () => {
                                         accept="image/*"
                                         onChange={handleImageUpload}
                                     />
-                                    <button onClick={() => setIsListening(true)}>Begin</button>
-                                    <button onClick={handleEndSession}>End Session</button>
+                                    <button onClick={handleStartSession} disabled={!sessionName}>Begin</button>
+                                    <button onClick={handleEndSession}>End</button>
                                     <Link to="/scores">
                                         <button>See Scores</button>
                                     </Link>

@@ -1,12 +1,16 @@
-# React Vibration App
+# Vib'N
 
-This project is a React-based web application that allows users to upload a song and receive vibrations based on the beat of the song. It also provides pitch levels for musical notes (Do, Re, Mi, Fa, etc.) to help users match the correct notes.
+Vib'N is an app that allows users to practice holding musical notes and track their progress over multiple sessions. Users can compete with each other to see who can hold notes the longest.
 
 ## Features
 
-- Upload a song file to analyze its beat.
-- Vibrations are triggered in sync with the beat of the song.
-- Display of expected pitch levels alongside user input for pitch matching.
+- **Voice Input**: Detect and display the pitch of the user's voice in real-time.
+- **Session Tracking**: Track multiple sessions to observe improvement over time.
+- **Competition Mode**: Users can compete to see who can hold notes the longest.
+- **Pitch Visualization**: Visualize pitches with bars and a pitch needle.
+- **Session Statistics**: View detailed statistics for each session.
+
+*Note: The **Upload Song** feature is currently under development.*
 
 ## Project Structure
 

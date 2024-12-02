@@ -9,16 +9,13 @@ interface PitchDisplayProps {
 const PitchDisplay: React.FC<PitchDisplayProps> = ({ pitchLevels }) => {
     return (
         <div className="pitch-display">
-
-            
             <ul>
                 {Object.entries(pitchLevels).map(([pitch, { min, max, color }]) => (
                     <li key={pitch} style={{ color }}>
-                        {pitch}: {min} Hz - {max} Hz
+                        {pitch}: {min.toFixed(2)} Hz - {max.toFixed(2)} Hz
                     </li>
                 ))}
             </ul>
-            
         </div>
     );
 };
