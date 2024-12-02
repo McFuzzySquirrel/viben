@@ -12,26 +12,6 @@ Vib'N is an app that allows users to practice holding musical notes and track th
 
 *Note: The **Upload Song** feature is currently under development.*
 
-## Project Structure
-
-```
-react-vibration-app
-├── public
-│   ├── index.html          # Main HTML document
-│   └── manifest.json       # Metadata for PWA features
-├── src
-│   ├── components
-│   │   ├── PitchDisplay.tsx  # Displays pitch levels
-│   │   ├── UploadSong.tsx    # Handles song uploads
-│   │   └── VibrationControl.tsx # Manages vibration settings
-│   ├── App.tsx              # Main application component
-│   ├── index.tsx            # Entry point for the React app
-│   └── styles
-│       └── App.css          # CSS styles for the application
-├── package.json             # npm configuration file
-├── tsconfig.json            # TypeScript configuration file
-└── README.md                # Project documentation
-```
 
 ## Installation
 
