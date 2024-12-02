@@ -3,9 +3,11 @@ import React, { useState, useEffect } from 'react';
 interface PitchSettingsProps {
     pitchLevels: { [key: string]: { min: number, max: number, color: string } };
     setPitchLevels: React.Dispatch<React.SetStateAction<{ [key: string]: { min: number, max: number, color: string } }>>;
+    octave: number;
+    setOctave: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const PitchSettings: React.FC<PitchSettingsProps> = ({ pitchLevels, setPitchLevels }) => {
+const PitchSettings: React.FC<PitchSettingsProps> = ({ pitchLevels, setPitchLevels, octave, setOctave }) => {
     const [localPitchLevels, setLocalPitchLevels] = useState(pitchLevels);
 
     useEffect(() => {
@@ -26,9 +28,26 @@ const PitchSettings: React.FC<PitchSettingsProps> = ({ pitchLevels, setPitchLeve
         setPitchLevels(localPitchLevels);
     };
 
+    const handleOctaveChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newOctave = parseInt(e.target.value, 10);
+        if (!isNaN(newOctave)) {
+            setOctave(newOctave);
+        }
+    };
+
     return (
         <div className="pitch-settings">
             <h2>Pitch Settings</h2><br/>
+            <label>
+                Octave:
+                <input
+                    type="number"
+                    value={octave}
+                    onChange={handleOctaveChange}
+                    min="0"
+                    max="8"
+                />
+            </label>
             {Object.entries(localPitchLevels).map(([pitch, { min, max, color }]) => (
                 <div key={pitch}>
                     <h3>{pitch}</h3>

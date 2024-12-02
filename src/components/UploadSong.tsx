@@ -12,8 +12,8 @@ const UploadSong: React.FC<UploadSongProps> = ({ onUpload }) => {
     };
 
     return (
-        <div className="upload-song">
-            <label htmlFor="song-upload">Upload a Song (Optional)</label>
+        <div className="upload-song" hidden>
+           <label htmlFor="song-upload">Upload a Song (Optional)</label>
             <input type="file" id="song-upload" onChange={handleFileChange} />
         </div>
     );

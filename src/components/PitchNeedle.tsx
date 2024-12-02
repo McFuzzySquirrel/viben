@@ -19,12 +19,13 @@ const PitchNeedle: React.FC<PitchNeedleProps> = ({ pitch, pitchLevels }) => {
     const needleStyle = {
         transform: `rotate(${pitch ? (pitch / 1000) * 180 : 0}deg)`,
         backgroundColor: getColor(pitch),
+        transition: 'transform 0.1s ease-in-out', // Smooth transition
     };
 
     return (
-        <center><div className="pitch-needle-container">
+        <div className="pitch-needle-container">
             <div className="pitch-needle" style={needleStyle}></div>
-        </div></center>
+        </div>
     );
 };
 
