@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
+import { DEFAULT_SOLFEGE_WINDOWS } from '@shared/config/solfege';
+import { useMicrophoneInput, usePitchMonitor } from '@features/audio';
 
 export function GameScreen() {
+  const microphone = useMicrophoneInput();
+  const pitchMonitor = usePitchMonitor(microphone.session);
+
   return (
     <section className="screen">
       <p className="screen__eyebrow">Game shell</p>
@@ -13,11 +18,64 @@ export function GameScreen() {
 
       <div className="screen-grid">
         <article className="panel">
-          <h3>Reserved integration zones</h3>
+          <h3>Audio foundation handoff</h3>
           <ul className="feature-list">
-            <li>Pre-run microphone readiness and blocked/error states.</li>
-            <li>Real-time note prompt, pitch state, and rocket response modules.</li>
-            <li>Keyboard-friendly shell controls and route-safe exit paths.</li>
+            <li>Support state: {microphone.state.support.isSupported ? 'supported' : 'blocked'}.</li>
+            <li>Permission state: {microphone.state.permission}.</li>
+            <li>Readiness state: {microphone.state.readiness}.</li>
+            <li>
+              Latest pitch classification:{' '}
+              {pitchMonitor.latestSample?.classification ?? 'waiting-for-audio'}.
+            </li>
+          </ul>
+        </article>
+
+        <article className="panel">
+          <h3>Minimal audio probe</h3>
+          <p>
+            This Phase 1 hook wires the extracted microphone and pitch modules into the active game
+            route without shipping the final mic-check UX.
+          </p>
+          {microphone.state.lastError ? (
+            <p role="alert">{microphone.state.lastError.message}</p>
+          ) : (
+            <p>Microphone analysis stays local-only and does not store recordings or raw buffers.</p>
+          )}
+          <div className="button-row">
+            <button className="button" onClick={() => void microphone.requestMicrophoneAccess()} type="button">
+              {microphone.state.isCapturing ? 'Restart audio capture' : 'Request microphone access'}
+            </button>
+            <button
+              className="button button--secondary"
+              onClick={() => void microphone.stopCapture()}
+              type="button"
+            >
+              Stop capture
+            </button>
+          </div>
+          <ul className="feature-list">
+            <li>Frame size: {microphone.state.captureMetrics?.frameSize ?? 'n/a'} samples.</li>
+            <li>Sample rate: {microphone.state.captureMetrics?.sampleRate ?? 'n/a'} Hz.</li>
+            <li>Detected note: {pitchMonitor.latestSample?.noteId ?? 'n/a'}.</li>
+            <li>
+              Detected frequency:{' '}
+              {pitchMonitor.latestSample?.frequencyHz
+                ? `${pitchMonitor.latestSample.frequencyHz.toFixed(1)} Hz`
+                : 'n/a'}
+              .
+            </li>
+          </ul>
+        </article>
+
+        <article className="panel">
+          <h3>Shared solfege windows</h3>
+          <ul className="feature-list">
+            {DEFAULT_SOLFEGE_WINDOWS.map((window) => (
+              <li key={window.id}>
+                <strong>{window.label}</strong> ({window.scientificPitch}) {window.minFrequencyHz.toFixed(1)}-
+                {window.maxFrequencyHz.toFixed(1)} Hz
+              </li>
+            ))}
           </ul>
         </article>
 

@@ -12,11 +12,13 @@
   - Files: `docs/PROGRESS.md`
 - [x] Phase 1, Task 1.1: Foundation migration and app shell setup (@project-architect)
   - Files: `package.json`, `package-lock.json`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `index.html`, `src/main.tsx`, `src/vite-env.d.ts`, `src/App.tsx`, `src/app/**`, `src/screens/**`, `src/shared/types/**`, `src/shared/config/privacy.ts`, `src/styles/global.css`, `src/components/VoiceInput.tsx`
+- [x] Phase 1, Task 1.2: Extract microphone and pitch-detection pipeline (@audio-systems-engineer)
+  - Files: `src/shared/config/solfege.ts`, `src/features/audio/**`, `src/screens/GameScreen/GameScreen.tsx`
 
 ## Current Task
-- [ ] Phase 1, Task 1.2: Extract microphone and pitch-detection pipeline (@audio-systems-engineer)
+- [ ] Phase 1, Task 1.3: Define difficulty and persistence contracts (@progression-systems-engineer)
   - Status: In progress
-  - Notes: Foundation is now on Vite with typed routing/providers in place; next task should plug reusable audio modules into the new shell without changing route contracts.
+  - Notes: Audio and solfege contracts are now in place; progression work can define difficulty and local-storage contracts for gameplay/results consumers.
 
 ## Phase Dependencies
 
@@ -145,3 +147,4 @@
 - The first implementation dependency chain is: `project-architect` -> (`audio-systems-engineer` and `progression-systems-engineer`) -> `gameplay-systems-engineer` -> `ui-hud-developer` -> `qa-test-engineer`.
 - Baseline verification before Phase 1 execution: `npm run build` succeeded, and `npm test -- --watchAll=false` exited with "No tests found".
 - Task 1.1 verification on the new foundation: `npm run typecheck`, `npm run build`, and `npm run test` all passed on the Vite/Vitest setup.
+- Task 1.2 verification: `npm run typecheck`, `npm run build`, and `npm run test` passed after extracting the audio foundation.
