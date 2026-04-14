@@ -84,4 +84,44 @@ describe('progression storage', () => {
       },
     });
   });
+
+  it('SP-06 persists gameplay-only run data without raw audio fields', () => {
+    persistRunSummary({
+      id: 'run-privacy',
+      recordedAt: '2026-04-14T12:05:00.000Z',
+      difficultyId: 'easy',
+      outcome: 'failed',
+      score: 320,
+      stars: 1,
+      durationMs: 24000,
+      comparisonGroupId: null,
+      performance: {
+        accuracyPercent: 48,
+        timeOnTargetMs: 9000,
+        longestCorrectStreak: 3,
+        promptsCleared: 4,
+        promptsPresented: 10,
+      },
+    });
+
+    const persistedSave = JSON.parse(window.localStorage.getItem(VIBEN_LOCAL_SAVE_KEY) ?? '{}') as Record<
+      string,
+      unknown
+    >;
+    const serializedSave = JSON.stringify(persistedSave);
+
+    expect(persistedSave).toMatchObject({
+      selectedDifficultyId: 'easy',
+      runHistory: [
+        expect.objectContaining({
+          id: 'run-privacy',
+          score: 320,
+        }),
+      ],
+    });
+    expect(serializedSave).not.toContain('audioBuffer');
+    expect(serializedSave).not.toContain('rawAudio');
+    expect(serializedSave).not.toContain('voiceprint');
+    expect(serializedSave).not.toContain('microphone');
+  });
 });
