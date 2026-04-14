@@ -16,11 +16,13 @@
   - Files: `src/shared/config/solfege.ts`, `src/features/audio/**`, `src/screens/GameScreen/GameScreen.tsx`
 - [x] Phase 1, Task 1.3: Define difficulty and persistence contracts (@progression-systems-engineer)
   - Files: `src/shared/config/difficulty.ts`, `src/features/progression/**`, `src/features/settings/**`, `src/shared/persistence/**`, `src/shared/types/app-shell.ts`, `src/app/providers/AppProviders.tsx`
+- [x] Phase 1, Task 1.4: Define game-state primitives and integration contracts (@gameplay-systems-engineer)
+  - Files: `src/features/game/**`
 
 ## Current Task
-- [ ] Phase 1, Task 1.4: Define game-state primitives and integration contracts (@gameplay-systems-engineer)
+- [ ] Phase 1, Task 1.5: Establish routed screen placeholders and baseline screen composition (@ui-hud-developer)
   - Status: In progress
-  - Notes: Audio and progression contracts now exist; gameplay work should bind prompt/run-state primitives to those contracts without implementing final screens or persistence writes yet.
+  - Notes: Game engine/state contracts now exist; UI work should replace remaining shell placeholders and connect them to audio/gameplay/progression providers without changing ownership boundaries.
 
 ## Phase Dependencies
 
@@ -151,3 +153,4 @@
 - Task 1.1 verification on the new foundation: `npm run typecheck`, `npm run build`, and `npm run test` all passed on the Vite/Vitest setup.
 - Task 1.2 verification: `npm run typecheck`, `npm run build`, and `npm run test` passed after extracting the audio foundation.
 - Task 1.3 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 7 progression foundation tests.
+- Task 1.4 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 12 total tests after adding gameplay foundation coverage.
