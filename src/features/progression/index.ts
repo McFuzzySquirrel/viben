@@ -15,3 +15,4 @@ export {
   type RunPerformanceMetrics,
   type RunResultSummary,
 } from './contracts';
+export { buildLocalRunComparison, getBestRunSummary, getLatestRunSummary, type LocalRunComparisonOptions } from './selectors';

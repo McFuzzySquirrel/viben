@@ -62,10 +62,13 @@ describe('game state reducer', () => {
       recordedAt: '2026-04-14T00:00:00.400Z',
       difficultyId: 'easy',
       outcome: 'completed',
+      endReason: 'moon-reached',
       score: resultsState.summary.score,
       stars: resultsState.summary.stars,
       durationMs: 400,
       comparisonGroupId: null,
+      hazardsFaced: resultsState.summary.hazardsTriggered,
+      boostsCaught: resultsState.summary.boostsTriggered,
       performance: resultsState.summary.performance,
     });
   });

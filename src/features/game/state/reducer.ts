@@ -229,10 +229,13 @@ export function toProgressionRunSummary(summary: GameRunSummary): RunResultSumma
     recordedAt: summary.recordedAt,
     difficultyId: summary.difficultyId,
     outcome: summary.outcome,
+    endReason: summary.endReason,
     score: summary.score,
     stars: summary.stars,
     durationMs: summary.durationMs,
     comparisonGroupId: summary.comparisonGroupId,
+    hazardsFaced: summary.hazardsTriggered,
+    boostsCaught: summary.boostsTriggered,
     performance: summary.performance,
   };
 }

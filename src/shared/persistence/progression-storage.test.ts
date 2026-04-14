@@ -7,6 +7,7 @@ import {
   persistRunSummary,
   persistSelectedDifficulty,
   VIBEN_LOCAL_SAVE_KEY,
+  VIBEN_LOCAL_SAVE_VERSION,
 } from './progression-storage';
 
 describe('progression storage', () => {
@@ -41,16 +42,72 @@ describe('progression storage', () => {
     expect(snapshot.save.lastUpdatedAt).not.toBeNull();
   });
 
+  it('filters malformed saved runs but keeps valid history entries', () => {
+    window.localStorage.setItem(
+      VIBEN_LOCAL_SAVE_KEY,
+      JSON.stringify({
+        version: VIBEN_LOCAL_SAVE_VERSION,
+        selectedDifficultyId: 'normal',
+        lastUpdatedAt: '2026-04-14T12:35:00.000Z',
+        milestones: [],
+        difficultyRecords: {},
+        runHistory: [
+          {
+            id: 'valid-run',
+            recordedAt: '2026-04-14T12:35:00.000Z',
+            difficultyId: 'normal',
+            outcome: 'completed',
+            endReason: 'moon-reached',
+            score: 1800,
+            stars: 3,
+            durationMs: 82000,
+            comparisonGroupId: null,
+            hazardsFaced: 1,
+            boostsCaught: 4,
+            performance: {
+              accuracyPercent: 88,
+              timeOnTargetMs: 56000,
+              longestCorrectStreak: 12,
+              promptsCleared: 15,
+              promptsPresented: 18,
+            },
+          },
+          {
+            id: 'bad-run',
+            recordedAt: 'not-a-date',
+            difficultyId: 'normal',
+            outcome: 'completed',
+            score: -1,
+            stars: 99,
+            durationMs: 1000,
+            performance: {},
+          },
+        ],
+      }),
+    );
+
+    const snapshot = loadProgressionState();
+
+    expect(snapshot.status).toBe('recovered');
+    expect(snapshot.issues).toContain('invalid-schema');
+    expect(snapshot.save.runHistory).toHaveLength(1);
+    expect(snapshot.save.runHistory[0]?.id).toBe('valid-run');
+    expect(snapshot.save.difficultyRecords.normal.bestScore).toBe(1800);
+  });
+
   it('stores minimized run summaries and recomputes local bests', () => {
     persistRunSummary({
       id: 'run-001',
       recordedAt: '2026-04-14T12:00:00.000Z',
       difficultyId: 'normal',
       outcome: 'completed',
+      endReason: 'moon-reached',
       score: 1280,
       stars: 2,
       durationMs: 96000,
       comparisonGroupId: 'local-group-1',
+      hazardsFaced: 3,
+      boostsCaught: 2,
       performance: {
         accuracyPercent: 82.5,
         timeOnTargetMs: 51000,
@@ -71,10 +128,13 @@ describe('progression storage', () => {
       recordedAt: '2026-04-14T12:00:00.000Z',
       difficultyId: 'normal',
       outcome: 'completed',
+      endReason: 'moon-reached',
       score: 1280,
       stars: 2,
       durationMs: 96000,
       comparisonGroupId: 'local-group-1',
+      hazardsFaced: 3,
+      boostsCaught: 2,
       performance: {
         accuracyPercent: 82.5,
         timeOnTargetMs: 51000,
@@ -91,10 +151,13 @@ describe('progression storage', () => {
       recordedAt: '2026-04-14T12:05:00.000Z',
       difficultyId: 'easy',
       outcome: 'failed',
+      endReason: 'stability-depleted',
       score: 320,
       stars: 1,
       durationMs: 24000,
       comparisonGroupId: null,
+      hazardsFaced: 1,
+      boostsCaught: 0,
       performance: {
         accuracyPercent: 48,
         timeOnTargetMs: 9000,

@@ -51,7 +51,8 @@ export interface GameRunSnapshot {
   lastAudioFrame: GameplayAudioFrame | null;
 }
 
-export interface GameRunSummary extends Omit<RunResultSummary, 'performance' | 'outcome'> {
+export interface GameRunSummary
+  extends Omit<RunResultSummary, 'performance' | 'outcome' | 'endReason' | 'hazardsFaced' | 'boostsCaught'> {
   outcome: RunOutcome;
   performance: RunPerformanceMetrics;
   endReason: GameRunEndReason | 'manual-return';

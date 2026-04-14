@@ -25,14 +25,14 @@ describe('App shell foundation coverage', () => {
     await router.navigate('/results');
     expect(
       await screen.findByRole('heading', {
-        name: 'Keep the routed summary screen in place for future run outcomes.',
+        name: 'No local run summary yet.',
       }),
     ).toBeInTheDocument();
 
     await router.navigate('/progress');
     expect(
       await screen.findByRole('heading', {
-        name: 'Keep local-only progression visible without committing to final reports yet.',
+        name: 'Local run history and comparison.',
       }),
     ).toBeInTheDocument();
   });

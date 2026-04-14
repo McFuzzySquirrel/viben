@@ -114,9 +114,12 @@ function coerceRunResultSummary(value: unknown): RunResultSummary | null {
   const recordedAt = isIsoTimestamp(value.recordedAt) ? value.recordedAt : null;
   const difficultyId = isDifficultyId(value.difficultyId) ? value.difficultyId : null;
   const outcome = coerceRunOutcome(value.outcome);
+  const endReason = coerceNullableString(value.endReason);
   const score = coerceNonNegativeNumber(value.score);
   const stars = coerceNonNegativeNumber(value.stars);
   const durationMs = coerceNonNegativeNumber(value.durationMs);
+  const hazardsFaced = coerceNonNegativeNumber(value.hazardsFaced) ?? 0;
+  const boostsCaught = coerceNonNegativeNumber(value.boostsCaught) ?? 0;
   const performance = coercePerformanceMetrics(value.performance);
 
   if (
@@ -138,10 +141,13 @@ function coerceRunResultSummary(value: unknown): RunResultSummary | null {
     recordedAt,
     difficultyId,
     outcome,
+    endReason,
     score,
     stars,
     durationMs,
     comparisonGroupId: coerceNullableString(value.comparisonGroupId),
+    hazardsFaced,
+    boostsCaught,
     performance,
   };
 }

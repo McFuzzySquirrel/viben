@@ -23,10 +23,13 @@ export interface RunResultSummary {
   recordedAt: string;
   difficultyId: DifficultyId;
   outcome: RunOutcome;
+  endReason: string | null;
   score: number;
   stars: number;
   durationMs: number;
   comparisonGroupId: string | null;
+  hazardsFaced: number;
+  boostsCaught: number;
   performance: RunPerformanceMetrics;
 }
 

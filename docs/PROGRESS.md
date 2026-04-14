@@ -28,11 +28,13 @@
   - Files: `src/features/game/**`, `src/screens/GameScreen/GameScreen.tsx`, `src/screens/ResultsScreen/ResultsScreen.tsx`
 - [x] Phase 2, Task 2.3: Build Home/Game screens and HUD (@ui-hud-developer)
   - Files: `src/screens/HomeScreen/HomeScreen.tsx`, `src/screens/GameScreen/GameScreen.tsx`, `src/features/game/components/**`, `src/styles/global.css`, `src/app/AppShell.test.tsx`, `src/screens/HomeScreen/HomeScreen.test.tsx`, `src/screens/GameScreen/GameScreen.test.tsx`
+- [x] Phase 2, Task 2.4: Build results and save flow (@progression-systems-engineer)
+  - Files: `src/features/progression/**`, `src/shared/persistence/**`, `src/screens/ResultsScreen/ResultsScreen.tsx`, `src/screens/ProgressScreen/ProgressScreen.tsx`, `src/features/game/state/**`, `src/app/AppShell.test.tsx`, `src/screens/ResultsScreen/ResultsScreen.test.tsx`, `src/screens/ProgressScreen/ProgressScreen.test.tsx`
 
 ## Current Task
-- [ ] Phase 2, Task 2.4: Build results and save flow (@progression-systems-engineer)
+- [ ] Phase 2, Task 2.5: Add integration and acceptance coverage (@qa-test-engineer)
   - Status: In progress
-  - Notes: Gameplay now routes transient `GameResultsRouteState.runSummary` into results; progression should persist completed runs locally and turn the Results/Progress screens into the first real post-run summary and history flow.
+  - Notes: Results and progress views now persist and reload local run history; QA should add Phase 2 acceptance coverage across mic flow, playable run loop, route transitions, results persistence, and blocked/error recovery paths.
 
 ## Phase Dependencies
 
@@ -164,3 +166,4 @@
 - Task 2.1 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 24 total tests after adding shared audio state, readiness selectors, and pitch-target integration contracts.
 - Task 2.2 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 32 total tests after adding the deterministic run loop, controller/state selectors, and gameplay end-state outputs.
 - Task 2.3 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 35 total tests after upgrading the Home/Game launch flow, in-run HUD, and UI route coverage.
+- Task 2.4 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 38 total tests after wiring real results persistence, route-backed results summaries, and local progress/history comparison views.
