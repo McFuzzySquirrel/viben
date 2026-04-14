@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildGameplayTuning } from '../engine';
 import { createInitialGameState, gameStateReducer } from './reducer';
-import { selectCanStartRun, selectSummaryForProgression } from './selectors';
+import { selectCanStartRun, selectRunHudSnapshot, selectSummaryForProgression } from './selectors';
 
 describe('game state reducer', () => {
   it('transitions setup state into a ready-to-start run contract', () => {
@@ -87,5 +87,82 @@ describe('game state reducer', () => {
     }
 
     expect(blockedState.blocker.code).toBe('microphone-denied');
+  });
+
+  it('tracks prompt progression, hud output, and hazard counts inside an active run', () => {
+    const tuning = buildGameplayTuning('normal', {
+      promptHoldMs: 300,
+      promptCadenceMs: 900,
+      hazardCadenceMs: 300,
+      targetAltitude: 1000,
+    });
+    const activeState = gameStateReducer(
+      gameStateReducer(createInitialGameState('normal'), {
+        type: 'start-run',
+        runId: 'run-loop-active',
+        startedAtMs: 0,
+        startedAtIso: '2026-04-14T00:00:00.000Z',
+        tuning,
+      }),
+      {
+        type: 'advance-run',
+        nowMs: 300,
+        elapsedMs: 300,
+        recordedAtIso: '2026-04-14T00:00:00.300Z',
+        audioFrame: {
+          sample: null,
+          matchState: 'correct',
+          targetNoteId: 'do',
+        },
+      },
+    );
+
+    expect(activeState.status).toBe('active');
+    if (activeState.status !== 'active') {
+      throw new Error('expected active state');
+    }
+
+    const hud = selectRunHudSnapshot(activeState);
+
+    expect(activeState.run.promptState.promptsCleared).toBe(1);
+    expect(activeState.run.eventHistory[0]?.kind).toBe('hazard');
+    expect(activeState.run.metrics.hazardsTriggered).toBe(1);
+    expect(hud?.promptsCleared).toBe(1);
+    expect(hud?.activeEvent?.kind).toBe('hazard');
+  });
+
+  it('produces a failed summary when stability is depleted before the moon is reached', () => {
+    const tuning = buildGameplayTuning('hard', {
+      startingStability: 10,
+      missingStabilityPenaltyPerSecond: 100,
+      targetAltitude: 500,
+    });
+    const activeState = gameStateReducer(createInitialGameState('hard'), {
+      type: 'start-run',
+      runId: 'run-phase-2-fail',
+      startedAtMs: 0,
+      startedAtIso: '2026-04-14T00:00:00.000Z',
+      tuning,
+    });
+    const resultsState = gameStateReducer(activeState, {
+      type: 'advance-run',
+      nowMs: 100,
+      elapsedMs: 100,
+      recordedAtIso: '2026-04-14T00:00:00.100Z',
+      audioFrame: {
+        sample: null,
+        matchState: 'missing',
+        targetNoteId: 'do',
+      },
+    });
+
+    expect(resultsState.status).toBe('results');
+    if (resultsState.status !== 'results') {
+      throw new Error('expected results state');
+    }
+
+    expect(resultsState.summary.outcome).toBe('failed');
+    expect(resultsState.summary.endReason).toBe('stability-depleted');
+    expect(resultsState.summary.finalStability).toBe(0);
   });
 });

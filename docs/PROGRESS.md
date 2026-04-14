@@ -24,11 +24,13 @@
   - Files: `vite.config.ts`, `src/test/**`, `src/app/AppShell.test.tsx`, `src/features/audio/input/useMicrophoneInput.test.tsx`, `src/shared/persistence/progression-storage.test.ts`
 - [x] Phase 2, Task 2.1: Implement microphone readiness and live pitch integration (@audio-systems-engineer)
   - Files: `src/app/providers/AppProviders.tsx`, `src/features/audio/**`, `src/screens/HomeScreen/HomeScreen.tsx`, `src/screens/GameScreen/GameScreen.tsx`, `src/app/AppShell.test.tsx`
+- [x] Phase 2, Task 2.2: Implement playable run loop (@gameplay-systems-engineer)
+  - Files: `src/features/game/**`, `src/screens/GameScreen/GameScreen.tsx`, `src/screens/ResultsScreen/ResultsScreen.tsx`
 
 ## Current Task
-- [ ] Phase 2, Task 2.2: Implement playable run loop (@gameplay-systems-engineer)
+- [ ] Phase 2, Task 2.3: Build Home/Game screens and HUD (@ui-hud-developer)
   - Status: In progress
-  - Notes: Audio setup and match-state contracts are now available via the shared audio provider, `selectAudioSetupStatus(...)`, and `useGameplayAudioInput(...)`; gameplay should consume them to drive prompts, rocket response, hazards, score, and success/failure transitions.
+  - Notes: Gameplay now exposes `useGameRunController(difficultyId)`, `selectRunHudSnapshot(...)`, `selectCurrentPrompt(...)`, and typed results route state; UI should turn those contracts into the first full playable screen and HUD flow.
 
 ## Phase Dependencies
 
@@ -158,3 +160,4 @@
 - Task 1.5 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed after upgrading the routed shell UI and HUD placeholders.
 - Task 1.6 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 18 total tests after adding the shared test harness and baseline integration coverage.
 - Task 2.1 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 24 total tests after adding shared audio state, readiness selectors, and pitch-target integration contracts.
+- Task 2.2 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 32 total tests after adding the deterministic run loop, controller/state selectors, and gameplay end-state outputs.

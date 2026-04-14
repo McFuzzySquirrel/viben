@@ -62,12 +62,25 @@ export function gameStateReducer(state: GameState, action: GameStateAction): Gam
         return state;
       }
 
+      if (state.setupPhase === 'ready') {
+        return state;
+      }
+
       return {
         ...state,
         setupPhase: 'ready',
       };
 
     case 'block-setup':
+      if (
+        state.status === 'blocked' &&
+        state.blocker.code === action.blocker.code &&
+        state.blocker.detail === action.blocker.detail &&
+        state.blocker.recoverable === action.blocker.recoverable
+      ) {
+        return state;
+      }
+
       return {
         status: 'blocked',
         selectedDifficultyId: state.selectedDifficultyId,
@@ -95,7 +108,7 @@ export function gameStateReducer(state: GameState, action: GameStateAction): Gam
           promptState: createPromptState(promptSequence),
           activeEvent: null,
           eventHistory: [],
-          metrics: createInitialGameplayMetrics(),
+          metrics: createInitialGameplayMetrics(tuning.startingStability),
           lastAudioFrame: null,
         },
       };

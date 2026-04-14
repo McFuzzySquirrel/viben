@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import type { GameResultsRouteState } from '@features/game';
 import { StatusBadge } from '@features/game/components';
 import { useDifficultySelection } from '@features/settings';
 import { loadProgressionState } from '@shared/persistence';
@@ -9,9 +10,11 @@ function formatMetricValue(value: number | null, suffix = '') {
 }
 
 export function ResultsScreen() {
+  const location = useLocation();
   const { persistenceIssues, persistenceStatus, selectedDifficulty } = useDifficultySelection();
   const progressionSnapshot = loadProgressionState();
-  const latestRun = progressionSnapshot.save.runHistory[0] ?? null;
+  const routeSummary = getRouteRunSummary(location.state);
+  const latestRun = routeSummary ?? progressionSnapshot.save.runHistory[0] ?? null;
   const selectedDifficultyRecord = progressionSnapshot.save.difficultyRecords[selectedDifficulty.id];
 
   const resultMetrics = [
@@ -74,7 +77,7 @@ export function ResultsScreen() {
 
       <div className="screen-grid">
         <article className="panel">
-          <h3>Latest run placeholder</h3>
+          <h3>{routeSummary ? 'Latest gameplay run' : 'Latest run placeholder'}</h3>
           {latestRun ? (
             <dl className="detail-list">
               <div>
@@ -93,6 +96,12 @@ export function ResultsScreen() {
                 <dt>Recorded at</dt>
                 <dd>{new Date(latestRun.recordedAt).toLocaleString()}</dd>
               </div>
+              {getRunEndReason(latestRun) ? (
+                <div>
+                  <dt>End state</dt>
+                  <dd>{getRunEndReason(latestRun)}</dd>
+                </div>
+              ) : null}
             </dl>
           ) : (
             <p className="panel__supporting-copy">
@@ -131,4 +140,20 @@ export function ResultsScreen() {
       </div>
     </section>
   );
+}
+
+function getRouteRunSummary(state: unknown) {
+  if (!state || typeof state !== 'object' || !('runSummary' in state)) {
+    return null;
+  }
+
+  return (state as GameResultsRouteState).runSummary;
+}
+
+function getRunEndReason(run: unknown) {
+  if (!run || typeof run !== 'object' || !('endReason' in run)) {
+    return null;
+  }
+
+  return typeof run.endReason === 'string' ? run.endReason : null;
 }

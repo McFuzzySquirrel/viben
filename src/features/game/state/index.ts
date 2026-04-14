@@ -6,6 +6,9 @@ export {
   type BlockedGameState,
   type GameBlocker,
   type GameBlockerCode,
+  type GameHudSnapshot,
+  type GameResultsRouteState,
+  type GameRunProgressSnapshot,
   type GameRunSnapshot,
   type GameRunSummary,
   type GameState,
@@ -24,10 +27,13 @@ export {
   toProgressionRunSummary,
 } from './reducer';
 export {
+  selectActiveRun,
   selectCanStartRun,
   selectCurrentPrompt,
   selectLatestSummary,
   selectRocketState,
+  selectRunHudSnapshot,
   selectRunProgress,
   selectSummaryForProgression,
 } from './selectors';
+export { useGameRunController, type GameRunController } from './useGameRunController';

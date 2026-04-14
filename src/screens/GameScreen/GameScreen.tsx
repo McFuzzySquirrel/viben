@@ -1,22 +1,15 @@
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   type PitchClassification,
   selectPitchTargetSnapshot,
-  useGameplayAudioInput,
 } from '@features/audio';
 import { HudMeter, PromptFocusCard, StatusBadge } from '@features/game/components';
 import {
-  createInitialGameState,
-  createSetupState,
-  gameStateReducer,
-  selectCanStartRun,
-  selectCurrentPrompt,
-  selectRocketState,
-  selectRunProgress,
+  useGameRunController,
 } from '@features/game';
 import { useDifficultySelection } from '@features/settings';
-import { buildDifficultySolfegeWindows, getDifficultyCalibration } from '@shared/config/difficulty';
+import { buildDifficultySolfegeWindows } from '@shared/config/difficulty';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
 function clampPercent(percent: number) {
@@ -70,7 +63,7 @@ function getFeedbackCopy(
   }
 }
 
-function getMicrophoneTone(audio: ReturnType<typeof useGameplayAudioInput>) {
+function getMicrophoneTone(audio: ReturnType<typeof useGameRunController>['audio']) {
   if (
     audio.setup.stage === 'unsupported' ||
     audio.setup.stage === 'blocked' ||
@@ -87,7 +80,7 @@ function getMicrophoneTone(audio: ReturnType<typeof useGameplayAudioInput>) {
 }
 
 function getRocketStatusLabel(
-  audio: ReturnType<typeof useGameplayAudioInput>,
+  audio: ReturnType<typeof useGameRunController>['audio'],
   matchState: ReturnType<typeof selectPitchTargetSnapshot>['matchState'],
 ) {
   if (audio.setup.stage === 'unsupported' || audio.setup.stage === 'blocked') {
@@ -111,44 +104,12 @@ function getRocketStatusLabel(
 
 export function GameScreen() {
   const { selectedDifficulty, selectedDifficultyId } = useDifficultySelection();
-  const calibration = useMemo(
-    () => getDifficultyCalibration(selectedDifficultyId),
-    [selectedDifficultyId],
-  );
-
-  const baseSetupState = useMemo(() => createSetupState(selectedDifficultyId), [selectedDifficultyId]);
-  const audio = useGameplayAudioInput(baseSetupState.promptPreview.currentPrompt?.noteId ?? null, calibration);
-
-  const setupState = useMemo(() => {
-    if (audio.isReadyForGameplay || audio.state.isCapturing) {
-      const nextState = gameStateReducer(baseSetupState, { type: 'mark-setup-ready' });
-
-      return nextState.status === 'setup' ? nextState : baseSetupState;
-    }
-
-    return baseSetupState;
-  }, [audio.isReadyForGameplay, audio.state.isCapturing, baseSetupState]);
-
-  const previewRunState = useMemo(
-    () =>
-      gameStateReducer(createInitialGameState(selectedDifficultyId), {
-        type: 'start-run',
-        runId: 'phase-1-shell-preview',
-        startedAtIso: '1970-01-01T00:00:00.000Z',
-        startedAtMs: 0,
-        promptSequence: setupState.promptPreview.sequence,
-      }),
-    [selectedDifficultyId, setupState.promptPreview.sequence],
-  );
-
-  const currentPrompt = selectCurrentPrompt(previewRunState) ?? selectCurrentPrompt(setupState);
-  const rocketState = selectRocketState(previewRunState);
-  const runProgress = selectRunProgress(previewRunState);
+  const navigate = useNavigate();
+  const gameplay = useGameRunController(selectedDifficultyId);
+  const navigatedSummaryIdRef = useRef<string | null>(null);
+  const { audio, currentPrompt, hud, state } = gameplay;
   const latestSample = audio.latestSample;
-  const target = useMemo(
-    () => selectPitchTargetSnapshot(latestSample, currentPrompt?.noteId ?? null, calibration),
-    [calibration, currentPrompt?.noteId, latestSample],
-  );
+  const target = audio.target;
   const detectedLabel = latestSample?.noteId?.toUpperCase() ?? latestSample?.nearestNoteId?.toUpperCase() ?? 'No note yet';
   const matchState = target.matchState;
   const feedbackCopy = getFeedbackCopy(
@@ -157,23 +118,43 @@ export function GameScreen() {
     detectedLabel,
     latestSample?.classification ?? null,
   );
-  const canStartRun = selectCanStartRun(setupState) && audio.isReadyForGameplay;
+  const canStartRun = gameplay.canStartRun;
   const microphoneTone = getMicrophoneTone(audio);
   const rocketStatusLabel = getRocketStatusLabel(audio, matchState);
-  const tuning = setupState.tuning;
+  const promptCadenceMs =
+    state.status === 'active'
+      ? state.run.tuning.promptCadenceMs
+      : state.status === 'setup'
+        ? state.tuning.promptCadenceMs
+        : selectedDifficulty.tuning.promptCadenceMs;
+  const targetAltitude =
+    state.status === 'active'
+      ? state.run.tuning.targetAltitude
+      : state.status === 'setup'
+        ? state.tuning.targetAltitude
+        : 1000;
   const solfegeWindows = buildDifficultySolfegeWindows(selectedDifficultyId);
-  const shellAltitudePercent = clampPercent(
-    (runProgress?.altitudePercent ?? 0) + (matchState === 'correct' ? 18 : matchState === 'incorrect' ? 6 : 0),
-  );
-  const shellStabilityPercent = clampPercent(
-    (runProgress?.stabilityPercent ?? 0) +
-      (matchState === 'correct' ? 0 : matchState === 'incorrect' ? -18 : audio.state.isCapturing ? -10 : -22),
-  );
-  const shellPromptHoldPercent = clampPercent(
-    (runProgress?.promptProgressPercent ?? 0) + (matchState === 'correct' ? 42 : matchState === 'incorrect' ? 14 : 0),
-  );
-  const shellThrustPercent =
-    !audio.state.isCapturing ? 0 : matchState === 'correct' ? 82 : matchState === 'incorrect' ? 40 : 14;
+  const hudAltitudePercent = clampPercent(hud?.altitudePercent ?? 0);
+  const hudStabilityPercent = clampPercent(hud?.stabilityPercent ?? 0);
+  const hudPromptHoldPercent = clampPercent(hud?.promptHoldPercent ?? 0);
+  const hudThrustPercent = clampPercent(hud?.thrustPercent ?? 0);
+
+  useEffect(() => {
+    if (state.status !== 'results') {
+      return;
+    }
+
+    if (navigatedSummaryIdRef.current === state.summary.id) {
+      return;
+    }
+
+    navigatedSummaryIdRef.current = state.summary.id;
+    navigate(APP_ROUTE_PATHS.results, {
+      state: {
+        runSummary: state.summary,
+      },
+    });
+  }, [navigate, state]);
 
   return (
     <section className="screen">
@@ -188,20 +169,29 @@ export function GameScreen() {
 
           <div className="status-row" aria-label="Gameplay shell status">
             <StatusBadge label={selectedDifficulty.label} tone="success" />
-            <StatusBadge label={rocketStatusLabel} tone={matchState === 'correct' ? 'success' : 'info'} />
             <StatusBadge
-               label={canStartRun ? 'Ready for future run start' : 'Needs mic readiness before run start'}
-               tone={canStartRun ? 'success' : microphoneTone}
-             />
+              label={rocketStatusLabel}
+              tone={matchState === 'correct' ? 'success' : matchState === 'incorrect' ? 'warning' : 'info'}
+            />
+            <StatusBadge
+              label={
+                canStartRun
+                  ? 'Run ready to launch'
+                  : state.status === 'active'
+                    ? 'Run in progress'
+                    : 'Needs mic readiness before launch'
+              }
+              tone={canStartRun || state.status === 'active' ? 'success' : microphoneTone}
+            />
           </div>
         </div>
 
         <aside className="panel">
-          <h3>Phase 2 audio scope</h3>
+          <h3>Playable run scope</h3>
           <ul className="feature-list">
-            <li>Uses selected difficulty and gameplay setup contracts without reloading the page.</li>
-            <li>Surfaces microphone permission, blocked states, and readiness with player-facing messaging.</li>
-            <li>Shows live pitch classification and match-state contracts that gameplay can consume next.</li>
+            <li>Prompts advance through a live run while current pitch match drives rocket behavior.</li>
+            <li>Hazards and boosts enter the same loop as altitude, stability, and score changes.</li>
+            <li>Failure and moon-reached outcomes emit typed summaries for the results route.</li>
           </ul>
         </aside>
       </div>
@@ -220,39 +210,39 @@ export function GameScreen() {
         <article className="panel">
           <div className="panel__header">
             <div>
-              <p className="screen__eyebrow">Rocket response shell</p>
-              <h3>HUD scaffolding for altitude, stability, and prompt hold</h3>
+              <p className="screen__eyebrow">Rocket response loop</p>
+              <h3>Altitude, stability, prompt hold, and thrust update together</h3>
             </div>
-            <StatusBadge label={rocketState?.mode ?? 'steady'} tone="info" />
+            <StatusBadge label={hud?.rocketMode ?? 'steady'} tone="info" />
           </div>
 
           <HudMeter
-            hint="Preview meter until the gameplay run loop starts consuming live match-state updates."
+            hint="Moon progress is driven by the reducer-backed gameplay loop."
             label="Moon progress"
-            percent={shellAltitudePercent}
+            percent={hudAltitudePercent}
             tone={matchState === 'correct' ? 'success' : 'neutral'}
-            valueText={`${Math.round((shellAltitudePercent / 100) * tuning.targetAltitude)} / ${tuning.targetAltitude}`}
+            valueText={`${Math.round(hud?.altitude ?? 0)} / ${Math.round(hud?.targetAltitude ?? 1000)}`}
           />
           <HudMeter
             hint="Lower stability should remain readable without relying on color alone."
             label="Rocket stability"
-            percent={shellStabilityPercent}
-            tone={shellStabilityPercent < 35 ? 'warning' : 'success'}
-            valueText={`${Math.round(shellStabilityPercent)}%`}
+            percent={hudStabilityPercent}
+            tone={hudStabilityPercent < 35 ? 'warning' : 'success'}
+            valueText={`${Math.round(hud?.stability ?? 0)} / 100`}
           />
           <HudMeter
-            hint="This stands in for the future time-on-note hold feedback."
+            hint="Prompt hold climbs only while the current target note is matched."
             label="Prompt hold"
-            percent={shellPromptHoldPercent}
+            percent={hudPromptHoldPercent}
             tone={matchState === 'correct' ? 'success' : 'warning'}
-            valueText={`${Math.round(shellPromptHoldPercent)}%`}
+            valueText={`${Math.round(hudPromptHoldPercent)}%`}
           />
           <HudMeter
-            hint="Thrust responds visibly here before final rocket simulation lands."
+            hint="Thrust mirrors the current simulation response, including negative drift pressure."
             label="Engine thrust"
-            percent={shellThrustPercent}
+            percent={hudThrustPercent}
             tone={matchState === 'correct' ? 'success' : 'warning'}
-            valueText={`${shellThrustPercent}%`}
+            valueText={`${Math.round(hudThrustPercent)}%`}
           />
         </article>
 
@@ -267,7 +257,7 @@ export function GameScreen() {
 
           <p className="panel__supporting-copy">
             Microphone processing stays local in the browser. No raw audio buffers or recordings are
-            saved while using this shell.
+            saved while using this run loop.
           </p>
 
           {audio.state.lastError ? (
@@ -279,10 +269,26 @@ export function GameScreen() {
           <div className="button-row">
             <button
               className="button"
-              onClick={() => void audio.requestMicrophoneAccess()}
+              onClick={() => void gameplay.requestMicrophoneAccess()}
               type="button"
             >
               {audio.state.isCapturing ? 'Refresh microphone capture' : 'Request microphone access'}
+            </button>
+            <button
+              className="button"
+              disabled={!canStartRun && state.status !== 'active'}
+              onClick={() => void (state.status === 'active' ? gameplay.restartRun() : gameplay.startRun())}
+              type="button"
+            >
+              {state.status === 'active' ? 'Restart run' : 'Start run'}
+            </button>
+            <button
+              className="button button--secondary"
+              disabled={!gameplay.canAbandonRun}
+              onClick={gameplay.abandonRun}
+              type="button"
+            >
+              End run
             </button>
             <button
               className="button button--secondary"
@@ -322,6 +328,14 @@ export function GameScreen() {
               <dd>{target.matchState}</dd>
             </div>
             <div>
+              <dt>Run state</dt>
+              <dd>{state.status}</dd>
+            </div>
+            <div>
+              <dt>Score</dt>
+              <dd>{hud?.score ?? 0}</dd>
+            </div>
+            <div>
               <dt>Nearest note</dt>
               <dd>{target.nearestNoteId?.toUpperCase() ?? 'No stable note yet'}</dd>
             </div>
@@ -331,8 +345,8 @@ export function GameScreen() {
         <article className="panel">
           <div className="panel__header">
             <div>
-              <p className="screen__eyebrow">Contract preview</p>
-              <h3>Gameplay tuning handoff</h3>
+              <p className="screen__eyebrow">Run telemetry</p>
+              <h3>Stable outputs for results and future HUD work</h3>
             </div>
             <StatusBadge label={`${solfegeWindows.length} note windows ready`} tone="info" />
           </div>
@@ -344,22 +358,31 @@ export function GameScreen() {
             </div>
             <div>
               <dt>Prompt cadence</dt>
-              <dd>{tuning.promptCadenceMs} ms</dd>
+              <dd>{promptCadenceMs} ms</dd>
             </div>
             <div>
               <dt>Target altitude</dt>
-              <dd>{tuning.targetAltitude} altitude units</dd>
+              <dd>{targetAltitude} altitude units</dd>
             </div>
             <div>
               <dt>Note tolerance</dt>
               <dd>±{selectedDifficulty.tuning.noteWindowCentsTolerance} cents</dd>
             </div>
+            <div>
+              <dt>Prompts cleared</dt>
+              <dd>{hud?.promptsCleared ?? 0}</dd>
+            </div>
+            <div>
+              <dt>Prompts presented</dt>
+              <dd>{hud?.promptsPresented ?? 0}</dd>
+            </div>
+            <div>
+              <dt>Active event</dt>
+              <dd>{hud?.activeEvent ? `${hud.activeEvent.kind} active` : 'None'}</dd>
+            </div>
           </dl>
 
           <div className="button-row">
-            <Link className="button" to={APP_ROUTE_PATHS.results}>
-              Open summary shell
-            </Link>
             <Link className="button button--secondary" to={APP_ROUTE_PATHS.home}>
               Return to launch pad
             </Link>

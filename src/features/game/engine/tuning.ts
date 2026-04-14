@@ -91,7 +91,9 @@ export function createInitialRocketState(tuning: GameplayTuning): RocketState {
   };
 }
 
-export function createInitialGameplayMetrics(): GameplayMetrics {
+export function createInitialGameplayMetrics(
+  initialStability = Number.POSITIVE_INFINITY,
+): GameplayMetrics {
   return {
     correctMs: 0,
     incorrectMs: 0,
@@ -101,6 +103,6 @@ export function createInitialGameplayMetrics(): GameplayMetrics {
     hazardsTriggered: 0,
     boostsTriggered: 0,
     peakAltitude: 0,
-    lowestStability: Number.POSITIVE_INFINITY,
+    lowestStability: initialStability,
   };
 }

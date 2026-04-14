@@ -1,5 +1,11 @@
 import type { RunResultSummary } from '@features/progression';
-import type { GameRunSummary, GameState } from './contracts';
+import type {
+  GameHudSnapshot,
+  GameRunProgressSnapshot,
+  GameRunSnapshot,
+  GameRunSummary,
+  GameState,
+} from './contracts';
 import { toProgressionRunSummary } from './reducer';
 
 export function selectCurrentPrompt(state: GameState) {
@@ -18,24 +24,65 @@ export function selectRocketState(state: GameState) {
   return state.status === 'active' ? state.run.rocket : null;
 }
 
-export function selectRunProgress(state: GameState) {
-  if (state.status !== 'active') {
+export function selectActiveRun(state: GameState): GameRunSnapshot | null {
+  return state.status === 'active' ? state.run : null;
+}
+
+export function selectRunProgress(state: GameState): GameRunProgressSnapshot | null {
+  const run = selectActiveRun(state);
+
+  if (!run) {
     return null;
   }
 
   return {
+    altitude: run.rocket.altitude,
+    targetAltitude: run.tuning.targetAltitude,
     altitudePercent:
-      state.run.tuning.targetAltitude > 0
-        ? (state.run.rocket.altitude / state.run.tuning.targetAltitude) * 100
-        : 0,
+      run.tuning.targetAltitude > 0 ? (run.rocket.altitude / run.tuning.targetAltitude) * 100 : 0,
+    stability: run.rocket.stability,
+    maxStability: run.tuning.maxStability,
     stabilityPercent:
-      state.run.tuning.maxStability > 0
-        ? (state.run.rocket.stability / state.run.tuning.maxStability) * 100
-        : 0,
+      run.tuning.maxStability > 0 ? (run.rocket.stability / run.tuning.maxStability) * 100 : 0,
+    promptHoldMs: run.tuning.promptHoldMs,
     promptProgressPercent:
-      state.run.tuning.promptHoldMs > 0
-        ? (state.run.promptState.holdProgressMs / state.run.tuning.promptHoldMs) * 100
-        : 0,
+      run.tuning.promptHoldMs > 0 ? (run.promptState.holdProgressMs / run.tuning.promptHoldMs) * 100 : 0,
+  };
+}
+
+export function selectRunHudSnapshot(state: GameState): GameHudSnapshot | null {
+  const run = selectActiveRun(state);
+
+  if (!run) {
+    return null;
+  }
+
+  const progress = selectRunProgress(state);
+
+  if (!progress) {
+    return null;
+  }
+
+  return {
+    status: state.status,
+    prompt: run.promptState.currentPrompt,
+    score: run.score,
+    elapsedMs: run.elapsedMs,
+    matchState: run.lastAudioFrame?.matchState ?? 'missing',
+    altitude: run.rocket.altitude,
+    altitudePercent: progress.altitudePercent,
+    targetAltitude: run.tuning.targetAltitude,
+    stability: run.rocket.stability,
+    stabilityPercent: progress.stabilityPercent,
+    thrustPercent: Math.max(0, Math.min(100, ((run.rocket.thrust + 1) / 2) * 100)),
+    promptHoldPercent: progress.promptProgressPercent,
+    rocketMode: run.rocket.mode,
+    progress,
+    promptsPresented: run.promptState.promptsPresented,
+    promptsCleared: run.promptState.promptsCleared,
+    activeEvent: run.activeEvent,
+    hazardsTriggered: run.metrics.hazardsTriggered,
+    boostsTriggered: run.metrics.boostsTriggered,
   };
 }
 

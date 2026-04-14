@@ -1,4 +1,5 @@
 import type { RunOutcome, RunPerformanceMetrics, RunResultSummary } from '@features/progression';
+import type { PitchTargetMatchState } from '@features/audio/pitch';
 import type { DifficultyId } from '@shared/config/difficulty';
 import type {
   GameRunEndReason,
@@ -10,6 +11,7 @@ import type {
   PromptDefinition,
   PromptState,
   RocketState,
+  RocketFlightMode,
 } from '../engine';
 
 export const GAME_STATE_STATUSES = ['idle', 'setup', 'active', 'results', 'blocked'] as const;
@@ -58,6 +60,43 @@ export interface GameRunSummary extends Omit<RunResultSummary, 'performance' | '
   targetAltitude: number;
   hazardsTriggered: number;
   boostsTriggered: number;
+}
+
+export interface GameRunProgressSnapshot {
+  altitude: number;
+  targetAltitude: number;
+  altitudePercent: number;
+  stability: number;
+  maxStability: number;
+  stabilityPercent: number;
+  promptHoldMs: number;
+  promptProgressPercent: number;
+}
+
+export interface GameHudSnapshot {
+  status: GameStateStatus;
+  prompt: PromptDefinition | null;
+  score: number;
+  elapsedMs: number;
+  matchState: PitchTargetMatchState;
+  rocketMode: RocketFlightMode | null;
+  progress: GameRunProgressSnapshot | null;
+  activeEvent: GameplayEventInstance | null;
+  promptsCleared: number;
+  promptsPresented: number;
+  hazardsTriggered: number;
+  boostsTriggered: number;
+  altitude: number;
+  altitudePercent: number;
+  targetAltitude: number;
+  stability: number;
+  stabilityPercent: number;
+  thrustPercent: number;
+  promptHoldPercent: number;
+}
+
+export interface GameResultsRouteState {
+  runSummary: GameRunSummary;
 }
 
 interface BaseGameState {

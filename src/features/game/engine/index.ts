@@ -1,4 +1,7 @@
 export {
+  createGameplayAudioFrame,
+} from './audio-frame';
+export {
   GAMEPLAY_EVENT_KINDS,
   GAME_RUN_END_REASONS,
   ROCKET_FLIGHT_MODES,
