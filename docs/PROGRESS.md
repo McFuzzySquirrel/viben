@@ -14,11 +14,13 @@
   - Files: `package.json`, `package-lock.json`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `index.html`, `src/main.tsx`, `src/vite-env.d.ts`, `src/App.tsx`, `src/app/**`, `src/screens/**`, `src/shared/types/**`, `src/shared/config/privacy.ts`, `src/styles/global.css`, `src/components/VoiceInput.tsx`
 - [x] Phase 1, Task 1.2: Extract microphone and pitch-detection pipeline (@audio-systems-engineer)
   - Files: `src/shared/config/solfege.ts`, `src/features/audio/**`, `src/screens/GameScreen/GameScreen.tsx`
+- [x] Phase 1, Task 1.3: Define difficulty and persistence contracts (@progression-systems-engineer)
+  - Files: `src/shared/config/difficulty.ts`, `src/features/progression/**`, `src/features/settings/**`, `src/shared/persistence/**`, `src/shared/types/app-shell.ts`, `src/app/providers/AppProviders.tsx`
 
 ## Current Task
-- [ ] Phase 1, Task 1.3: Define difficulty and persistence contracts (@progression-systems-engineer)
+- [ ] Phase 1, Task 1.4: Define game-state primitives and integration contracts (@gameplay-systems-engineer)
   - Status: In progress
-  - Notes: Audio and solfege contracts are now in place; progression work can define difficulty and local-storage contracts for gameplay/results consumers.
+  - Notes: Audio and progression contracts now exist; gameplay work should bind prompt/run-state primitives to those contracts without implementing final screens or persistence writes yet.
 
 ## Phase Dependencies
 
@@ -148,3 +150,4 @@
 - Baseline verification before Phase 1 execution: `npm run build` succeeded, and `npm test -- --watchAll=false` exited with "No tests found".
 - Task 1.1 verification on the new foundation: `npm run typecheck`, `npm run build`, and `npm run test` all passed on the Vite/Vitest setup.
 - Task 1.2 verification: `npm run typecheck`, `npm run build`, and `npm run test` passed after extracting the audio foundation.
+- Task 1.3 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 7 progression foundation tests.
