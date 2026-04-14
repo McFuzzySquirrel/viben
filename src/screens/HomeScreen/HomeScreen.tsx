@@ -1,45 +1,31 @@
 import { Link } from 'react-router-dom';
-import { useMicrophoneInput } from '@features/audio';
+import { selectAudioSetupStatus, useAudioInput } from '@features/audio';
 import { StatusBadge } from '@features/game/components';
 import { useDifficultySelection } from '@features/settings';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
-function formatPermissionLabel(permission: ReturnType<typeof useMicrophoneInput>['state']['permission']) {
-  switch (permission) {
-    case 'granted':
-      return 'Permission already granted';
-    case 'denied':
-      return 'Permission blocked by browser';
-    case 'requesting':
-      return 'Browser prompt in progress';
-    case 'prompt':
-      return 'Browser will ask when gameplay starts';
+function formatSetupLabel(setupStage: ReturnType<typeof selectAudioSetupStatus>['stage']) {
+  switch (setupStage) {
     case 'unsupported':
       return 'Browser cannot provide microphone access';
-    case 'error':
-      return 'Microphone setup error';
-    default:
-      return 'Permission not requested yet';
-  }
-}
-
-function formatReadinessLabel(readiness: ReturnType<typeof useMicrophoneInput>['state']['readiness']) {
-  switch (readiness) {
+    case 'requesting':
+      return 'Browser prompt in progress';
+    case 'ready':
+      return 'Permission granted and ready for mic check';
     case 'capturing':
       return 'Listening for live input';
-    case 'ready':
-      return 'Ready for the next mic check';
     case 'blocked':
       return 'Blocked until browser issue is fixed';
     case 'error':
-      return 'Needs recovery before a run';
+      return 'Microphone setup error';
     default:
-      return 'Waiting to enter the game route';
+      return 'Browser will ask when gameplay starts';
   }
 }
 
 export function HomeScreen() {
-  const microphone = useMicrophoneInput();
+  const microphone = useAudioInput();
+  const setup = selectAudioSetupStatus(microphone.state);
   const {
     availableDifficulties,
     persistenceIssues,
@@ -49,9 +35,9 @@ export function HomeScreen() {
     setSelectedDifficulty,
   } = useDifficultySelection();
 
-  const microphoneTone = !microphone.state.support.isSupported || microphone.state.permission === 'denied'
+  const microphoneTone = setup.stage === 'unsupported' || setup.stage === 'blocked' || setup.stage === 'error'
     ? 'danger'
-    : microphone.state.permission === 'granted'
+    : setup.stage === 'ready' || setup.stage === 'capturing'
       ? 'success'
       : 'info';
 
@@ -62,17 +48,17 @@ export function HomeScreen() {
       <div className="hero">
         <div className="hero__copy">
           <p className="screen__eyebrow">Launch pad</p>
-          <h2>Start the Phase 1 singing run flow from a clear home screen.</h2>
+          <h2>Start the Phase 2 microphone readiness flow from a clear home screen.</h2>
           <p className="screen__lead">
             Pick a difficulty, review the microphone expectation, and move into the routed game
-            shell for the future mic check and note-matching loop.
+            shell for live mic check and note-matching setup.
           </p>
 
           <div className="status-row" aria-label="Current setup summary">
-            <StatusBadge label={selectedDifficulty.label} tone="success" />
-            <StatusBadge label={formatPermissionLabel(microphone.state.permission)} tone={microphoneTone} />
-            <StatusBadge label={`Save status: ${persistenceStatus}`} tone={persistenceTone} />
-          </div>
+              <StatusBadge label={selectedDifficulty.label} tone="success" />
+              <StatusBadge label={formatSetupLabel(setup.stage)} tone={microphoneTone} />
+              <StatusBadge label={`Save status: ${persistenceStatus}`} tone={persistenceTone} />
+            </div>
 
           <div className="button-row">
             <Link className="button" to={APP_ROUTE_PATHS.game}>
@@ -147,11 +133,11 @@ export function HomeScreen() {
             </div>
             <div>
               <dt>Permission</dt>
-              <dd>{formatPermissionLabel(microphone.state.permission)}</dd>
+              <dd>{microphone.state.permission}</dd>
             </div>
             <div>
               <dt>Readiness</dt>
-              <dd>{formatReadinessLabel(microphone.state.readiness)}</dd>
+              <dd>{formatSetupLabel(setup.stage)}</dd>
             </div>
           </dl>
           {microphone.state.lastError ? (
@@ -167,10 +153,10 @@ export function HomeScreen() {
         </article>
 
         <article className="panel">
-          <h3>Phase 1 routing handoff</h3>
+          <h3>Audio handoff</h3>
           <ul className="feature-list">
-            <li>Home is now the stable launch point for future start-run flow work.</li>
-            <li>Game receives the selected difficulty and microphone setup expectations.</li>
+            <li>Home is the stable launch point for start-run and recovery flow work.</li>
+            <li>Game receives the selected difficulty and shared microphone setup state.</li>
             <li>Results and Progress routes stay reachable without changing the route contract.</li>
           </ul>
         </article>

@@ -15,6 +15,15 @@ export type AudioInputPermissionState =
 
 export type AudioReadinessState = 'idle' | 'ready' | 'capturing' | 'blocked' | 'error';
 
+export type AudioSetupStage =
+  | 'unsupported'
+  | 'idle'
+  | 'requesting'
+  | 'ready'
+  | 'capturing'
+  | 'blocked'
+  | 'error';
+
 export type AudioBlockedReason =
   | 'unsupported-browser'
   | 'insecure-context'
@@ -68,4 +77,14 @@ export interface AudioInputSnapshot {
   isCapturing: boolean;
   captureMetrics: AudioCaptureMetrics | null;
   lastError: AudioInputError | null;
+}
+
+export interface AudioSetupStatus {
+  stage: AudioSetupStage;
+  blockedReason: AudioBlockedReason | null;
+  isBlocked: boolean;
+  isListening: boolean;
+  isReadyForGameplay: boolean;
+  canRequestAccess: boolean;
+  canRetry: boolean;
 }

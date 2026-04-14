@@ -34,7 +34,7 @@ export function classifyPitchSample(
   const windows = buildSolfegeWindows(calibration);
   const nearestWindow = findNearestWindow(frequencyHz, windows);
 
-  if (frequencyHz === null || stats.rms < calibration.minimumSignalRms) {
+  if (stats.rms < calibration.minimumSignalRms) {
     return {
       capturedAt: stats.capturedAt,
       frequencyHz: null,
@@ -43,6 +43,20 @@ export function classifyPitchSample(
       classification: 'silence',
       noteId: null,
       nearestNoteId: nearestWindow?.id ?? null,
+      centsFromNearest: null,
+      matchedWindow: null,
+    };
+  }
+
+  if (frequencyHz === null) {
+    return {
+      capturedAt: stats.capturedAt,
+      frequencyHz: null,
+      rms: stats.rms,
+      peak: stats.peak,
+      classification: 'unusable',
+      noteId: null,
+      nearestNoteId: null,
       centsFromNearest: null,
       matchedWindow: null,
     };
@@ -98,7 +112,7 @@ export function classifyPitchTargetMatch(
   sample: PitchDetectionSample | null,
   targetNoteId: SolfegeNoteId,
 ): PitchTargetMatchState {
-  if (!sample || sample.classification === 'silence') {
+  if (!sample || sample.classification === 'silence' || sample.classification === 'unusable') {
     return 'missing';
   }
 

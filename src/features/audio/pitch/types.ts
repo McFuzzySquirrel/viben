@@ -1,6 +1,6 @@
 import type { SolfegeCalibrationConfig, SolfegeNoteId, SolfegeWindow } from '@shared/config/solfege';
 
-export type PitchClassification = 'silence' | 'out-of-range' | 'note';
+export type PitchClassification = 'silence' | 'unusable' | 'out-of-range' | 'note';
 export type PitchTargetMatchState = 'missing' | 'correct' | 'incorrect';
 
 export interface PitchDetectionSample {
@@ -23,4 +23,14 @@ export interface PitchMonitorState {
   calibration: SolfegeCalibrationConfig;
   isMonitoring: boolean;
   latestSample: PitchDetectionSample | null;
+}
+
+export interface PitchTargetSnapshot {
+  targetNoteId: SolfegeNoteId | null;
+  matchState: PitchTargetMatchState;
+  classification: PitchClassification | null;
+  detectedNoteId: SolfegeNoteId | null;
+  nearestNoteId: SolfegeNoteId | null;
+  centsOffTarget: number | null;
+  hasUsablePitch: boolean;
 }

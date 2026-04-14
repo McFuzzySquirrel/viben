@@ -11,6 +11,7 @@ function MicrophoneHarness() {
       <p>permission:{microphone.state.permission}</p>
       <p>readiness:{microphone.state.readiness}</p>
       <p>capturing:{String(microphone.state.isCapturing)}</p>
+      <p>blocked:{microphone.state.blockedReason ?? 'none'}</p>
       <p>
         metrics:
         {microphone.state.captureMetrics
@@ -79,5 +80,35 @@ describe('useMicrophoneInput', () => {
     });
 
     expect(screen.getByText(/Microphone access was denied/)).toBeInTheDocument();
+  });
+
+  it('NF-06 enters a blocked unsupported state when browser audio APIs are missing', async () => {
+    installBrowserTestMocks({
+      hasMediaDevices: false,
+      hasWebAudio: false,
+    });
+
+    render(<MicrophoneHarness />);
+
+    expect(await screen.findByText('permission:unsupported')).toBeInTheDocument();
+    expect(screen.getByText('readiness:blocked')).toBeInTheDocument();
+    expect(screen.getByText(/This browser is missing audio requirements/)).toBeInTheDocument();
+  });
+
+  it('NF-06 keeps missing hardware as an explicit blocked state', async () => {
+    installBrowserTestMocks({
+      permissionState: 'granted',
+      getUserMediaError: new DOMException('No device', 'NotFoundError'),
+    });
+
+    render(<MicrophoneHarness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'request microphone access' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('permission:granted')).toBeInTheDocument();
+      expect(screen.getByText('readiness:blocked')).toBeInTheDocument();
+      expect(screen.getByText('blocked:no-input-device')).toBeInTheDocument();
+    });
   });
 });

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createAudioInputError } from './errors';
 import { createAudioInputSession, type AudioInputSession } from './session';
 import { createUnsupportedAudioError, detectAudioInputSupport, queryMicrophonePermission } from './support';
-import type { AudioInputSnapshot } from './types';
+import type { AudioBlockedReason, AudioInputPermissionState, AudioInputSnapshot } from './types';
 
 function createInitialSnapshot(): AudioInputSnapshot {
   const support = detectAudioInputSupport();
@@ -38,6 +38,33 @@ export interface MicrophoneInputController {
   reset: () => Promise<void>;
 }
 
+function isBlockedAudioReason(reason: AudioBlockedReason | 'unknown-error') {
+  return [
+    'permission-denied',
+    'no-input-device',
+    'device-unavailable',
+    'unsupported-browser',
+    'insecure-context',
+  ].includes(reason);
+}
+
+function toPermissionState(
+  blockedReason: AudioBlockedReason | 'unknown-error',
+): AudioInputPermissionState {
+  switch (blockedReason) {
+    case 'permission-denied':
+      return 'denied';
+    case 'unsupported-browser':
+    case 'insecure-context':
+      return 'unsupported';
+    case 'no-input-device':
+    case 'device-unavailable':
+      return 'granted';
+    default:
+      return 'error';
+  }
+}
+
 export function useMicrophoneInput(): MicrophoneInputController {
   const [state, setState] = useState<AudioInputSnapshot>(() => createInitialSnapshot());
   const sessionRef = useRef<AudioInputSession | null>(null);
@@ -50,14 +77,21 @@ export function useMicrophoneInput(): MicrophoneInputController {
       await currentSession.close();
     }
 
-    setState((currentState) => ({
-      ...currentState,
-      readiness:
-        currentState.permission === 'granted' && currentState.support.isSupported ? 'ready' : 'idle',
-      blockedReason: null,
-      isCapturing: false,
-      captureMetrics: null,
-    }));
+    setState((currentState) => {
+      if (!currentSession && !currentState.isCapturing) {
+        return currentState;
+      }
+
+      return {
+        ...currentState,
+        readiness:
+          currentState.permission === 'granted' && currentState.support.isSupported ? 'ready' : 'idle',
+        blockedReason: null,
+        isCapturing: false,
+        captureMetrics: null,
+        lastError: null,
+      };
+    });
   }, []);
 
   const requestMicrophoneAccess = useCallback(async () => {
@@ -109,11 +143,14 @@ export function useMicrophoneInput(): MicrophoneInputController {
       return true;
     } catch (error) {
       const mappedError = createAudioInputError(error);
+      const permission = toPermissionState(mappedError.code);
+      const readiness = isBlockedAudioReason(mappedError.code) ? 'blocked' : 'error';
+
       setState((currentState) => ({
         ...currentState,
         support,
-        permission: mappedError.code === 'permission-denied' ? 'denied' : 'error',
-        readiness: mappedError.code === 'permission-denied' ? 'blocked' : 'error',
+        permission,
+        readiness,
         blockedReason: mappedError.code === 'unknown-error' ? 'initialization-failed' : mappedError.code,
         isCapturing: false,
         captureMetrics: null,

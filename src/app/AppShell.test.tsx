@@ -11,14 +11,14 @@ describe('App shell foundation coverage', () => {
     expect(screen.getByRole('heading', { name: "Vib'N: Rocket to the Moon" })).toBeInTheDocument();
     expect(
       screen.getByRole('heading', {
-        name: 'Start the Phase 1 singing run flow from a clear home screen.',
+        name: 'Start the Phase 2 microphone readiness flow from a clear home screen.',
       }),
     ).toBeInTheDocument();
 
     await router.navigate('/game');
     expect(
       await screen.findByRole('heading', {
-        name: 'Present the future run loop as an intentional, accessible HUD shell.',
+        name: 'Run the live microphone check inside an intentional, accessible HUD shell.',
       }),
     ).toBeInTheDocument();
 
@@ -54,7 +54,7 @@ describe('App shell foundation coverage', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: 'Present the future run loop as an intentional, accessible HUD shell.',
+        name: 'Run the live microphone check inside an intentional, accessible HUD shell.',
       }),
     ).toBeInTheDocument();
     expect(await screen.findAllByText('Hard')).not.toHaveLength(0);

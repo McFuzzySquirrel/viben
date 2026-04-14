@@ -2,9 +2,9 @@
 
 ## Current State
 **Mode**: Full Build  
-**Phase**: Phase 1 — Foundation and Reuse Extraction  
-**Status**: Paused (Phase 1 complete; ready for Phase 2)  
-**Last Updated**: 2026-04-14T21:06:26.736Z  
+**Phase**: Phase 2 — Core Gameplay Prototype  
+**Status**: In Progress  
+**Last Updated**: 2026-04-14T22:10:12.028Z  
 **PRD**: `docs/PRD.md`
 
 ## Completed Tasks
@@ -22,11 +22,13 @@
   - Files: `src/screens/HomeScreen/HomeScreen.tsx`, `src/screens/GameScreen/GameScreen.tsx`, `src/screens/ResultsScreen/ResultsScreen.tsx`, `src/screens/ProgressScreen/ProgressScreen.tsx`, `src/features/game/components/**`, `src/styles/global.css`
 - [x] Phase 1, Task 1.6: Establish test harness and mocks (@qa-test-engineer)
   - Files: `vite.config.ts`, `src/test/**`, `src/app/AppShell.test.tsx`, `src/features/audio/input/useMicrophoneInput.test.tsx`, `src/shared/persistence/progression-storage.test.ts`
+- [x] Phase 2, Task 2.1: Implement microphone readiness and live pitch integration (@audio-systems-engineer)
+  - Files: `src/app/providers/AppProviders.tsx`, `src/features/audio/**`, `src/screens/HomeScreen/HomeScreen.tsx`, `src/screens/GameScreen/GameScreen.tsx`, `src/app/AppShell.test.tsx`
 
 ## Current Task
-- [ ] Phase 2, Task 2.1: Implement microphone readiness and live pitch integration (@audio-systems-engineer)
-  - Status: Planned
-  - Notes: Phase 2 begins by turning the extracted audio foundation into the full mic-readiness flow and live pitch integration consumed by gameplay and UI.
+- [ ] Phase 2, Task 2.2: Implement playable run loop (@gameplay-systems-engineer)
+  - Status: In progress
+  - Notes: Audio setup and match-state contracts are now available via the shared audio provider, `selectAudioSetupStatus(...)`, and `useGameplayAudioInput(...)`; gameplay should consume them to drive prompts, rocket response, hazards, score, and success/failure transitions.
 
 ## Phase Dependencies
 
@@ -155,3 +157,4 @@
 - Task 1.4 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 12 total tests after adding gameplay foundation coverage.
 - Task 1.5 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed after upgrading the routed shell UI and HUD placeholders.
 - Task 1.6 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 18 total tests after adding the shared test harness and baseline integration coverage.
+- Task 2.1 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 24 total tests after adding shared audio state, readiness selectors, and pitch-target integration contracts.

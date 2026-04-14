@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  useMicrophoneInput,
-  usePitchMonitor,
   type PitchClassification,
-  type PitchTargetMatchState,
+  selectPitchTargetSnapshot,
+  useGameplayAudioInput,
 } from '@features/audio';
 import { HudMeter, PromptFocusCard, StatusBadge } from '@features/game/components';
 import {
@@ -17,7 +16,7 @@ import {
   selectRunProgress,
 } from '@features/game';
 import { useDifficultySelection } from '@features/settings';
-import { buildDifficultySolfegeWindows } from '@shared/config/difficulty';
+import { buildDifficultySolfegeWindows, getDifficultyCalibration } from '@shared/config/difficulty';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
 function clampPercent(percent: number) {
@@ -28,6 +27,8 @@ function toReadableClassificationLabel(classification: PitchClassification | nul
   switch (classification) {
     case 'note':
       return 'Pitch detected inside the solfege range';
+    case 'unusable':
+      return 'Signal detected, but the note is not stable enough to classify';
     case 'out-of-range':
       return 'Pitch detected outside the supported note windows';
     case 'silence':
@@ -37,23 +38,19 @@ function toReadableClassificationLabel(classification: PitchClassification | nul
   }
 }
 
-function deriveShellMatchState(
-  latestNoteId: string | null | undefined,
-  promptNoteId: string | null | undefined,
-  isCapturing: boolean,
-): PitchTargetMatchState {
-  if (!isCapturing || !latestNoteId || !promptNoteId) {
-    return 'missing';
-  }
-
-  return latestNoteId === promptNoteId ? 'correct' : 'incorrect';
-}
-
 function getFeedbackCopy(
-  matchState: PitchTargetMatchState,
+  matchState: ReturnType<typeof selectPitchTargetSnapshot>['matchState'],
   promptLabel: string,
   detectedLabel: string,
+  classification: PitchClassification | null,
 ) {
+  if (classification === 'unusable') {
+    return {
+      badge: 'Stabilize input',
+      detail: `The microphone hears sound, but not a stable note yet. Hold ${promptLabel} a little more steadily.`,
+    };
+  }
+
   switch (matchState) {
     case 'correct':
       return {
@@ -73,12 +70,16 @@ function getFeedbackCopy(
   }
 }
 
-function getMicrophoneTone(microphone: ReturnType<typeof useMicrophoneInput>) {
-  if (!microphone.state.support.isSupported || microphone.state.permission === 'denied') {
+function getMicrophoneTone(audio: ReturnType<typeof useGameplayAudioInput>) {
+  if (
+    audio.setup.stage === 'unsupported' ||
+    audio.setup.stage === 'blocked' ||
+    audio.setup.stage === 'error'
+  ) {
     return 'danger';
   }
 
-  if (microphone.state.readiness === 'capturing' || microphone.state.permission === 'granted') {
+  if (audio.setup.stage === 'capturing' || audio.setup.stage === 'ready') {
     return 'success';
   }
 
@@ -86,14 +87,14 @@ function getMicrophoneTone(microphone: ReturnType<typeof useMicrophoneInput>) {
 }
 
 function getRocketStatusLabel(
-  matchState: PitchTargetMatchState,
-  microphone: ReturnType<typeof useMicrophoneInput>,
+  audio: ReturnType<typeof useGameplayAudioInput>,
+  matchState: ReturnType<typeof selectPitchTargetSnapshot>['matchState'],
 ) {
-  if (!microphone.state.support.isSupported || microphone.state.readiness === 'blocked') {
+  if (audio.setup.stage === 'unsupported' || audio.setup.stage === 'blocked') {
     return 'Rocket offline';
   }
 
-  if (!microphone.state.isCapturing) {
+  if (!audio.state.isCapturing) {
     return 'Awaiting mic check';
   }
 
@@ -109,21 +110,24 @@ function getRocketStatusLabel(
 }
 
 export function GameScreen() {
-  const microphone = useMicrophoneInput();
-  const pitchMonitor = usePitchMonitor(microphone.session);
   const { selectedDifficulty, selectedDifficultyId } = useDifficultySelection();
+  const calibration = useMemo(
+    () => getDifficultyCalibration(selectedDifficultyId),
+    [selectedDifficultyId],
+  );
 
   const baseSetupState = useMemo(() => createSetupState(selectedDifficultyId), [selectedDifficultyId]);
+  const audio = useGameplayAudioInput(baseSetupState.promptPreview.currentPrompt?.noteId ?? null, calibration);
 
   const setupState = useMemo(() => {
-    if (microphone.state.readiness === 'ready' || microphone.state.readiness === 'capturing') {
+    if (audio.isReadyForGameplay || audio.state.isCapturing) {
       const nextState = gameStateReducer(baseSetupState, { type: 'mark-setup-ready' });
 
       return nextState.status === 'setup' ? nextState : baseSetupState;
     }
 
     return baseSetupState;
-  }, [baseSetupState, microphone.state.readiness]);
+  }, [audio.isReadyForGameplay, audio.state.isCapturing, baseSetupState]);
 
   const previewRunState = useMemo(
     () =>
@@ -140,15 +144,22 @@ export function GameScreen() {
   const currentPrompt = selectCurrentPrompt(previewRunState) ?? selectCurrentPrompt(setupState);
   const rocketState = selectRocketState(previewRunState);
   const runProgress = selectRunProgress(previewRunState);
-  const promptNoteId = currentPrompt?.noteId ?? null;
-  const latestSample = pitchMonitor.latestSample;
-  const latestNoteId = latestSample?.noteId ?? latestSample?.nearestNoteId ?? null;
+  const latestSample = audio.latestSample;
+  const target = useMemo(
+    () => selectPitchTargetSnapshot(latestSample, currentPrompt?.noteId ?? null, calibration),
+    [calibration, currentPrompt?.noteId, latestSample],
+  );
   const detectedLabel = latestSample?.noteId?.toUpperCase() ?? latestSample?.nearestNoteId?.toUpperCase() ?? 'No note yet';
-  const matchState = deriveShellMatchState(latestSample?.noteId, promptNoteId, microphone.state.isCapturing);
-  const feedbackCopy = getFeedbackCopy(matchState, currentPrompt?.label ?? 'the target note', detectedLabel);
-  const canStartRun = selectCanStartRun(setupState);
-  const microphoneTone = getMicrophoneTone(microphone);
-  const rocketStatusLabel = getRocketStatusLabel(matchState, microphone);
+  const matchState = target.matchState;
+  const feedbackCopy = getFeedbackCopy(
+    matchState,
+    currentPrompt?.label ?? 'the target note',
+    detectedLabel,
+    latestSample?.classification ?? null,
+  );
+  const canStartRun = selectCanStartRun(setupState) && audio.isReadyForGameplay;
+  const microphoneTone = getMicrophoneTone(audio);
+  const rocketStatusLabel = getRocketStatusLabel(audio, matchState);
   const tuning = setupState.tuning;
   const solfegeWindows = buildDifficultySolfegeWindows(selectedDifficultyId);
   const shellAltitudePercent = clampPercent(
@@ -156,41 +167,41 @@ export function GameScreen() {
   );
   const shellStabilityPercent = clampPercent(
     (runProgress?.stabilityPercent ?? 0) +
-      (matchState === 'correct' ? 0 : matchState === 'incorrect' ? -18 : microphone.state.isCapturing ? -10 : -22),
+      (matchState === 'correct' ? 0 : matchState === 'incorrect' ? -18 : audio.state.isCapturing ? -10 : -22),
   );
   const shellPromptHoldPercent = clampPercent(
     (runProgress?.promptProgressPercent ?? 0) + (matchState === 'correct' ? 42 : matchState === 'incorrect' ? 14 : 0),
   );
   const shellThrustPercent =
-    !microphone.state.isCapturing ? 0 : matchState === 'correct' ? 82 : matchState === 'incorrect' ? 40 : 14;
+    !audio.state.isCapturing ? 0 : matchState === 'correct' ? 82 : matchState === 'incorrect' ? 40 : 14;
 
   return (
     <section className="screen">
       <div className="hero">
         <div className="hero__copy">
           <p className="screen__eyebrow">Gameplay shell</p>
-          <h2>Present the future run loop as an intentional, accessible HUD shell.</h2>
+          <h2>Run the live microphone check inside an intentional, accessible HUD shell.</h2>
           <p className="screen__lead">
-            This Phase 1 route now frames the audio and gameplay contracts as a future singing run:
-            one target note, clear microphone status, and visible rocket-response placeholders.
+            This Phase 2 route frames the audio and gameplay contracts as a live singing run:
+            one target note, clear microphone status, and visible rocket-response feedback.
           </p>
 
           <div className="status-row" aria-label="Gameplay shell status">
             <StatusBadge label={selectedDifficulty.label} tone="success" />
             <StatusBadge label={rocketStatusLabel} tone={matchState === 'correct' ? 'success' : 'info'} />
             <StatusBadge
-              label={canStartRun ? 'Ready for future run start' : 'Needs mic readiness before run start'}
-              tone={canStartRun ? 'success' : microphoneTone}
-            />
+               label={canStartRun ? 'Ready for future run start' : 'Needs mic readiness before run start'}
+               tone={canStartRun ? 'success' : microphoneTone}
+             />
           </div>
         </div>
 
         <aside className="panel">
-          <h3>Phase 1 scope</h3>
+          <h3>Phase 2 audio scope</h3>
           <ul className="feature-list">
-            <li>Uses selected difficulty and gameplay setup contracts without starting the full run loop.</li>
-            <li>Surfaces microphone permission and readiness with player-facing messaging.</li>
-            <li>Shows placeholder correctness and rocket feedback that later agents can replace with live gameplay.</li>
+            <li>Uses selected difficulty and gameplay setup contracts without reloading the page.</li>
+            <li>Surfaces microphone permission, blocked states, and readiness with player-facing messaging.</li>
+            <li>Shows live pitch classification and match-state contracts that gameplay can consume next.</li>
           </ul>
         </aside>
       </div>
@@ -216,7 +227,7 @@ export function GameScreen() {
           </div>
 
           <HudMeter
-            hint="Phase 1 preview meter. Real altitude changes arrive with the gameplay run loop."
+            hint="Preview meter until the gameplay run loop starts consuming live match-state updates."
             label="Moon progress"
             percent={shellAltitudePercent}
             tone={matchState === 'correct' ? 'success' : 'neutral'}
@@ -251,10 +262,7 @@ export function GameScreen() {
               <p className="screen__eyebrow">Microphone controls</p>
               <h3>Permission and readiness messaging</h3>
             </div>
-            <StatusBadge
-              label={`${microphone.state.permission} / ${microphone.state.readiness}`}
-              tone={microphoneTone}
-            />
+            <StatusBadge label={`${audio.state.permission} / ${audio.setup.stage}`} tone={microphoneTone} />
           </div>
 
           <p className="panel__supporting-copy">
@@ -262,24 +270,24 @@ export function GameScreen() {
             saved while using this shell.
           </p>
 
-          {microphone.state.lastError ? (
+          {audio.state.lastError ? (
             <p className="inline-message inline-message--warning" role="alert">
-              {microphone.state.lastError.message}
+              {audio.state.lastError.message}
             </p>
           ) : null}
 
           <div className="button-row">
             <button
               className="button"
-              onClick={() => void microphone.requestMicrophoneAccess()}
+              onClick={() => void audio.requestMicrophoneAccess()}
               type="button"
             >
-              {microphone.state.isCapturing ? 'Refresh microphone capture' : 'Request microphone access'}
+              {audio.state.isCapturing ? 'Refresh microphone capture' : 'Request microphone access'}
             </button>
             <button
               className="button button--secondary"
-              disabled={!microphone.state.isCapturing}
-              onClick={() => void microphone.stopCapture()}
+              disabled={!audio.state.isCapturing}
+              onClick={() => void audio.stopCapture()}
               type="button"
             >
               Stop microphone capture
@@ -289,11 +297,11 @@ export function GameScreen() {
           <dl className="detail-list">
             <div>
               <dt>Current permission</dt>
-              <dd>{microphone.state.permission}</dd>
+              <dd>{audio.state.permission}</dd>
             </div>
             <div>
               <dt>Readiness</dt>
-              <dd>{microphone.state.readiness}</dd>
+              <dd>{audio.setup.stage}</dd>
             </div>
             <div>
               <dt>Detected frequency</dt>
@@ -304,10 +312,18 @@ export function GameScreen() {
             <div>
               <dt>Capture format</dt>
               <dd>
-                {microphone.state.captureMetrics
-                  ? `${microphone.state.captureMetrics.frameSize} samples @ ${microphone.state.captureMetrics.sampleRate} Hz`
+                {audio.state.captureMetrics
+                  ? `${audio.state.captureMetrics.frameSize} samples @ ${audio.state.captureMetrics.sampleRate} Hz`
                   : 'Available after microphone capture starts'}
               </dd>
+            </div>
+            <div>
+              <dt>Target match</dt>
+              <dd>{target.matchState}</dd>
+            </div>
+            <div>
+              <dt>Nearest note</dt>
+              <dd>{target.nearestNoteId?.toUpperCase() ?? 'No stable note yet'}</dd>
             </div>
           </dl>
         </article>
