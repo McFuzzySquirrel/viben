@@ -30,6 +30,9 @@ if (-not $env:REASON)                 { $env:REASON = _vizField 'reason' }
 if (-not $env:STATUS)                 { $v = _vizNested 'toolResult.resultType'; if ($v) { $env:STATUS = $v } else { $env:STATUS = _vizField 'status','tool_status' } }
 if (-not $env:ERROR_SUMMARY)          { $v = _vizNested 'error.message'; if ($v) { $env:ERROR_SUMMARY = $v } else { $env:ERROR_SUMMARY = _vizField 'error_summary','errorSummary' } }
 if (-not $env:TOOL_ARGS)              { $env:TOOL_ARGS = _vizField 'toolArgs' }
+if (-not $env:SKILL_NAME)             { $v = _vizNested 'skill.name'; if ($v) { $env:SKILL_NAME = $v } else { $v = _vizNested 'tool.skill.name'; if ($v) { $env:SKILL_NAME = $v } else { $v = _vizNested 'toolResult.skill.name'; if ($v) { $env:SKILL_NAME = $v } else { $env:SKILL_NAME = _vizField 'skill_name','skillName' } } } }
+if (-not $env:SKILL_ID)               { $v = _vizNested 'skill.id'; if ($v) { $env:SKILL_ID = $v } else { $v = _vizNested 'tool.skill.id'; if ($v) { $env:SKILL_ID = $v } else { $v = _vizNested 'toolResult.skill.id'; if ($v) { $env:SKILL_ID = $v } else { $env:SKILL_ID = _vizField 'skill_id','skillId' } } } }
+if (-not $env:TOOL_CALL_ID)           { $env:TOOL_CALL_ID = _vizField 'tool_call_id','toolCallId','tool_use_id','toolUseId' }
 if (-not $env:SOURCE)                 { $env:SOURCE = _vizField 'source' }
 if (-not $env:PROMPT)                 { $env:PROMPT = _vizField 'prompt','user_prompt' }
 if (-not $env:NOTIFICATION_TYPE)      { $env:NOTIFICATION_TYPE = _vizField 'notification_type','notificationType' }

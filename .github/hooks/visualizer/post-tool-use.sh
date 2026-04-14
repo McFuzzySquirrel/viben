@@ -30,6 +30,9 @@ _vjq() { echo "$_VIZ_STDIN" | jq -r "$1" 2>/dev/null || true; }
 : "${STATUS:=$(_vjq '.toolResult.resultType // .status // .tool_status // empty')}"
 : "${ERROR_SUMMARY:=$(_vjq '.error.message // .error_summary // .errorSummary // empty')}"
 : "${TOOL_ARGS:=$(_vjq '.toolArgs // empty')}"
+: "${SKILL_NAME:=$(_vjq '.skill_name // .skillName // .skill.name // .tool.skill.name // .toolResult.skill.name // empty')}"
+: "${SKILL_ID:=$(_vjq '.skill_id // .skillId // .skill.id // .tool.skill.id // .toolResult.skill.id // empty')}"
+: "${TOOL_CALL_ID:=$(_vjq '.tool_call_id // .toolCallId // .tool_use_id // .toolUseId // empty')}"
 : "${SOURCE:=$(_vjq '.source // empty')}"
 : "${PROMPT:=$(_vjq '.prompt // .user_prompt // empty')}"
 : "${NOTIFICATION_TYPE:=$(_vjq '.notification_type // .notificationType // empty')}"
@@ -39,10 +42,10 @@ _vjq() { echo "$_VIZ_STDIN" | jq -r "$1" 2>/dev/null || true; }
 # --- Visualizer emit (auto-wired by bootstrap-existing-repo) ---
 if [ -x "${REPO_ROOT}/.visualizer/emit-event.sh" ]; then
   if [ "${STATUS}" = "failure" ] || [ "${STATUS}" = "denied" ]; then
-    _VIZ_PAYLOAD=$(jq -nc --arg tool "${TOOL_NAME:-unknown}" --arg err "${ERROR_SUMMARY:-}" '{"toolName":$tool,"status":"failure","errorSummary":$err}' 2>/dev/null || echo '{}')
+    _VIZ_PAYLOAD=$(jq -nc --arg tool "${TOOL_NAME:-unknown}" --arg err "${ERROR_SUMMARY:-}" --arg agent "${AGENT_NAME:-${SUBAGENT_NAME:-${AGENT_DISPLAY_NAME:-${SUBAGENT_DISPLAY_NAME:-}}}}" --arg agentDisplay "${AGENT_DISPLAY_NAME:-${SUBAGENT_DISPLAY_NAME:-}}" --arg task "${TASK_DESC:-}" --arg message "${AGENT_MESSAGE:-${MESSAGE:-${SUMMARY:-}}}" --arg skill "${SKILL_NAME:-}" --arg skillId "${SKILL_ID:-}" --arg callId "${TOOL_CALL_ID:-}" --arg toolArgsRaw "${TOOL_ARGS:-}" '{"toolName":$tool,"status":"failure","errorSummary":$err} + (if ($toolArgsRaw|length)>0 then (try (($toolArgsRaw|fromjson) as $args | {"toolArgs":$args}) catch {"toolArgsText":$toolArgsRaw}) else {} end) + (if ($agent|length)>0 then {"agentName":$agent} else {} end) + (if ($agentDisplay|length)>0 then {"agentDisplayName":$agentDisplay} else {} end) + (if ($task|length)>0 then {"taskDescription":$task} else {} end) + (if ($message|length)>0 then {"message":$message} else {} end) + (if ($skill|length)>0 then {"skillName":$skill} else {} end) + (if ($skillId|length)>0 then {"skillId":$skillId} else {} end) + (if ($callId|length)>0 then {"toolCallId":$callId} else {} end)' 2>/dev/null || echo '{}')
     "${REPO_ROOT}/.visualizer/emit-event.sh" postToolUseFailure "${_VIZ_PAYLOAD}" "${SESSION_ID:-run-$$}" >&2 || true
   else
-    _VIZ_PAYLOAD=$(jq -nc --arg tool "${TOOL_NAME:-unknown}" '{"toolName":$tool,"status":"success"}' 2>/dev/null || echo '{}')
+    _VIZ_PAYLOAD=$(jq -nc --arg tool "${TOOL_NAME:-unknown}" --arg agent "${AGENT_NAME:-${SUBAGENT_NAME:-${AGENT_DISPLAY_NAME:-${SUBAGENT_DISPLAY_NAME:-}}}}" --arg agentDisplay "${AGENT_DISPLAY_NAME:-${SUBAGENT_DISPLAY_NAME:-}}" --arg task "${TASK_DESC:-}" --arg message "${AGENT_MESSAGE:-${MESSAGE:-${SUMMARY:-}}}" --arg skill "${SKILL_NAME:-}" --arg skillId "${SKILL_ID:-}" --arg callId "${TOOL_CALL_ID:-}" --arg toolArgsRaw "${TOOL_ARGS:-}" '{"toolName":$tool,"status":"success"} + (if ($toolArgsRaw|length)>0 then (try (($toolArgsRaw|fromjson) as $args | {"toolArgs":$args}) catch {"toolArgsText":$toolArgsRaw}) else {} end) + (if ($agent|length)>0 then {"agentName":$agent} else {} end) + (if ($agentDisplay|length)>0 then {"agentDisplayName":$agentDisplay} else {} end) + (if ($task|length)>0 then {"taskDescription":$task} else {} end) + (if ($message|length)>0 then {"message":$message} else {} end) + (if ($skill|length)>0 then {"skillName":$skill} else {} end) + (if ($skillId|length)>0 then {"skillId":$skillId} else {} end) + (if ($callId|length)>0 then {"toolCallId":$callId} else {} end)' 2>/dev/null || echo '{}')
     "${REPO_ROOT}/.visualizer/emit-event.sh" postToolUse "${_VIZ_PAYLOAD}" "${SESSION_ID:-run-$$}" >&2 || true
   fi
 fi
