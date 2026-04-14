@@ -39,7 +39,7 @@ const SAMPLE_RUN_SUMMARY: GameRunSummary = {
 };
 
 describe('Results screen save flow', () => {
-  it('persists routed run summaries and reloads them into progress history', async () => {
+  it('AC-10 AC-11 persists routed run summaries and reloads them into progress history', async () => {
     const firstRender = renderApp();
 
     await firstRender.router.navigate('/results', {

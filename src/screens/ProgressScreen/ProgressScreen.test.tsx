@@ -8,7 +8,7 @@ function hasNormalizedText(node: Element | null, expectedText: string) {
 }
 
 describe('Progress screen local comparison', () => {
-  it('reads saved run history back into same-device comparison cards after refresh', async () => {
+  it('AC-12 reads saved run history back into same-device comparison cards after refresh', async () => {
     window.localStorage.setItem(
       VIBEN_LOCAL_SAVE_KEY,
       JSON.stringify({
