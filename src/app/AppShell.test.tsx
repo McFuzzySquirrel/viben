@@ -11,14 +11,14 @@ describe('App shell foundation coverage', () => {
     expect(screen.getByRole('heading', { name: "Vib'N: Rocket to the Moon" })).toBeInTheDocument();
     expect(
       screen.getByRole('heading', {
-        name: 'Start the Phase 2 microphone readiness flow from a clear home screen.',
+        name: 'Choose a difficulty, confirm your mic, and launch the first playable run.',
       }),
     ).toBeInTheDocument();
 
     await router.navigate('/game');
     expect(
       await screen.findByRole('heading', {
-        name: 'Run the live microphone check inside an intentional, accessible HUD shell.',
+        name: 'Sing the prompt and steer the rocket to the moon.',
       }),
     ).toBeInTheDocument();
 
@@ -54,11 +54,10 @@ describe('App shell foundation coverage', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: 'Run the live microphone check inside an intentional, accessible HUD shell.',
+        name: 'Sing the prompt and steer the rocket to the moon.',
       }),
     ).toBeInTheDocument();
-    expect(await screen.findAllByText('Hard')).not.toHaveLength(0);
-    expect(screen.getByText('±25 cents')).toBeInTheDocument();
+    expect(screen.getByText('Difficulty: Hard')).toBeInTheDocument();
   });
 
   it('NF-06 shows a blocked support banner when required browser capabilities are missing', async () => {

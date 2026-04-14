@@ -1,29 +1,110 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { selectAudioSetupStatus, useAudioInput } from '@features/audio';
 import { StatusBadge } from '@features/game/components';
 import { useDifficultySelection } from '@features/settings';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
+interface GameLaunchRouteState {
+  autoStart?: boolean;
+}
+
 function formatSetupLabel(setupStage: ReturnType<typeof selectAudioSetupStatus>['stage']) {
   switch (setupStage) {
     case 'unsupported':
-      return 'Browser cannot provide microphone access';
+      return 'Microphone unsupported';
     case 'requesting':
-      return 'Browser prompt in progress';
+      return 'Browser prompt open';
     case 'ready':
-      return 'Permission granted and ready for mic check';
+      return 'Permission granted';
     case 'capturing':
-      return 'Listening for live input';
+      return 'Mic live and listening';
     case 'blocked':
-      return 'Blocked until browser issue is fixed';
+      return 'Microphone blocked';
     case 'error':
-      return 'Microphone setup error';
+      return 'Microphone error';
     default:
-      return 'Browser will ask when gameplay starts';
+      return 'Microphone check pending';
+  }
+}
+
+function getSetupTone(setupStage: ReturnType<typeof selectAudioSetupStatus>['stage']) {
+  if (setupStage === 'unsupported' || setupStage === 'blocked' || setupStage === 'error') {
+    return 'danger';
+  }
+
+  if (setupStage === 'ready' || setupStage === 'capturing') {
+    return 'success';
+  }
+
+  return 'info';
+}
+
+function getSetupGuidance(setup: ReturnType<typeof selectAudioSetupStatus>, lastErrorMessage: string | null) {
+  switch (setup.stage) {
+    case 'capturing':
+      return {
+        title: 'Microphone ready for launch',
+        detail:
+          'Your browser is already listening. Press Start singing run to jump straight into the playable HUD.',
+        tone: 'success' as const,
+        alert: false,
+      };
+    case 'ready':
+      return {
+        title: 'Permission granted — one step left',
+        detail:
+          'Your microphone permission is approved. Start the run to enter the game screen and begin the first mission.',
+        tone: 'success' as const,
+        alert: false,
+      };
+    case 'requesting':
+      return {
+        title: 'Check the browser permission prompt',
+        detail:
+          'Choose Allow in the browser prompt, then return here or continue into the game screen to begin the run.',
+        tone: 'info' as const,
+        alert: false,
+      };
+    case 'blocked':
+      return {
+        title: 'Microphone access is blocked',
+        detail:
+          lastErrorMessage ??
+          'Gameplay needs microphone access. Re-enable the microphone in browser site settings, then retry.',
+        tone: 'warning' as const,
+        alert: true,
+      };
+    case 'unsupported':
+      return {
+        title: 'This browser cannot start the singing run',
+        detail:
+          lastErrorMessage ??
+          'Use a secure desktop browser with MediaDevices and Web Audio support to play the run.',
+        tone: 'warning' as const,
+        alert: true,
+      };
+    case 'error':
+      return {
+        title: 'The microphone check hit an error',
+        detail:
+          lastErrorMessage ??
+          'Retry the microphone check. If another app is using the device, close it before trying again.',
+        tone: 'warning' as const,
+        alert: true,
+      };
+    default:
+      return {
+        title: 'Microphone required for gameplay',
+        detail:
+          'Start from this launch pad, choose a difficulty, then allow microphone access when the browser asks.',
+        tone: 'info' as const,
+        alert: false,
+      };
   }
 }
 
 export function HomeScreen() {
+  const navigate = useNavigate();
   const microphone = useAudioInput();
   const setup = selectAudioSetupStatus(microphone.state);
   const {
@@ -34,52 +115,71 @@ export function HomeScreen() {
     selectedDifficultyId,
     setSelectedDifficulty,
   } = useDifficultySelection();
-
-  const microphoneTone = setup.stage === 'unsupported' || setup.stage === 'blocked' || setup.stage === 'error'
-    ? 'danger'
-    : setup.stage === 'ready' || setup.stage === 'capturing'
-      ? 'success'
-      : 'info';
-
+  const microphoneTone = getSetupTone(setup.stage);
   const persistenceTone = persistenceIssues.length > 0 ? 'warning' : 'success';
+  const setupGuidance = getSetupGuidance(setup, microphone.state.lastError?.message ?? null);
+
+  const startRunFromHome = () => {
+    navigate(APP_ROUTE_PATHS.game, {
+      state: {
+        autoStart: true,
+      } satisfies GameLaunchRouteState,
+    });
+  };
 
   return (
     <section className="screen">
       <div className="hero">
         <div className="hero__copy">
           <p className="screen__eyebrow">Launch pad</p>
-          <h2>Start the Phase 2 microphone readiness flow from a clear home screen.</h2>
+          <h2>Choose a difficulty, confirm your mic, and launch the first playable run.</h2>
           <p className="screen__lead">
-            Pick a difficulty, review the microphone expectation, and move into the routed game
-            shell for live mic check and note-matching setup.
+            Vib&apos;N uses live microphone input for every mission. This home screen keeps the setup
+            clear: pick a challenge, understand any blocked state, and start the run without leaving
+            the app shell.
           </p>
 
           <div className="status-row" aria-label="Current setup summary">
-              <StatusBadge label={selectedDifficulty.label} tone="success" />
-              <StatusBadge label={formatSetupLabel(setup.stage)} tone={microphoneTone} />
-              <StatusBadge label={`Save status: ${persistenceStatus}`} tone={persistenceTone} />
-            </div>
+            <StatusBadge label={`Difficulty: ${selectedDifficulty.label}`} tone="success" />
+            <StatusBadge label={formatSetupLabel(setup.stage)} tone={microphoneTone} />
+            <StatusBadge label={`Save status: ${persistenceStatus}`} tone={persistenceTone} />
+          </div>
+
+          <p
+            className={`inline-message inline-message--${setupGuidance.tone}`}
+            role={setupGuidance.alert ? 'alert' : undefined}
+          >
+            <strong>{setupGuidance.title}.</strong> {setupGuidance.detail}
+          </p>
 
           <div className="button-row">
-            <Link className="button" to={APP_ROUTE_PATHS.game}>
-              Open microphone check shell
-            </Link>
+            <button className="button" onClick={startRunFromHome} type="button">
+              Start singing run
+            </button>
+            <button
+              className="button button--secondary"
+              disabled={!setup.canRequestAccess}
+              onClick={() => void microphone.requestMicrophoneAccess()}
+              type="button"
+            >
+              {setup.stage === 'capturing' ? 'Refresh microphone check' : 'Check microphone now'}
+            </button>
             <Link className="button button--secondary" to={APP_ROUTE_PATHS.progress}>
-              Review local progress shell
+              Review local progress
             </Link>
           </div>
         </div>
 
         <aside className="panel">
-          <h3>What happens next</h3>
+          <h3>How the launch flow works</h3>
           <ol className="step-list">
-            <li>Carry your selected difficulty into the routed game shell.</li>
-            <li>Confirm microphone permission before the real run loop begins.</li>
-            <li>Follow one solfege prompt at a time once Phase 2 gameplay lands.</li>
+            <li>Pick a difficulty that fits your voice and reaction speed.</li>
+            <li>Allow microphone access when the browser asks, or use Check microphone now first.</li>
+            <li>Press Start singing run to open the HUD and begin the current note mission.</li>
           </ol>
           <p className="panel__supporting-copy">
-            Audio analysis remains local-only. No raw recordings, telemetry, or account setup are
-            introduced in the foundation.
+            Audio stays local in the browser. No recordings or raw voice data are stored for this
+            prototype.
           </p>
         </aside>
       </div>
@@ -89,7 +189,7 @@ export function HomeScreen() {
           <fieldset className="selection-group">
             <legend>Choose a launch difficulty</legend>
             <p className="panel__supporting-copy" id="difficulty-help">
-              This selection is saved locally so later routes can reuse the same difficulty contract.
+              This choice carries into the run and stays saved locally for the next visit.
             </p>
             <div aria-describedby="difficulty-help" className="choice-grid">
               {availableDifficulties.map((difficulty) => {
@@ -123,41 +223,35 @@ export function HomeScreen() {
         <article className="panel">
           <h3>Microphone requirement</h3>
           <p className="panel__supporting-copy">
-            The browser will request microphone access on the game route before a real singing run
-            can begin.
+            You need microphone access to fly the rocket. The game screen will never silently fail;
+            it will either confirm readiness or show a clear blocked message with a way back home.
           </p>
           <dl className="detail-list">
             <div>
-              <dt>Support</dt>
-              <dd>{microphone.state.support.isSupported ? 'Supported in this browser' : 'Blocked in this browser'}</dd>
+              <dt>Browser support</dt>
+              <dd>{microphone.state.support.isSupported ? 'Ready for microphone APIs' : 'Missing required browser APIs'}</dd>
             </div>
             <div>
               <dt>Permission</dt>
               <dd>{microphone.state.permission}</dd>
             </div>
             <div>
-              <dt>Readiness</dt>
+              <dt>Setup state</dt>
               <dd>{formatSetupLabel(setup.stage)}</dd>
             </div>
+            <div>
+              <dt>Current capture</dt>
+              <dd>{microphone.state.isCapturing ? 'Live input detected' : 'Not yet capturing'}</dd>
+            </div>
           </dl>
-          {microphone.state.lastError ? (
-            <p className="inline-message inline-message--warning" role="alert">
-              {microphone.state.lastError.message}
-            </p>
-          ) : (
-            <p className="inline-message">
-              If access is denied later, the game shell will show a recovery message instead of
-              starting the run silently.
-            </p>
-          )}
         </article>
 
         <article className="panel">
-          <h3>Audio handoff</h3>
+          <h3>Keyboard-friendly launch tips</h3>
           <ul className="feature-list">
-            <li>Home is the stable launch point for start-run and recovery flow work.</li>
-            <li>Game receives the selected difficulty and shared microphone setup state.</li>
-            <li>Results and Progress routes stay reachable without changing the route contract.</li>
+            <li>Use Tab and Shift+Tab to move between difficulty cards and action buttons.</li>
+            <li>Press Space or Enter on a radio button to change difficulty.</li>
+            <li>Use Start singing run to move straight into the playable HUD without pointer-only steps.</li>
           </ul>
         </article>
       </div>

@@ -1,29 +1,40 @@
-import { useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { type PitchClassification } from '@features/audio';
 import {
-  type PitchClassification,
-  selectPitchTargetSnapshot,
-} from '@features/audio';
-import { HudMeter, PromptFocusCard, StatusBadge } from '@features/game/components';
-import {
-  useGameRunController,
-} from '@features/game';
+  HudMeter,
+  PromptFocusCard,
+  RocketFlightCard,
+  StatusBadge,
+} from '@features/game/components';
+import { selectRunProgress, useGameRunController } from '@features/game';
 import { useDifficultySelection } from '@features/settings';
-import { buildDifficultySolfegeWindows } from '@shared/config/difficulty';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
+
+interface GameLaunchRouteState {
+  autoStart?: boolean;
+}
 
 function clampPercent(percent: number) {
   return Math.max(0, Math.min(100, percent));
 }
 
+function formatElapsedMs(elapsedMs: number) {
+  const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
 function toReadableClassificationLabel(classification: PitchClassification | null) {
   switch (classification) {
     case 'note':
-      return 'Pitch detected inside the solfege range';
+      return 'Stable note detected';
     case 'unusable':
-      return 'Signal detected, but the note is not stable enough to classify';
+      return 'Sound heard, but the note is unstable';
     case 'out-of-range':
-      return 'Pitch detected outside the supported note windows';
+      return 'Detected pitch is outside the playable note range';
     case 'silence':
       return 'No stable singing input detected';
     default:
@@ -32,33 +43,33 @@ function toReadableClassificationLabel(classification: PitchClassification | nul
 }
 
 function getFeedbackCopy(
-  matchState: ReturnType<typeof selectPitchTargetSnapshot>['matchState'],
+  matchState: ReturnType<typeof useGameRunController>['audio']['target']['matchState'],
   promptLabel: string,
   detectedLabel: string,
   classification: PitchClassification | null,
 ) {
   if (classification === 'unusable') {
     return {
-      badge: 'Stabilize input',
-      detail: `The microphone hears sound, but not a stable note yet. Hold ${promptLabel} a little more steadily.`,
+      badge: 'Hold the note steady',
+      detail: `The mic hears you, but the note is wobbling. Settle onto ${promptLabel} and keep it steady.`,
     };
   }
 
   switch (matchState) {
     case 'correct':
       return {
-        badge: 'On target',
-        detail: `Nice — keep holding ${promptLabel} to feed future rocket thrust and prompt-clear feedback.`,
+        badge: 'Correct note',
+        detail: `Nice work. Keep singing ${promptLabel} to keep the rocket climbing and the prompt meter filling.`,
       };
     case 'incorrect':
       return {
-        badge: 'Adjust pitch',
-        detail: `The shell hears ${detectedLabel}. Slide toward ${promptLabel} for future success feedback.`,
+        badge: 'Wrong note',
+        detail: `You are closest to ${detectedLabel}. Slide your pitch until it matches ${promptLabel}.`,
       };
     default:
       return {
         badge: 'Need input',
-        detail: `Sing or hum ${promptLabel} when the microphone is ready so the rocket response has something to follow.`,
+        detail: `Sing or hum ${promptLabel}. Missing input slows the rocket and drains stability.`,
       };
   }
 }
@@ -79,65 +90,111 @@ function getMicrophoneTone(audio: ReturnType<typeof useGameRunController>['audio
   return 'info';
 }
 
-function getRocketStatusLabel(
-  audio: ReturnType<typeof useGameRunController>['audio'],
-  matchState: ReturnType<typeof selectPitchTargetSnapshot>['matchState'],
-) {
-  if (audio.setup.stage === 'unsupported' || audio.setup.stage === 'blocked') {
-    return 'Rocket offline';
+function getRunStatus(gameplay: ReturnType<typeof useGameRunController>) {
+  if (gameplay.state.status === 'active') {
+    return {
+      label: 'Run in progress',
+      detail: 'Follow the live prompt, keep the rocket stable, and climb toward the moon.',
+      tone: 'success' as const,
+      alert: false,
+    };
   }
 
-  if (!audio.state.isCapturing) {
-    return 'Awaiting mic check';
+  if (gameplay.state.status === 'blocked') {
+    return {
+      label: 'Run blocked',
+      detail: gameplay.state.blocker.detail,
+      tone: 'warning' as const,
+      alert: true,
+    };
   }
 
-  if (matchState === 'correct') {
-    return 'Rocket boosting';
+  switch (gameplay.audio.setup.stage) {
+    case 'capturing':
+      return {
+        label: 'Mic ready — launch when ready',
+        detail: 'Your microphone is live. Start the run to begin the first prompt immediately.',
+        tone: 'success' as const,
+        alert: false,
+      };
+    case 'ready':
+      return {
+        label: 'Permission granted',
+        detail: 'The browser approved microphone access. Start the run to begin singing.',
+        tone: 'success' as const,
+        alert: false,
+      };
+    case 'requesting':
+      return {
+        label: 'Waiting for browser permission',
+        detail: 'Approve microphone access in the browser prompt to continue.',
+        tone: 'info' as const,
+        alert: false,
+      };
+    case 'blocked':
+    case 'error':
+    case 'unsupported':
+      return {
+        label: 'Microphone setup needs attention',
+        detail:
+          gameplay.audio.state.lastError?.message ??
+          'Gameplay cannot begin until the microphone issue is resolved.',
+        tone: 'warning' as const,
+        alert: true,
+      };
+    default:
+      return {
+        label: 'Ready for setup',
+        detail: 'Request microphone access, then start the run from this screen.',
+        tone: 'info' as const,
+        alert: false,
+      };
+  }
+}
+
+function getActionLabel(gameplay: ReturnType<typeof useGameRunController>) {
+  if (gameplay.state.status === 'active') {
+    return 'Restart run';
   }
 
-  if (matchState === 'incorrect') {
-    return 'Rocket drifting';
-  }
-
-  return 'Rocket idling';
+  return gameplay.latestSummary ? 'Retry run' : 'Start run';
 }
 
 export function GameScreen() {
-  const { selectedDifficulty, selectedDifficultyId } = useDifficultySelection();
+  const location = useLocation();
   const navigate = useNavigate();
-  const gameplay = useGameRunController(selectedDifficultyId);
+  const autoStartHandledRef = useRef(false);
   const navigatedSummaryIdRef = useRef<string | null>(null);
+  const { selectedDifficulty } = useDifficultySelection();
+  const gameplay = useGameRunController(selectedDifficulty.id);
   const { audio, currentPrompt, hud, state } = gameplay;
+  const runProgress = useMemo(() => selectRunProgress(state), [state]);
+  const locationState = location.state as GameLaunchRouteState | null;
   const latestSample = audio.latestSample;
-  const target = audio.target;
-  const detectedLabel = latestSample?.noteId?.toUpperCase() ?? latestSample?.nearestNoteId?.toUpperCase() ?? 'No note yet';
-  const matchState = target.matchState;
+  const detectedLabel =
+    latestSample?.noteId?.toUpperCase() ?? latestSample?.nearestNoteId?.toUpperCase() ?? 'No note yet';
   const feedbackCopy = getFeedbackCopy(
-    matchState,
+    audio.target.matchState,
     currentPrompt?.label ?? 'the target note',
     detectedLabel,
     latestSample?.classification ?? null,
   );
-  const canStartRun = gameplay.canStartRun;
   const microphoneTone = getMicrophoneTone(audio);
-  const rocketStatusLabel = getRocketStatusLabel(audio, matchState);
-  const promptCadenceMs =
-    state.status === 'active'
-      ? state.run.tuning.promptCadenceMs
-      : state.status === 'setup'
-        ? state.tuning.promptCadenceMs
-        : selectedDifficulty.tuning.promptCadenceMs;
-  const targetAltitude =
-    state.status === 'active'
-      ? state.run.tuning.targetAltitude
-      : state.status === 'setup'
-        ? state.tuning.targetAltitude
-        : 1000;
-  const solfegeWindows = buildDifficultySolfegeWindows(selectedDifficultyId);
-  const hudAltitudePercent = clampPercent(hud?.altitudePercent ?? 0);
-  const hudStabilityPercent = clampPercent(hud?.stabilityPercent ?? 0);
-  const hudPromptHoldPercent = clampPercent(hud?.promptHoldPercent ?? 0);
-  const hudThrustPercent = clampPercent(hud?.thrustPercent ?? 0);
+  const runStatus = getRunStatus(gameplay);
+  const altitudePercent = clampPercent(runProgress?.altitudePercent ?? hud?.altitudePercent ?? 0);
+  const stabilityPercent = clampPercent(runProgress?.stabilityPercent ?? hud?.stabilityPercent ?? 0);
+  const promptHoldPercent = clampPercent(runProgress?.promptProgressPercent ?? hud?.promptHoldPercent ?? 0);
+  const thrustPercent = clampPercent(hud?.thrustPercent ?? 0);
+  const actionLabel = getActionLabel(gameplay);
+
+  useEffect(() => {
+    if (!locationState?.autoStart || autoStartHandledRef.current) {
+      return;
+    }
+
+    autoStartHandledRef.current = true;
+    void gameplay.startRun();
+  }, [gameplay, locationState?.autoStart]);
 
   useEffect(() => {
     if (state.status !== 'results') {
@@ -160,128 +217,46 @@ export function GameScreen() {
     <section className="screen">
       <div className="hero">
         <div className="hero__copy">
-          <p className="screen__eyebrow">Gameplay shell</p>
-          <h2>Run the live microphone check inside an intentional, accessible HUD shell.</h2>
+          <p className="screen__eyebrow">Active mission</p>
+          <h2>Sing the prompt and steer the rocket to the moon.</h2>
           <p className="screen__lead">
-            This Phase 2 route frames the audio and gameplay contracts as a live singing run:
-            one target note, clear microphone status, and visible rocket-response feedback.
+            One note prompt stays in focus at a time. Correct singing lifts the rocket, missing or
+            wrong input causes visible drift, and hazards or boosts appear in the same run loop.
           </p>
 
-          <div className="status-row" aria-label="Gameplay shell status">
-            <StatusBadge label={selectedDifficulty.label} tone="success" />
-            <StatusBadge
-              label={rocketStatusLabel}
-              tone={matchState === 'correct' ? 'success' : matchState === 'incorrect' ? 'warning' : 'info'}
-            />
-            <StatusBadge
-              label={
-                canStartRun
-                  ? 'Run ready to launch'
-                  : state.status === 'active'
-                    ? 'Run in progress'
-                    : 'Needs mic readiness before launch'
-              }
-              tone={canStartRun || state.status === 'active' ? 'success' : microphoneTone}
-            />
-          </div>
-        </div>
-
-        <aside className="panel">
-          <h3>Playable run scope</h3>
-          <ul className="feature-list">
-            <li>Prompts advance through a live run while current pitch match drives rocket behavior.</li>
-            <li>Hazards and boosts enter the same loop as altitude, stability, and score changes.</li>
-            <li>Failure and moon-reached outcomes emit typed summaries for the results route.</li>
-          </ul>
-        </aside>
-      </div>
-
-      <div className="screen-grid screen-grid--game">
-        <PromptFocusCard
-          classificationLabel={toReadableClassificationLabel(latestSample?.classification ?? null)}
-          detectedLabel={detectedLabel}
-          feedbackDetail={feedbackCopy.detail}
-          feedbackLabel={feedbackCopy.badge}
-          matchState={matchState}
-          promptLabel={currentPrompt?.label ?? 'Preparing note'}
-          promptScientificPitch={currentPrompt?.scientificPitch ?? '—'}
-        />
-
-        <article className="panel">
-          <div className="panel__header">
-            <div>
-              <p className="screen__eyebrow">Rocket response loop</p>
-              <h3>Altitude, stability, prompt hold, and thrust update together</h3>
-            </div>
-            <StatusBadge label={hud?.rocketMode ?? 'steady'} tone="info" />
+          <div className="status-row" aria-label="Live run summary">
+            <StatusBadge label={`Difficulty: ${selectedDifficulty.label}`} tone="success" />
+            <StatusBadge label={runStatus.label} tone={runStatus.tone} />
+            <StatusBadge label={`Mic: ${audio.setup.stage}`} tone={microphoneTone} />
+            <StatusBadge label={`Score: ${hud?.score ?? 0}`} tone="info" />
           </div>
 
-          <HudMeter
-            hint="Moon progress is driven by the reducer-backed gameplay loop."
-            label="Moon progress"
-            percent={hudAltitudePercent}
-            tone={matchState === 'correct' ? 'success' : 'neutral'}
-            valueText={`${Math.round(hud?.altitude ?? 0)} / ${Math.round(hud?.targetAltitude ?? 1000)}`}
-          />
-          <HudMeter
-            hint="Lower stability should remain readable without relying on color alone."
-            label="Rocket stability"
-            percent={hudStabilityPercent}
-            tone={hudStabilityPercent < 35 ? 'warning' : 'success'}
-            valueText={`${Math.round(hud?.stability ?? 0)} / 100`}
-          />
-          <HudMeter
-            hint="Prompt hold climbs only while the current target note is matched."
-            label="Prompt hold"
-            percent={hudPromptHoldPercent}
-            tone={matchState === 'correct' ? 'success' : 'warning'}
-            valueText={`${Math.round(hudPromptHoldPercent)}%`}
-          />
-          <HudMeter
-            hint="Thrust mirrors the current simulation response, including negative drift pressure."
-            label="Engine thrust"
-            percent={hudThrustPercent}
-            tone={matchState === 'correct' ? 'success' : 'warning'}
-            valueText={`${Math.round(hudThrustPercent)}%`}
-          />
-        </article>
-
-        <article className="panel">
-          <div className="panel__header">
-            <div>
-              <p className="screen__eyebrow">Microphone controls</p>
-              <h3>Permission and readiness messaging</h3>
-            </div>
-            <StatusBadge label={`${audio.state.permission} / ${audio.setup.stage}`} tone={microphoneTone} />
-          </div>
-
-          <p className="panel__supporting-copy">
-            Microphone processing stays local in the browser. No raw audio buffers or recordings are
-            saved while using this run loop.
+          <p
+            className={`inline-message inline-message--${runStatus.tone}`}
+            role={runStatus.alert ? 'alert' : undefined}
+          >
+            <strong>{runStatus.label}.</strong> {runStatus.detail}
           </p>
-
-          {audio.state.lastError ? (
-            <p className="inline-message inline-message--warning" role="alert">
-              {audio.state.lastError.message}
-            </p>
-          ) : null}
 
           <div className="button-row">
             <button
               className="button"
-              onClick={() => void gameplay.requestMicrophoneAccess()}
-              type="button"
-            >
-              {audio.state.isCapturing ? 'Refresh microphone capture' : 'Request microphone access'}
-            </button>
-            <button
-              className="button"
-              disabled={!canStartRun && state.status !== 'active'}
               onClick={() => void (state.status === 'active' ? gameplay.restartRun() : gameplay.startRun())}
               type="button"
             >
-              {state.status === 'active' ? 'Restart run' : 'Start run'}
+              {actionLabel}
             </button>
+            <button
+              className="button button--secondary"
+              disabled={!gameplay.canRetrySetup}
+              onClick={() => void gameplay.requestMicrophoneAccess()}
+              type="button"
+            >
+              {audio.state.isCapturing ? 'Refresh microphone access' : 'Request microphone access'}
+            </button>
+            <Link className="button button--secondary" to={APP_ROUTE_PATHS.home}>
+              Back to home
+            </Link>
             <button
               className="button button--secondary"
               disabled={!gameplay.canAbandonRun}
@@ -296,100 +271,162 @@ export function GameScreen() {
               onClick={() => void audio.stopCapture()}
               type="button"
             >
-              Stop microphone capture
+              Stop mic
             </button>
           </div>
+        </div>
 
-          <dl className="detail-list">
+        <aside className="panel">
+          <h3>Mission checklist</h3>
+          <ul className="feature-list">
+            <li>Watch the large solfege prompt and sing only that note.</li>
+            <li>Use the moon progress, stability, and thrust HUD to read the rocket response quickly.</li>
+            <li>If setup fails, use Back to home or retry microphone access without reloading the app.</li>
+          </ul>
+          <p className="panel__supporting-copy">
+            Keyboard users can tab through every launch, retry, end-run, and recovery action on this
+            screen.
+          </p>
+        </aside>
+      </div>
+
+      <div className="screen-grid screen-grid--game">
+        <PromptFocusCard
+          classificationLabel={toReadableClassificationLabel(latestSample?.classification ?? null)}
+          detectedLabel={detectedLabel}
+          feedbackDetail={feedbackCopy.detail}
+          feedbackLabel={feedbackCopy.badge}
+          matchState={audio.target.matchState}
+          promptLabel={currentPrompt?.label ?? 'Preparing note'}
+          promptScientificPitch={currentPrompt?.scientificPitch ?? '—'}
+        />
+
+        <RocketFlightCard
+          activeEvent={hud?.activeEvent ?? null}
+          altitudePercent={altitudePercent}
+          altitudeText={`${Math.round(hud?.altitude ?? 0)} / ${Math.round(hud?.targetAltitude ?? 1000)} altitude`}
+          boostsTriggered={hud?.boostsTriggered ?? 0}
+          hazardsTriggered={hud?.hazardsTriggered ?? 0}
+          rocketMode={hud?.rocketMode ?? null}
+        />
+
+        <article className="panel">
+          <div className="panel__header">
             <div>
-              <dt>Current permission</dt>
-              <dd>{audio.state.permission}</dd>
+              <p className="screen__eyebrow">Mission stats</p>
+              <h3>Track score, time, and prompt clears at a glance</h3>
             </div>
-            <div>
-              <dt>Readiness</dt>
-              <dd>{audio.setup.stage}</dd>
-            </div>
-            <div>
-              <dt>Detected frequency</dt>
-              <dd>
-                {latestSample?.frequencyHz ? `${latestSample.frequencyHz.toFixed(1)} Hz` : 'Waiting for stable pitch'}
-              </dd>
-            </div>
-            <div>
-              <dt>Capture format</dt>
-              <dd>
-                {audio.state.captureMetrics
-                  ? `${audio.state.captureMetrics.frameSize} samples @ ${audio.state.captureMetrics.sampleRate} Hz`
-                  : 'Available after microphone capture starts'}
-              </dd>
-            </div>
-            <div>
-              <dt>Target match</dt>
-              <dd>{target.matchState}</dd>
-            </div>
-            <div>
-              <dt>Run state</dt>
-              <dd>{state.status}</dd>
-            </div>
-            <div>
-              <dt>Score</dt>
-              <dd>{hud?.score ?? 0}</dd>
-            </div>
-            <div>
-              <dt>Nearest note</dt>
-              <dd>{target.nearestNoteId?.toUpperCase() ?? 'No stable note yet'}</dd>
-            </div>
-          </dl>
+            <StatusBadge label={hud?.activeEvent ? 'Event active' : 'Clear sky'} tone={hud?.activeEvent ? 'warning' : 'info'} />
+          </div>
+
+          <div className="run-stat-grid">
+            <article className="run-stat-card">
+              <span className="run-stat-card__label">Score</span>
+              <strong>{hud?.score ?? 0}</strong>
+            </article>
+            <article className="run-stat-card">
+              <span className="run-stat-card__label">Elapsed</span>
+              <strong>{formatElapsedMs(hud?.elapsedMs ?? 0)}</strong>
+            </article>
+            <article className="run-stat-card">
+              <span className="run-stat-card__label">Prompts cleared</span>
+              <strong>{hud?.promptsCleared ?? 0}</strong>
+            </article>
+            <article className="run-stat-card">
+              <span className="run-stat-card__label">Prompts shown</span>
+              <strong>{hud?.promptsPresented ?? 0}</strong>
+            </article>
+          </div>
+
+          <p className="panel__supporting-copy">
+            Correct note matches raise score and help clear prompts. Hazards and boosts stay visible
+            through the counts and live event status.
+          </p>
         </article>
 
         <article className="panel">
           <div className="panel__header">
             <div>
-              <p className="screen__eyebrow">Run telemetry</p>
-              <h3>Stable outputs for results and future HUD work</h3>
+              <p className="screen__eyebrow">Rocket HUD</p>
+              <h3>Read stability, thrust, and prompt hold without relying on color alone</h3>
             </div>
-            <StatusBadge label={`${solfegeWindows.length} note windows ready`} tone="info" />
+            <StatusBadge label={hud?.rocketMode ?? 'awaiting launch'} tone="info" />
           </div>
+
+          <HudMeter
+            hint="Higher moon progress means the rocket is closer to the finish."
+            label="Moon progress"
+            percent={altitudePercent}
+            tone={audio.target.matchState === 'correct' ? 'success' : 'neutral'}
+            valueText={`${Math.round(altitudePercent)}%`}
+          />
+          <HudMeter
+            hint="If stability falls too low, the run will fail."
+            label="Rocket stability"
+            percent={stabilityPercent}
+            tone={stabilityPercent < 35 ? 'warning' : 'success'}
+            valueText={`${Math.round(hud?.stability ?? 0)} / 100`}
+          />
+          <HudMeter
+            hint="Prompt hold fills while you stay on the current note."
+            label="Prompt hold"
+            percent={promptHoldPercent}
+            tone={audio.target.matchState === 'correct' ? 'success' : 'warning'}
+            valueText={`${Math.round(promptHoldPercent)}%`}
+          />
+          <HudMeter
+            hint="Thrust shows how strongly the current singing result is moving the rocket."
+            label="Engine thrust"
+            percent={thrustPercent}
+            tone={audio.target.matchState === 'correct' ? 'success' : 'warning'}
+            valueText={`${Math.round(thrustPercent)}%`}
+          />
+        </article>
+
+        <article className="panel">
+          <div className="panel__header">
+            <div>
+              <p className="screen__eyebrow">Mic and note readout</p>
+              <h3>See what the microphone hears and how the game classifies it</h3>
+            </div>
+            <StatusBadge
+              label={audio.state.isCapturing ? 'Mic listening' : 'Mic idle'}
+              tone={audio.state.isCapturing ? 'success' : microphoneTone}
+            />
+          </div>
+
+          {audio.state.lastError ? (
+            <p className="inline-message inline-message--warning" role={runStatus.alert ? undefined : 'alert'}>
+              <strong>Microphone issue.</strong> {audio.state.lastError.message}
+            </p>
+          ) : null}
 
           <dl className="detail-list">
             <div>
-              <dt>Difficulty</dt>
-              <dd>{selectedDifficulty.label}</dd>
+              <dt>Input status</dt>
+              <dd>{toReadableClassificationLabel(latestSample?.classification ?? null)}</dd>
             </div>
             <div>
-              <dt>Prompt cadence</dt>
-              <dd>{promptCadenceMs} ms</dd>
+              <dt>Detected note</dt>
+              <dd>{detectedLabel}</dd>
             </div>
             <div>
-              <dt>Target altitude</dt>
-              <dd>{targetAltitude} altitude units</dd>
+              <dt>Detected frequency</dt>
+              <dd>{latestSample?.frequencyHz ? `${latestSample.frequencyHz.toFixed(1)} Hz` : 'Waiting for stable pitch'}</dd>
             </div>
             <div>
-              <dt>Note tolerance</dt>
-              <dd>±{selectedDifficulty.tuning.noteWindowCentsTolerance} cents</dd>
+              <dt>Permission</dt>
+              <dd>{audio.state.permission}</dd>
             </div>
             <div>
-              <dt>Prompts cleared</dt>
-              <dd>{hud?.promptsCleared ?? 0}</dd>
+              <dt>Setup stage</dt>
+              <dd>{audio.setup.stage}</dd>
             </div>
             <div>
-              <dt>Prompts presented</dt>
-              <dd>{hud?.promptsPresented ?? 0}</dd>
-            </div>
-            <div>
-              <dt>Active event</dt>
-              <dd>{hud?.activeEvent ? `${hud.activeEvent.kind} active` : 'None'}</dd>
+              <dt>Privacy</dt>
+              <dd>Audio stays local in the browser and is not saved as recordings.</dd>
             </div>
           </dl>
-
-          <div className="button-row">
-            <Link className="button button--secondary" to={APP_ROUTE_PATHS.home}>
-              Return to launch pad
-            </Link>
-            <Link className="button button--secondary" to={APP_ROUTE_PATHS.progress}>
-              View progress shell
-            </Link>
-          </div>
         </article>
       </div>
     </section>

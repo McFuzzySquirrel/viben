@@ -22,6 +22,17 @@ function getMatchTone(matchState: PitchTargetMatchState) {
   }
 }
 
+function getMatchSymbol(matchState: PitchTargetMatchState) {
+  switch (matchState) {
+    case 'correct':
+      return '✓';
+    case 'incorrect':
+      return '↕';
+    default:
+      return '🎤';
+  }
+}
+
 export function PromptFocusCard({
   promptLabel,
   promptScientificPitch,
@@ -32,16 +43,21 @@ export function PromptFocusCard({
   classificationLabel,
 }: PromptFocusCardProps) {
   return (
-    <article aria-labelledby="phase-one-prompt-heading" className="panel prompt-card">
+    <article aria-labelledby="prompt-focus-heading" className="panel prompt-card">
       <div className="prompt-card__header">
         <div>
           <p className="screen__eyebrow">Current note prompt</p>
-          <h3 id="phase-one-prompt-heading">Focus on one target at a time</h3>
+          <h3 id="prompt-focus-heading">Sing this note now</h3>
         </div>
         <StatusBadge label={feedbackLabel} tone={getMatchTone(matchState)} />
       </div>
 
-      <p className="prompt-card__solfege">{promptLabel}</p>
+      <p className="prompt-card__solfege">
+        <span aria-hidden="true" className="prompt-card__symbol">
+          {getMatchSymbol(matchState)}
+        </span>
+        <span>{promptLabel}</span>
+      </p>
       <p className="prompt-card__pitch">{promptScientificPitch} target window</p>
 
       <p aria-live="polite" className="prompt-card__feedback">
