@@ -1,0 +1,259 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background:
+    radial-gradient(circle at top, rgba(82, 141, 255, 0.28), transparent 32%),
+    linear-gradient(180deg, #0f1633 0%, #090d1d 58%, #05070f 100%);
+  color: #f4f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.8rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff5ca8, #6ab7ff);
+  color: #08111f;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease;
+}
+
+button:hover,
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(74, 121, 255, 0.24);
+}
+
+button:focus-visible,
+.button:focus-visible,
+.nav-list__link:focus-visible {
+  outline: 3px solid #fbd34d;
+  outline-offset: 3px;
+}
+
+.button--secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f4f7fb;
+}
+
+.shell {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 2.5rem;
+}
+
+.shell__header,
+.shell__footer,
+.support-banner,
+.panel,
+.screen {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 12, 26, 0.78);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.shell__header,
+.shell__footer,
+.support-banner {
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem;
+}
+
+.shell__header {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.brand {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.brand__logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 1rem;
+}
+
+.brand__eyebrow,
+.screen__eyebrow {
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.78rem;
+  color: #8ecbff;
+}
+
+.shell__header h1,
+.screen h2,
+.panel h3 {
+  margin: 0;
+}
+
+.nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-list__link {
+  display: inline-flex;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.nav-list__link--active {
+  border-color: rgba(142, 203, 255, 0.45);
+  background: rgba(77, 133, 255, 0.18);
+}
+
+.support-banner {
+  margin-bottom: 1rem;
+}
+
+.support-banner p {
+  margin: 0.3rem 0;
+}
+
+.support-banner--ok {
+  border-color: rgba(120, 234, 195, 0.2);
+}
+
+.support-banner--warning {
+  border-color: rgba(251, 211, 77, 0.4);
+}
+
+.shell__content {
+  min-height: 60vh;
+}
+
+.screen {
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+}
+
+.screen__lead {
+  margin: 0.75rem 0 0;
+  max-width: 68ch;
+  color: #d8e4f7;
+}
+
+.hero,
+.screen-grid,
+.metric-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.hero {
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+}
+
+.screen-grid,
+.metric-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.panel {
+  border-radius: 1.25rem;
+  padding: 1.2rem;
+}
+
+.feature-list {
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.feature-list li + li {
+  margin-top: 0.5rem;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.metric-card p {
+  margin: 0;
+  color: #8ecbff;
+}
+
+.metric-card strong {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 2rem;
+}
+
+.shell__footer {
+  margin-top: 1rem;
+  color: #cbd8eb;
+}
+
+@media (max-width: 800px) {
+  .shell {
+    width: min(100% - 1rem, 1120px);
+    padding-top: 0.75rem;
+  }
+
+  .shell__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .brand {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
