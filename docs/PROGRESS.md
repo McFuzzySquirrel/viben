@@ -18,11 +18,13 @@
   - Files: `src/shared/config/difficulty.ts`, `src/features/progression/**`, `src/features/settings/**`, `src/shared/persistence/**`, `src/shared/types/app-shell.ts`, `src/app/providers/AppProviders.tsx`
 - [x] Phase 1, Task 1.4: Define game-state primitives and integration contracts (@gameplay-systems-engineer)
   - Files: `src/features/game/**`
+- [x] Phase 1, Task 1.5: Establish routed screen placeholders and baseline screen composition (@ui-hud-developer)
+  - Files: `src/screens/HomeScreen/HomeScreen.tsx`, `src/screens/GameScreen/GameScreen.tsx`, `src/screens/ResultsScreen/ResultsScreen.tsx`, `src/screens/ProgressScreen/ProgressScreen.tsx`, `src/features/game/components/**`, `src/styles/global.css`
 
 ## Current Task
-- [ ] Phase 1, Task 1.5: Establish routed screen placeholders and baseline screen composition (@ui-hud-developer)
+- [ ] Phase 1, Task 1.6: Establish test harness and mocks (@qa-test-engineer)
   - Status: In progress
-  - Notes: Game engine/state contracts now exist; UI work should replace remaining shell placeholders and connect them to audio/gameplay/progression providers without changing ownership boundaries.
+  - Notes: The shell UI is now in place; QA should formalize the Phase 1 test harness and add baseline browser API / route / provider coverage around the new foundation.
 
 ## Phase Dependencies
 
@@ -154,3 +156,4 @@
 - Task 1.2 verification: `npm run typecheck`, `npm run build`, and `npm run test` passed after extracting the audio foundation.
 - Task 1.3 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 7 progression foundation tests.
 - Task 1.4 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 12 total tests after adding gameplay foundation coverage.
+- Task 1.5 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed after upgrading the routed shell UI and HUD placeholders.
