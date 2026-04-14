@@ -25,7 +25,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ pitchLevels, onBarChange, isLis
 
     const pitchRef = useRef<number | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
-    const requestRef = useRef<number>();
+    const requestRef = useRef<number | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
     const isListeningRef = useRef(isListening);
 
@@ -106,9 +106,9 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ pitchLevels, onBarChange, isLis
         getMicrophoneInput();
 
         return () => {
-            if (requestRef.current) {
+            if (requestRef.current !== null) {
                 cancelAnimationFrame(requestRef.current);
-                requestRef.current = undefined;
+                requestRef.current = null;
             }
             if (audioContextRef.current) {
                 audioContextRef.current.close();
