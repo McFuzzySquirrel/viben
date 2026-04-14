@@ -130,11 +130,6 @@
 | `qa-test-engineer` | Test harness, acceptance/regression coverage, playtest and cross-browser validation | Phase 1 |
 
 ## Remaining
-- [ ] Phase 1, Task 1.2: Extract microphone and pitch-detection pipeline
-- [ ] Phase 1, Task 1.3: Define difficulty and persistence contracts
-- [ ] Phase 1, Task 1.4: Define game-state primitives and integration contracts
-- [ ] Phase 1, Task 1.5: Establish routed screen placeholders
-- [ ] Phase 1, Task 1.6: Establish test harness and mocks
 - [ ] Phase 2, Task 2.1: Implement microphone readiness and live pitch integration
 - [ ] Phase 2, Task 2.2: Implement playable run loop
 - [ ] Phase 2, Task 2.3: Build Home/Game screens and HUD
