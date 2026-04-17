@@ -8,12 +8,22 @@ $ErrorActionPreference = "Stop"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = (Resolve-Path (Join-Path $ScriptDir "..")).Path
-$VisualizerRoot = "/home/mcfuzzysquirrel/Projects/agent-forge-visualizer"
+$VisualizerRoot = "/home/mcfuzzysquirrel/Projects/hooked-on-hooks"
 $JsonlPath = Join-Path $RepoRoot ".visualizer" "logs" "events.jsonl"
 $HttpEndpoint = "http://127.0.0.1:7070/events"
 if ($env:VISUALIZER_HTTP_ENDPOINT) { $HttpEndpoint = $env:VISUALIZER_HTTP_ENDPOINT }
 $StorePrompts = "false"
 if ($env:VISUALIZER_STORE_PROMPTS) { $StorePrompts = $env:VISUALIZER_STORE_PROMPTS }
+
+# Optional Tracing v2 envelope fields — set VISUALIZER_TURN_ID / VISUALIZER_TRACE_ID /
+# VISUALIZER_SPAN_ID / VISUALIZER_PARENT_SPAN_ID in your hook environment to enable
+# exact tool-call pairing. All fields are optional; the ingest service falls back to
+# a FIFO heuristic when they are absent.
+$_vizExtraArgs = @()
+if ($env:VISUALIZER_TURN_ID)        { $_vizExtraArgs += '--turnId';        $_vizExtraArgs += $env:VISUALIZER_TURN_ID }
+if ($env:VISUALIZER_TRACE_ID)       { $_vizExtraArgs += '--traceId';       $_vizExtraArgs += $env:VISUALIZER_TRACE_ID }
+if ($env:VISUALIZER_SPAN_ID)        { $_vizExtraArgs += '--spanId';        $_vizExtraArgs += $env:VISUALIZER_SPAN_ID }
+if ($env:VISUALIZER_PARENT_SPAN_ID) { $_vizExtraArgs += '--parentSpanId';  $_vizExtraArgs += $env:VISUALIZER_PARENT_SPAN_ID }
 
 npx tsx "$VisualizerRoot/scripts/emit-event-cli.ts" `
   --eventType $EventType `
@@ -22,4 +32,5 @@ npx tsx "$VisualizerRoot/scripts/emit-event-cli.ts" `
   --repoPath $RepoRoot `
   --jsonlPath $JsonlPath `
   --httpEndpoint $HttpEndpoint `
-  --storePrompts $StorePrompts
+  --storePrompts $StorePrompts `
+  @_vizExtraArgs

@@ -1,5 +1,5 @@
 {
-  "visualizerRoot": "/home/mcfuzzysquirrel/Projects/agent-forge-visualizer",
+  "visualizerRoot": "/home/mcfuzzysquirrel/Projects/hooked-on-hooks",
   "repoPath": "/home/mcfuzzysquirrel/Projects/viben",
   "jsonlPath": ".visualizer/logs/events.jsonl",
   "httpEndpoint": "http://127.0.0.1:7070/events",
