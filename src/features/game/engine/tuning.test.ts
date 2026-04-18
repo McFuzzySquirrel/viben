@@ -11,8 +11,8 @@ import {
   GRAVITY_WELL_HAZARD_ID,
   NEBULA_SHIELD_BOOST_ID,
   SOLAR_FLARE_HAZARD_ID,
-  type GameplayTuning,
 } from './tuning';
+import type { GameplayTuning } from './contracts';
 
 // ---------------------------------------------------------------------------
 // Task 3.5 — Tuning regression tests
