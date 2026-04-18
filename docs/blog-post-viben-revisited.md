@@ -35,6 +35,14 @@ This was November 2024. AI-assisted coding was still in its early days — usefu
 
 It was rough, it was fun, and it proved the concept. We got something working in an afternoon. That alone felt like a win.
 
+Here's what that looked like — the landing page and the active pitch detection view:
+
+![Original Vib'N — Landing Page](/assets/images/2026-04-18-viben-revisited/00-original-app.png)
+
+![Original Vib'N — Active Pitch Detection](/assets/images/2026-04-18-viben-revisited/00-original-active.png)
+
+A circular pitch needle, colored note bars (Do through Ti), frequency ranges displayed in the corner, and a "Choose File" upload that never quite worked. Simple, functional, honest.
+
 **The original tech stack:**
 - React 17 with Create React App
 - The `pitchfinder` library for pitch detection
