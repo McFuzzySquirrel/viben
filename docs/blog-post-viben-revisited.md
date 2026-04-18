@@ -37,9 +37,9 @@ It was rough, it was fun, and it proved the concept. We got something working in
 
 Here's what that looked like — the landing page and the active pitch detection view:
 
-![Original Vib'N — Landing Page](https://raw.githubusercontent.com/McFuzzySquirrel/viben/feat/rework-rocket/docs/screenshots/00-original-app.png)
+![Original Vib'N — Landing Page](https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/00-original-app.png)
 
-![Original Vib'N — Active Pitch Detection](https://raw.githubusercontent.com/McFuzzySquirrel/viben/feat/rework-rocket/docs/screenshots/00-original-active.png)
+![Original Vib'N — Active Pitch Detection](https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/00-original-active.png)
 
 A circular pitch needle, colored note bars (Do through Ti), frequency ranges displayed in the corner, and a "Choose File" upload that never quite worked. Simple, functional, honest.
 
@@ -123,13 +123,13 @@ Here's what a run through the game looks like today:
 
 ### Home — The Launch Pad
 
-![Home Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/feat/rework-rocket/docs/screenshots/01-home.png)
+![Home Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/01-home.png)
 
 Pick your difficulty, check your stats, and launch a mission. The retro-styled interface shows your best scores, active difficulty, and voice profile status.
 
 ### Game — Active Mission
 
-![Game Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/feat/rework-rocket/docs/screenshots/02-game.png)
+![Game Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/02-game.png)
 
 The core experience. A solfege note appears ("Sing: Do"), you sing it, and the rocket responds. Hit the note accurately and the rocket climbs. Miss it and your stability drops. The HUD shows stability, thrust, altitude, accuracy, and the current prompt — all in a retro monospace style.
 
@@ -144,19 +144,19 @@ Two boosts reward accuracy:
 
 ### Voice Calibration
 
-![Calibration Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/feat/rework-rocket/docs/screenshots/03-calibration.png)
+![Calibration Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/03-calibration.png)
 
 This is where accessibility meets gameplay. Not everyone's voice fits standard solfege frequency ranges. The calibration screen lets you record your own Do, Re, Mi — capturing your actual vocal range. The game then builds custom frequency windows from your voice, so you're playing with *your* notes, not textbook frequencies.
 
 ### Results — Run Review
 
-![Results Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/feat/rework-rocket/docs/screenshots/04-results.png)
+![Results Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/04-results.png)
 
 After each run: altitude reached, accuracy percentage, notes hit vs missed, stars earned. Clean breakdown of what worked and what didn't.
 
 ### Progress — History & Milestones
 
-![Progress Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/feat/rework-rocket/docs/screenshots/05-progress.png)
+![Progress Screen](https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/05-progress.png)
 
 Your run history, personal bests, milestones unlocked, and trend tracking across sessions. All stored locally — no accounts, no cloud, just your browser.
 
@@ -252,6 +252,6 @@ My son hasn't beaten Hard mode yet. Neither have I. But the rocket flies, and th
 
 ---
 
-*The source code is at [github.com/McFuzzySquirrel/viben](https://github.com/McFuzzySquirrel/viben). The original prototype lives on the [`main` branch](https://github.com/McFuzzySquirrel/viben/tree/main). The rework is on [`feat/rework-rocket`](https://github.com/McFuzzySquirrel/viben/tree/feat/rework-rocket).*
+*The source code is at [github.com/McFuzzySquirrel/viben](https://github.com/McFuzzySquirrel/viben). The original prototype is preserved on the [`archive/the-original-viben`](https://github.com/McFuzzySquirrel/viben/tree/archive/the-original-viben) branch. The reworked game lives on [`main`](https://github.com/McFuzzySquirrel/viben/tree/main).*
 
 *Agent Forge is documented in [The Story of Agent Forge](https://mcfuzzysquirrel.github.io/personal/update/2026/03/20/story-of-agent-forge.html).*
