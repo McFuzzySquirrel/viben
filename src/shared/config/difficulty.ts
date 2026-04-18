@@ -2,7 +2,10 @@ import {
   buildSolfegeWindows,
   DEFAULT_SOLFEGE_CALIBRATION,
   type SolfegeCalibrationConfig,
+  type SolfegeWindow,
 } from '@shared/config/solfege';
+import type { VoiceProfile } from '@features/calibration/types';
+import { buildSolfegeWindowsFromVoiceProfile } from '@features/calibration/voice-profile';
 
 export const DIFFICULTY_IDS = ['easy', 'normal', 'hard'] as const;
 
@@ -108,4 +111,21 @@ export function buildDifficultySolfegeWindows(
   overrides: Partial<SolfegeCalibrationConfig> = {},
 ) {
   return buildSolfegeWindows(getDifficultyCalibration(difficultyId, overrides));
+}
+
+/**
+ * Build solfege windows using a player's voice profile frequencies combined
+ * with difficulty-specific cents tolerance.
+ *
+ * Each note's center frequency comes from the profile's captured median
+ * rather than from equal-temperament A4 math.  The difficulty's
+ * `noteWindowCentsTolerance` is applied symmetrically to define the
+ * acceptance bounds.
+ */
+export function buildVoiceProfileDifficultyWindows(
+  profile: VoiceProfile,
+  difficultyId: DifficultyId,
+): ReadonlyArray<SolfegeWindow> {
+  const tolerance = getDifficultyDefinition(difficultyId).tuning.noteWindowCentsTolerance;
+  return buildSolfegeWindowsFromVoiceProfile(profile, tolerance);
 }

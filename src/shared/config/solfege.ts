@@ -111,7 +111,7 @@ export function buildCalibrationFromPreset(
   };
 }
 
-const SOLFEGE_NOTE_DEFINITIONS: ReadonlyArray<SolfegeNoteDefinition> = [
+export const SOLFEGE_NOTE_DEFINITIONS: ReadonlyArray<SolfegeNoteDefinition> = [
   { id: 'do', label: 'Do', scientificPitch: 'C4', semitoneOffsetFromA4: -9 },
   { id: 're', label: 'Re', scientificPitch: 'D4', semitoneOffsetFromA4: -7 },
   { id: 'mi', label: 'Mi', scientificPitch: 'E4', semitoneOffsetFromA4: -5 },
@@ -133,7 +133,7 @@ function toFrequency(referenceFrequencyHz: number, semitoneOffsetFromA4: number)
   return referenceFrequencyHz * 2 ** (semitoneOffsetFromA4 / 12);
 }
 
-function toFrequencyOffset(frequencyHz: number, cents: number) {
+export function toFrequencyOffset(frequencyHz: number, cents: number) {
   return frequencyHz * 2 ** (cents / 1200);
 }
 
