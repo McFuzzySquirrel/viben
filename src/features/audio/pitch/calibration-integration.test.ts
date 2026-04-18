@@ -84,19 +84,36 @@ describe('calibration preset × difficulty — solfege window validity', () => {
   );
 });
 
-describe('difficulty-driven solfege windows are non-overlapping', () => {
+describe('difficulty-driven solfege windows are ordered and valid', () => {
   it.each(DIFFICULTY_IDS)(
-    '%s difficulty produces non-overlapping windows',
+    '%s difficulty produces ordered, valid windows',
     (difficultyId) => {
       const windows = buildDifficultySolfegeWindows(difficultyId);
 
+      // Windows must be in ascending frequency order
       for (let i = 1; i < windows.length; i++) {
-        expect(windows[i].minFrequencyHz).toBeGreaterThan(
-          windows[i - 1].maxFrequencyHz,
+        expect(windows[i].centerFrequencyHz).toBeGreaterThan(
+          windows[i - 1].centerFrequencyHz,
         );
+      }
+
+      // Each window must be valid (min < center < max)
+      for (const w of windows) {
+        expect(w.minFrequencyHz).toBeLessThan(w.centerFrequencyHz);
+        expect(w.centerFrequencyHz).toBeLessThan(w.maxFrequencyHz);
       }
     },
   );
+
+  it('hard difficulty produces strictly non-overlapping windows', () => {
+    const windows = buildDifficultySolfegeWindows('hard');
+
+    for (let i = 1; i < windows.length; i++) {
+      expect(windows[i].minFrequencyHz).toBeGreaterThan(
+        windows[i - 1].maxFrequencyHz,
+      );
+    }
+  });
 });
 
 describe('preset-based windows do not significantly overlap', () => {
@@ -107,10 +124,11 @@ describe('preset-based windows do not significantly overlap', () => {
       const windows = buildSolfegeWindows(config);
 
       for (let i = 1; i < windows.length; i++) {
-        // Allow for floating-point precision (windows may touch exactly
-        // when the tolerance is wide, e.g. 50 cents for "sensitive")
         const gap = windows[i].minFrequencyHz - windows[i - 1].maxFrequencyHz;
-        expect(gap).toBeGreaterThanOrEqual(-0.001);
+        // Wide tolerances (e.g. "sensitive" at 75 cents) can cause semitone-adjacent
+        // notes (Mi–Fa, Ti–Do) to overlap. Allow overlap up to ~15 Hz which covers
+        // the widest preset without permitting gross errors.
+        expect(gap).toBeGreaterThanOrEqual(-15);
       }
     },
   );

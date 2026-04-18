@@ -25,9 +25,9 @@ import type {
 /**
  * RMS power threshold below which audio is classified as **silence**.
  *
- * This value (0.012) was chosen to reject typical room ambient noise
- * (≈ –38 dBFS) while still detecting quiet but intentional singing.
- * It mirrors `DEFAULT_SOLFEGE_CALIBRATION.minimumSignalRms`.
+ * This value (0.025) was chosen to reject typical room ambient noise
+ * and non-vocal sounds (≈ –32 dBFS) while still detecting intentional
+ * singing.  It mirrors `DEFAULT_SOLFEGE_CALIBRATION.minimumSignalRms`.
  */
 export const SILENCE_THRESHOLD_RMS = DEFAULT_SOLFEGE_CALIBRATION.minimumSignalRms;
 

@@ -61,21 +61,21 @@ export const CALIBRATION_PRESETS: Readonly<Record<CalibrationPresetId, Calibrati
     id: 'default',
     label: 'Default',
     description: 'Standard tuning with balanced note windows.',
-    centsTolerance: 35,
+    centsTolerance: 45,
     referenceA4Hz: 440,
   },
   sensitive: {
     id: 'sensitive',
     label: 'Sensitive',
     description: 'Wider note windows for beginners or noisy environments.',
-    centsTolerance: 50,
+    centsTolerance: 75,
     referenceA4Hz: 440,
   },
   strict: {
     id: 'strict',
     label: 'Strict',
     description: 'Tighter note windows for advanced players seeking precision.',
-    centsTolerance: 20,
+    centsTolerance: 25,
     referenceA4Hz: 440,
   },
 } as const;
@@ -123,10 +123,10 @@ const SOLFEGE_NOTE_DEFINITIONS: ReadonlyArray<SolfegeNoteDefinition> = [
 
 export const DEFAULT_SOLFEGE_CALIBRATION: SolfegeCalibrationConfig = {
   referenceFrequencyHz: 440,
-  centsTolerance: 35,
-  minimumSignalRms: 0.012,
-  minimumFrequencyHz: 220,
-  maximumFrequencyHz: 523.25,
+  centsTolerance: 45,
+  minimumSignalRms: 0.025,
+  minimumFrequencyHz: 80,
+  maximumFrequencyHz: 1100,
 } as const;
 
 function toFrequency(referenceFrequencyHz: number, semitoneOffsetFromA4: number) {

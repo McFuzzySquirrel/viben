@@ -25,7 +25,7 @@ function createStats(overrides: Partial<{ capturedAt: number; rms: number; peak:
     capturedAt: overrides.capturedAt ?? 123,
     frameSize: 2048,
     sampleRate: 48_000,
-    rms: overrides.rms ?? 0.02,
+    rms: overrides.rms ?? 0.05,
     peak: overrides.peak ?? 0.1,
   };
 }

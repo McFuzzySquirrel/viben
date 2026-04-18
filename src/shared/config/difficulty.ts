@@ -36,10 +36,10 @@ const DIFFICULTY_DEFINITION_MAP: Readonly<Record<DifficultyId, DifficultyDefinit
   easy: {
     id: 'easy',
     label: 'Easy',
-    summary: 'Wider note windows and slower prompts for onboarding and mic confidence checks.',
+    summary: 'Very wide note windows and slower prompts for onboarding and casual play.',
     sortOrder: 0,
     tuning: {
-      noteWindowCentsTolerance: 45,
+      noteWindowCentsTolerance: 65,
       promptCadenceMs: 2800,
       hazardCadenceMs: 9500,
       boostCadenceMs: 12000,
@@ -52,7 +52,7 @@ const DIFFICULTY_DEFINITION_MAP: Readonly<Record<DifficultyId, DifficultyDefinit
     summary: 'Balanced prototype tuning for the default arcade climb.',
     sortOrder: 1,
     tuning: {
-      noteWindowCentsTolerance: 35,
+      noteWindowCentsTolerance: 45,
       promptCadenceMs: 2200,
       hazardCadenceMs: 8000,
       boostCadenceMs: 11000,
@@ -65,7 +65,7 @@ const DIFFICULTY_DEFINITION_MAP: Readonly<Record<DifficultyId, DifficultyDefinit
     summary: 'Tighter note windows and faster pressure for repeat players.',
     sortOrder: 2,
     tuning: {
-      noteWindowCentsTolerance: 25,
+      noteWindowCentsTolerance: 35,
       promptCadenceMs: 1700,
       hazardCadenceMs: 6500,
       boostCadenceMs: 10000,
