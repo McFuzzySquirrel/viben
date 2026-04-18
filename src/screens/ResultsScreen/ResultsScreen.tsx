@@ -4,10 +4,14 @@ import { type GameResultsRouteState, type GameRunSummary, toProgressionRunSummar
 import { StatusBadge } from '@features/game/components';
 import {
   buildLocalRunComparison,
+  checkNewPersonalBests,
   getBestRunSummary,
   getLatestRunSummary,
+  getMilestoneDefinition,
+  type ProgressMilestoneRecord,
   type RunResultSummary,
 } from '@features/progression';
+import { detectNewMilestones } from '@features/progression/milestones';
 import { getDifficultyDefinition } from '@shared/config/difficulty';
 import { loadProgressionState, persistRunSummary } from '@shared/persistence';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
@@ -98,6 +102,51 @@ export function ResultsScreen() {
   const latestComparisonEntry = comparison?.entries[0] ?? null;
   const previousRun = comparison?.entries[1] ?? null;
   const bestDifficultyRun = getBestRunSummary(effectiveRunHistory, selectedDifficulty.id);
+
+  // Compute newly earned milestones for this run
+  const newMilestones = useMemo<ProgressMilestoneRecord[]>(() => {
+    if (!routeRun) {
+      return [];
+    }
+
+    // Build a snapshot as it was *before* this run was persisted to detect what is new
+    const priorHistory = progressionSnapshot.save.runHistory.filter((r) => r.id !== routeRun.id);
+    const priorMilestones = progressionSnapshot.save.milestones.filter(
+      (m) => !progressionSnapshot.save.milestones.some(
+        (pm) => pm.id === m.id && pm.achievedAt === m.achievedAt,
+      ) || priorHistory.length < progressionSnapshot.save.runHistory.length,
+    );
+
+    // The current snapshot already includes milestones awarded by persistRunSummary.
+    // We need to figure out which ones were newly added by this run.
+    // Compare milestone ids in the snapshot vs what would exist without this run.
+    const snapshotWithoutRun = {
+      ...progressionSnapshot.save,
+      runHistory: priorHistory,
+      milestones: [],
+    };
+    const milestonesWithout = detectNewMilestones(snapshotWithoutRun);
+    const milestonesWithoutIds = new Set(milestonesWithout.map((m) => m.id));
+
+    // Any milestone in the current snapshot that would NOT have been detected
+    // without this run is "newly earned"
+    return progressionSnapshot.save.milestones.filter(
+      (m) => !milestonesWithoutIds.has(m.id),
+    );
+  }, [routeRun, progressionSnapshot.save]);
+
+  // Check if this run set any personal bests
+  const personalBests = useMemo(() => {
+    if (!routeRun) {
+      return null;
+    }
+
+    return checkNewPersonalBests(routeRun, {
+      ...progressionSnapshot.save,
+      runHistory: progressionSnapshot.save.runHistory.filter((r) => r.id !== routeRun.id),
+    });
+  }, [routeRun, progressionSnapshot.save]);
+
   const resultMetrics = latestRun
     ? [
         { label: 'Score', value: String(latestRun.score) },
@@ -170,6 +219,88 @@ export function ResultsScreen() {
           </article>
         ))}
       </div>
+
+      {(newMilestones.length > 0 || (personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak))) ? (
+        <div className="screen-grid">
+          {newMilestones.length > 0 ? (
+            <article className="panel" aria-label="New milestones">
+              <div className="panel__header">
+                <div>
+                  <p className="screen__eyebrow">Achievements</p>
+                  <h3>Milestones earned this run</h3>
+                </div>
+                <StatusBadge label={`${newMilestones.length} new`} tone="success" />
+              </div>
+              <div className="milestone-grid">
+                {newMilestones.map((m) => {
+                  const def = getMilestoneDefinition(m.id);
+                  const icon = m.kind === 'performance' ? '⭐' : m.kind === 'difficulty' ? '🎮' : '🏅';
+                  return (
+                    <div className="milestone-card milestone-card--new" key={m.id}>
+                      <span className="milestone-card__icon" aria-hidden="true">{icon}</span>
+                      <div className="milestone-card__body">
+                        <span className="milestone-card__label">{def?.label ?? m.id}</span>
+                        <span className="milestone-card__description">{def?.description ?? `Milestone ${m.kind}`}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          ) : null}
+
+          {personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak) ? (
+            <article className="panel" aria-label="Personal bests">
+              <div className="panel__header">
+                <div>
+                  <p className="screen__eyebrow">Records</p>
+                  <h3>New personal bests</h3>
+                </div>
+                <StatusBadge label="New record!" tone="success" />
+              </div>
+              <div className="pb-grid">
+                {personalBests.isNewBestScore && (
+                  <span className="pb-badge pb-badge--trophy">
+                    <em className="pb-badge__icon" aria-hidden="true">🏆</em>
+                    New best score on {selectedDifficulty.label}
+                  </span>
+                )}
+                {personalBests.isNewBestAccuracy && (
+                  <span className="pb-badge pb-badge--accuracy">
+                    <em className="pb-badge__icon" aria-hidden="true">🎯</em>
+                    New best accuracy on {selectedDifficulty.label}
+                  </span>
+                )}
+                {personalBests.isNewBestStreak && (
+                  <span className="pb-badge pb-badge--streak">
+                    <em className="pb-badge__icon" aria-hidden="true">🔥</em>
+                    New best streak on {selectedDifficulty.label}
+                  </span>
+                )}
+              </div>
+            </article>
+          ) : null}
+        </div>
+      ) : routeRun ? (
+        <div className="screen-grid">
+          <article className="panel" aria-label="Milestones">
+            <div className="panel__header">
+              <div>
+                <p className="screen__eyebrow">Achievements</p>
+                <h3>Milestones</h3>
+              </div>
+              <StatusBadge label="Keep going" tone="info" />
+            </div>
+            <div className="empty-state">
+              <span className="empty-state__icon" aria-hidden="true">🚀</span>
+              <p className="empty-state__heading">No new milestones this run</p>
+              <p className="empty-state__copy">
+                Keep flying — milestones unlock as you hit score targets, complete runs, and try harder difficulties.
+              </p>
+            </div>
+          </article>
+        </div>
+      ) : null}
 
       <div className="screen-grid">
         <article className="panel">

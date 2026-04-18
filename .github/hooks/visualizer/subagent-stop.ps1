@@ -15,18 +15,22 @@ function _vizNested([string]$path) { if (-not $_vizJson) { return '' }; $parts =
 # Extract fields from stdin JSON into env vars (stdin fills unset vars)
 if (-not $env:TOOL_NAME)              { $env:TOOL_NAME = _vizField 'tool_name','toolName' }
 if (-not $env:SESSION_ID)             { $env:SESSION_ID = _vizField 'session_id','sessionId' }
-if (-not $env:AGENT_NAME)             { $env:AGENT_NAME = _vizField 'agent_name','agentName','name' }
-if (-not $env:SUBAGENT_NAME)          { $env:SUBAGENT_NAME = _vizField 'subagent_name','agent_name','agentName' }
-if (-not $env:AGENT_DISPLAY_NAME)     { $env:AGENT_DISPLAY_NAME = _vizField 'agent_display_name','agentDisplayName','display_name','displayName' }
-if (-not $env:SUBAGENT_DISPLAY_NAME)  { $env:SUBAGENT_DISPLAY_NAME = _vizField 'agent_display_name','agentDisplayName','display_name','displayName' }
-if (-not $env:AGENT_DESCRIPTION)      { $env:AGENT_DESCRIPTION = _vizField 'agent_description','agentDescription','description' }
-if (-not $env:SUBAGENT_DESCRIPTION)   { $env:SUBAGENT_DESCRIPTION = _vizField 'agent_description','agentDescription','description' }
-if (-not $env:TASK_DESC)              { $env:TASK_DESC = _vizField 'task_description','taskDescription','task' }
-if (-not $env:AGENT_MESSAGE)          { $env:AGENT_MESSAGE = _vizField 'message' }
-if (-not $env:MESSAGE)                { $v = _vizNested 'error.message'; if ($v) { $env:MESSAGE = $v } else { $env:MESSAGE = _vizField 'message' } }
-if (-not $env:SUMMARY)                { $env:SUMMARY = _vizField 'summary' }
+if (-not $env:AGENT_NAME)             { $v = _vizNested 'activeAgent.name'; if ($v) { $env:AGENT_NAME = $v } else { $v = _vizNested 'activeAgent.id'; if ($v) { $env:AGENT_NAME = $v } else { $v = _vizNested 'active_agent.name'; if ($v) { $env:AGENT_NAME = $v } else { $v = _vizNested 'active_agent.id'; if ($v) { $env:AGENT_NAME = $v } else { $v = _vizNested 'agent.name'; if ($v) { $env:AGENT_NAME = $v } else { $v = _vizNested 'agent.id'; if ($v) { $env:AGENT_NAME = $v } else { $v = _vizNested 'agent.slug'; if ($v) { $env:AGENT_NAME = $v } else { $v = _vizNested 'actor.name'; if ($v) { $env:AGENT_NAME = $v } else { $env:AGENT_NAME = _vizField 'agent_name','agentName','name' } } } } } } } } }
+if (-not $env:AGENT_TYPE)             { $v = _vizNested 'activeAgent.type'; if ($v) { $env:AGENT_TYPE = $v } else { $v = _vizNested 'active_agent.type'; if ($v) { $env:AGENT_TYPE = $v } else { $v = _vizNested 'toolArgs.agent_type'; if ($v) { $env:AGENT_TYPE = $v } else { $v = _vizNested 'tool_args.agent_type'; if ($v) { $env:AGENT_TYPE = $v } else { $env:AGENT_TYPE = _vizField 'agent_type','agentType' } } } } }
+if (-not $env:AGENT_TASK_NAME)        { $v = _vizNested 'toolArgs.name'; if ($v) { $env:AGENT_TASK_NAME = $v } else { $v = _vizNested 'tool_args.name'; if ($v) { $env:AGENT_TASK_NAME = $v } else { $env:AGENT_TASK_NAME = _vizField 'task_name','taskName','task_description','taskDescription','task','description','name' } } }
+if (-not $env:SUBAGENT_NAME)          { $v = _vizNested 'subagent.name'; if ($v) { $env:SUBAGENT_NAME = $v } else { $v = _vizNested 'subagent.id'; if ($v) { $env:SUBAGENT_NAME = $v } else { $env:SUBAGENT_NAME = _vizField 'subagent_name','subagentName','agent_name','agentName' } } }
+if (-not $env:AGENT_ID)               { $v = _vizNested 'agent.id'; if ($v) { $env:AGENT_ID = $v } else { $v = _vizNested 'actor.id'; if ($v) { $env:AGENT_ID = $v } else { $env:AGENT_ID = _vizField 'agent_id','agentId' } } }
+if (-not $env:SUBAGENT_ID)            { $v = _vizNested 'subagent.id'; if ($v) { $env:SUBAGENT_ID = $v } else { $env:SUBAGENT_ID = _vizField 'subagent_id','subagentId' } }
+if (-not $env:AGENT_DISPLAY_NAME)     { $v = _vizNested 'agent.display_name'; if ($v) { $env:AGENT_DISPLAY_NAME = $v } else { $v = _vizNested 'agent.displayName'; if ($v) { $env:AGENT_DISPLAY_NAME = $v } else { $v = _vizNested 'actor.display_name'; if ($v) { $env:AGENT_DISPLAY_NAME = $v } else { $env:AGENT_DISPLAY_NAME = _vizField 'agent_display_name','agentDisplayName','display_name','displayName' } } } }
+if (-not $env:SUBAGENT_DISPLAY_NAME)  { $v = _vizNested 'subagent.display_name'; if ($v) { $env:SUBAGENT_DISPLAY_NAME = $v } else { $v = _vizNested 'subagent.displayName'; if ($v) { $env:SUBAGENT_DISPLAY_NAME = $v } else { $env:SUBAGENT_DISPLAY_NAME = _vizField 'subagent_display_name','subagentDisplayName','agent_display_name','agentDisplayName','display_name','displayName' } } }
+if (-not $env:AGENT_DESCRIPTION)      { $v = _vizNested 'agent.description'; if ($v) { $env:AGENT_DESCRIPTION = $v } else { $v = _vizNested 'actor.description'; if ($v) { $env:AGENT_DESCRIPTION = $v } else { $env:AGENT_DESCRIPTION = _vizField 'agent_description','agentDescription','description' } } }
+if (-not $env:SUBAGENT_DESCRIPTION)   { $v = _vizNested 'subagent.description'; if ($v) { $env:SUBAGENT_DESCRIPTION = $v } else { $env:SUBAGENT_DESCRIPTION = _vizField 'subagent_description','subagentDescription','agent_description','agentDescription','description' } }
+if (-not $env:TASK_DESC)              { $v = _vizNested 'toolArgs.description'; if ($v) { $env:TASK_DESC = $v } else { $v = _vizNested 'tool_args.description'; if ($v) { $env:TASK_DESC = $v } else { $env:TASK_DESC = _vizField 'task_description','taskDescription','task' } } }
+if (-not $env:AGENT_MESSAGE)          { $v = _vizNested 'agent.message'; if ($v) { $env:AGENT_MESSAGE = $v } else { $v = _vizNested 'agent.finalMessage'; if ($v) { $env:AGENT_MESSAGE = $v } else { $v = _vizNested 'agent.output.summary'; if ($v) { $env:AGENT_MESSAGE = $v } else { $env:AGENT_MESSAGE = _vizField 'message' } } } }
+if (-not $env:MESSAGE)                { $v = _vizNested 'error.message'; if ($v) { $env:MESSAGE = $v } else { $v = _vizNested 'output.message'; if ($v) { $env:MESSAGE = $v } else { $v = _vizNested 'final_message'; if ($v) { $env:MESSAGE = $v } else { $v = _vizNested 'finalMessage'; if ($v) { $env:MESSAGE = $v } else { $env:MESSAGE = _vizField 'message' } } } } }
+if (-not $env:SUMMARY)                { $v = _vizNested 'output.summary'; if ($v) { $env:SUMMARY = $v } else { $v = _vizNested 'final_summary'; if ($v) { $env:SUMMARY = $v } else { $v = _vizNested 'finalSummary'; if ($v) { $env:SUMMARY = $v } else { $env:SUMMARY = _vizField 'summary' } } } }
 if (-not $env:RESULT)                 { $env:RESULT = _vizField 'result' }
-if (-not $env:REASON)                 { $env:REASON = _vizField 'reason' }
+if (-not $env:REASON)                 { $v = _vizField 'reason','stopReason','stop_reason','resultType','status'; if ($v) { $env:REASON = $v } }
 if (-not $env:STATUS)                 { $v = _vizNested 'toolResult.resultType'; if ($v) { $env:STATUS = $v } else { $env:STATUS = _vizField 'status','tool_status' } }
 if (-not $env:ERROR_SUMMARY)          { $v = _vizNested 'error.message'; if ($v) { $env:ERROR_SUMMARY = $v } else { $env:ERROR_SUMMARY = _vizField 'error_summary','errorSummary' } }
 if (-not $env:TOOL_ARGS)              { $env:TOOL_ARGS = _vizField 'toolArgs' }
@@ -43,7 +47,7 @@ if (-not $env:CODE)                   { $env:CODE = _vizField 'code','error_code
 $_vizEmitScript = Join-Path $RepoRoot ".visualizer/emit-event.ps1"
 if (Test-Path $_vizEmitScript) {
   try {
-    $_vizPayload = (ConvertTo-Json @{ agentName = $(if ($env:AGENT_NAME) { $env:AGENT_NAME } elseif ($env:SUBAGENT_NAME) { $env:SUBAGENT_NAME } else { 'unknown' }); taskDescription = $(if ($env:TASK_DESC) { $env:TASK_DESC } else { '' }); message = $(if ($env:AGENT_MESSAGE) { $env:AGENT_MESSAGE } elseif ($env:MESSAGE) { $env:MESSAGE } else { '' }) } -Compress)
+    $_vizPayload = (ConvertTo-Json @{ agentName = $(if ($env:AGENT_NAME) { $env:AGENT_NAME } elseif ($env:SUBAGENT_NAME) { $env:SUBAGENT_NAME } else { 'unknown' }); taskDescription = $(if ($env:TASK_DESC) { $env:TASK_DESC } else { '' }); description = $(if ($env:TASK_DESC) { $env:TASK_DESC } else { '' }); message = $(if ($env:AGENT_MESSAGE) { $env:AGENT_MESSAGE } elseif ($env:MESSAGE) { $env:MESSAGE } elseif ($env:TASK_DESC) { $env:TASK_DESC } else { '' }); summary = $(if ($env:SUMMARY) { $env:SUMMARY } elseif ($env:MESSAGE) { $env:MESSAGE } elseif ($env:TASK_DESC) { $env:TASK_DESC } else { '' }) } -Compress)
     & $_vizEmitScript -EventType "subagentStop" -Payload $_vizPayload -SessionId $(if ($env:SESSION_ID) { $env:SESSION_ID } else { "run-$PID" }) 2>&1 | Out-Null
   } catch { <# visualizer emit errors are intentionally silenced #> }
 }

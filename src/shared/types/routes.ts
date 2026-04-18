@@ -2,6 +2,7 @@ export const APP_ROUTE_SEGMENTS = {
   game: 'game',
   progress: 'progress',
   results: 'results',
+  calibration: 'calibration',
 } as const;
 
 export const APP_ROUTE_PATHS = {
@@ -9,9 +10,10 @@ export const APP_ROUTE_PATHS = {
   game: `/${APP_ROUTE_SEGMENTS.game}`,
   results: `/${APP_ROUTE_SEGMENTS.results}`,
   progress: `/${APP_ROUTE_SEGMENTS.progress}`,
+  calibration: `/${APP_ROUTE_SEGMENTS.calibration}`,
 } as const;
 
-export const APP_ROUTE_IDS = ['home', 'game', 'results', 'progress'] as const;
+export const APP_ROUTE_IDS = ['home', 'game', 'results', 'progress', 'calibration'] as const;
 
 export type AppRouteId = (typeof APP_ROUTE_IDS)[number];
 export type AppRoutePath = (typeof APP_ROUTE_PATHS)[AppRouteId];
@@ -52,5 +54,12 @@ export const APP_NAV_ROUTES: ReadonlyArray<AppRouteDefinition> = [
     navLabel: 'Progress',
     title: 'Progress',
     description: 'Placeholder route for local history and comparison.',
+  },
+  {
+    id: 'calibration',
+    path: APP_ROUTE_PATHS.calibration,
+    navLabel: 'Calibrate',
+    title: 'Voice Calibration',
+    description: 'Guided voice calibration to personalise note detection.',
   },
 ] as const;

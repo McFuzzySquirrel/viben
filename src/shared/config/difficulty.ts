@@ -2,7 +2,10 @@ import {
   buildSolfegeWindows,
   DEFAULT_SOLFEGE_CALIBRATION,
   type SolfegeCalibrationConfig,
+  type SolfegeWindow,
 } from '@shared/config/solfege';
+import type { VoiceProfile } from '@features/calibration/types';
+import { buildSolfegeWindowsFromVoiceProfile } from '@features/calibration/voice-profile';
 
 export const DIFFICULTY_IDS = ['easy', 'normal', 'hard'] as const;
 
@@ -11,6 +14,8 @@ export type DifficultyId = (typeof DIFFICULTY_IDS)[number];
 export interface DifficultyTuningConfig {
   noteWindowCentsTolerance: number;
   promptCadenceMs: number;
+  /** Pause (ms) between notes for the player to breathe. */
+  breathGapMs: number;
   hazardCadenceMs: number;
   boostCadenceMs: number;
   scoreMultiplier: number;
@@ -36,11 +41,12 @@ const DIFFICULTY_DEFINITION_MAP: Readonly<Record<DifficultyId, DifficultyDefinit
   easy: {
     id: 'easy',
     label: 'Easy',
-    summary: 'Wider note windows and slower prompts for onboarding and mic confidence checks.',
+    summary: 'Very wide note windows and slower prompts for onboarding and casual play.',
     sortOrder: 0,
     tuning: {
-      noteWindowCentsTolerance: 45,
+      noteWindowCentsTolerance: 65,
       promptCadenceMs: 2800,
+      breathGapMs: 900,
       hazardCadenceMs: 9500,
       boostCadenceMs: 12000,
       scoreMultiplier: 1,
@@ -52,8 +58,9 @@ const DIFFICULTY_DEFINITION_MAP: Readonly<Record<DifficultyId, DifficultyDefinit
     summary: 'Balanced prototype tuning for the default arcade climb.',
     sortOrder: 1,
     tuning: {
-      noteWindowCentsTolerance: 35,
+      noteWindowCentsTolerance: 45,
       promptCadenceMs: 2200,
+      breathGapMs: 600,
       hazardCadenceMs: 8000,
       boostCadenceMs: 11000,
       scoreMultiplier: 1.15,
@@ -65,8 +72,9 @@ const DIFFICULTY_DEFINITION_MAP: Readonly<Record<DifficultyId, DifficultyDefinit
     summary: 'Tighter note windows and faster pressure for repeat players.',
     sortOrder: 2,
     tuning: {
-      noteWindowCentsTolerance: 25,
+      noteWindowCentsTolerance: 35,
       promptCadenceMs: 1700,
+      breathGapMs: 350,
       hazardCadenceMs: 6500,
       boostCadenceMs: 10000,
       scoreMultiplier: 1.3,
@@ -108,4 +116,21 @@ export function buildDifficultySolfegeWindows(
   overrides: Partial<SolfegeCalibrationConfig> = {},
 ) {
   return buildSolfegeWindows(getDifficultyCalibration(difficultyId, overrides));
+}
+
+/**
+ * Build solfege windows using a player's voice profile frequencies combined
+ * with difficulty-specific cents tolerance.
+ *
+ * Each note's center frequency comes from the profile's captured median
+ * rather than from equal-temperament A4 math.  The difficulty's
+ * `noteWindowCentsTolerance` is applied symmetrically to define the
+ * acceptance bounds.
+ */
+export function buildVoiceProfileDifficultyWindows(
+  profile: VoiceProfile,
+  difficultyId: DifficultyId,
+): ReadonlyArray<SolfegeWindow> {
+  const tolerance = getDifficultyDefinition(difficultyId).tuning.noteWindowCentsTolerance;
+  return buildSolfegeWindowsFromVoiceProfile(profile, tolerance);
 }

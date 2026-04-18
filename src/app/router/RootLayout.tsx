@@ -29,6 +29,10 @@ function BrowserSupportBanner() {
 export function RootLayout() {
   return (
     <div className="shell">
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
+
       <header className="shell__header">
         <div className="brand">
           <img className="brand__logo" src="/viben-logo.png" alt="" />
@@ -58,7 +62,7 @@ export function RootLayout() {
 
       <BrowserSupportBanner />
 
-      <main className="shell__content">
+      <main className="shell__content" id="main-content">
         <Outlet />
       </main>
 

@@ -15,4 +15,27 @@ export {
   type RunPerformanceMetrics,
   type RunResultSummary,
 } from './contracts';
-export { buildLocalRunComparison, getBestRunSummary, getLatestRunSummary, type LocalRunComparisonOptions } from './selectors';
+export {
+  detectNewMilestones,
+  getMilestoneDefinition,
+  MILESTONE_DEFINITIONS,
+  type MilestoneDefinition,
+} from './milestones';
+export {
+  buildLocalRunComparison,
+  checkNewPersonalBests,
+  getBestRunSummary,
+  getCompletionRate,
+  getLatestRunSummary,
+  getOverallProgressSummary,
+  getPersonalBests,
+  getProgressSummaryForDifficulty,
+  getRecentTrend,
+  getRunHistoryForDifficulty,
+  type DifficultyProgressSummary,
+  type LocalRunComparisonOptions,
+  type NewPersonalBests,
+  type OverallProgressSummary,
+  type PersonalBestEntry,
+  type TrendDirection,
+} from './selectors';

@@ -12,3 +12,11 @@ export {
   type VibenLocalSave,
 } from './progression-storage';
 export { type StorageIssueCode } from './storage';
+export {
+  deleteVoiceProfile,
+  loadVoiceProfile,
+  saveVoiceProfile,
+  VOICE_PROFILE_STORAGE_KEY,
+  VOICE_PROFILE_VERSION,
+  type VoiceProfileLoadResult,
+} from './voice-profile-storage';

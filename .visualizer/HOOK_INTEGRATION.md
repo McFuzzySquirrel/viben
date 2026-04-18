@@ -1,6 +1,6 @@
 # Visualizer Hook Integration
 
-This repo was bootstrapped for Copilot Agent Activity Visualizer.
+This repo was bootstrapped for Copilot Activity Visualiser.
 
 ## Generated Files
 - .visualizer/emit-event.sh (bash / macOS / Linux)
@@ -74,7 +74,7 @@ matched (e.g. `viz-session-start.sh` with `--prefix viz`).
 
 ## Live Viewing
 1. Start the ingest service from the visualizer repo:
-   npm run serve:ingest   (from /home/mcfuzzysquirrel/Projects/agent-forge-visualizer)
+   npm run serve:ingest   (from /home/mcfuzzysquirrel/Projects/hooked-on-hooks)
 2. Start the web UI from the visualizer repo:
    npm run dev --workspace=packages/web-ui
 3. Run your multi-agent workflow with hook emits enabled.

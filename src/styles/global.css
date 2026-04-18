@@ -578,6 +578,334 @@ button:focus-visible,
   color: #cbd8eb;
 }
 
+/* ── Retro HUD styling ── */
+
+.retro-hud {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.retro-glow {
+  text-shadow:
+    0 0 8px rgba(106, 183, 255, 0.5),
+    0 0 18px rgba(106, 183, 255, 0.3);
+}
+
+.prompt-card__solfege {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 12px rgba(106, 183, 255, 0.6),
+    0 0 28px rgba(106, 183, 255, 0.25);
+}
+
+.prompt-card__symbol {
+  text-shadow: none;
+}
+
+.prompt-card__solfege--correct {
+  text-shadow:
+    0 0 12px rgba(120, 234, 195, 0.65),
+    0 0 28px rgba(120, 234, 195, 0.3);
+}
+
+.prompt-card__solfege--incorrect {
+  text-shadow:
+    0 0 12px rgba(255, 149, 175, 0.6),
+    0 0 28px rgba(255, 149, 175, 0.25);
+}
+
+.prompt-card__solfege--waiting {
+  text-shadow:
+    0 0 12px rgba(106, 183, 255, 0.6),
+    0 0 28px rgba(106, 183, 255, 0.25);
+}
+
+/* Match-state symbol styling (ACC-03: don't rely on color alone) */
+.prompt-card__symbol--correct {
+  background: rgba(120, 234, 195, 0.18);
+  border: 1px solid rgba(120, 234, 195, 0.45);
+}
+
+.prompt-card__symbol--incorrect {
+  background: rgba(255, 149, 175, 0.18);
+  border: 1px solid rgba(255, 149, 175, 0.45);
+}
+
+.prompt-card__symbol--waiting {
+  background: rgba(142, 203, 255, 0.12);
+  border: 1px solid rgba(142, 203, 255, 0.35);
+}
+
+/* ── Run stat retro styling ── */
+
+.run-stat-card__label {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.run-stat-card strong {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.04em;
+}
+
+.rocket-flight-card__altitude {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 10px rgba(106, 183, 255, 0.4),
+    0 0 22px rgba(106, 183, 255, 0.15);
+}
+
+/* ── HUD meter label retro styling ── */
+
+.hud-meter__header {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.04em;
+  font-size: 0.92rem;
+}
+
+.hud-meter__header strong {
+  white-space: nowrap;
+}
+
+/* ── Rocket climbing animation ── */
+
+@keyframes rocket-climb {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  25% {
+    transform: translateX(-50%) translateY(-3px);
+  }
+  75% {
+    transform: translateX(-50%) translateY(2px);
+  }
+}
+
+.rocket-track__rocket--climbing {
+  animation: rocket-climb 0.9s ease-in-out infinite;
+}
+
+/* ── Milestone & achievement cards ── */
+
+.milestone-card {
+  border: 1px solid rgba(142, 203, 255, 0.2);
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.milestone-card--new {
+  border-color: rgba(120, 234, 195, 0.55);
+  box-shadow:
+    0 0 12px rgba(120, 234, 195, 0.2),
+    inset 0 0 16px rgba(120, 234, 195, 0.04);
+}
+
+.milestone-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.7rem;
+  background: rgba(142, 203, 255, 0.1);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.milestone-card--new .milestone-card__icon {
+  background: rgba(120, 234, 195, 0.15);
+}
+
+.milestone-card__body {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.milestone-card__label {
+  font-weight: 700;
+}
+
+.milestone-card__description {
+  color: #d8e4f7;
+  font-size: 0.92rem;
+}
+
+.milestone-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+/* ── Personal best / trend badges ── */
+
+.pb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.pb-badge--trophy {
+  background: rgba(251, 211, 77, 0.12);
+  border: 1px solid rgba(251, 211, 77, 0.45);
+  color: #fbd34d;
+}
+
+.pb-badge--accuracy {
+  background: rgba(120, 234, 195, 0.1);
+  border: 1px solid rgba(120, 234, 195, 0.45);
+  color: #78eac3;
+}
+
+.pb-badge--streak {
+  background: rgba(255, 149, 175, 0.1);
+  border: 1px solid rgba(255, 149, 175, 0.45);
+  color: #ff95af;
+}
+
+.pb-badge__icon {
+  font-style: normal;
+  line-height: 1;
+}
+
+.pb-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.trend-badge--improving {
+  background: rgba(120, 234, 195, 0.1);
+  border: 1px solid rgba(120, 234, 195, 0.4);
+  color: #78eac3;
+}
+
+.trend-badge--declining {
+  background: rgba(255, 149, 175, 0.1);
+  border: 1px solid rgba(255, 149, 175, 0.4);
+  color: #ff95af;
+}
+
+.trend-badge--stable {
+  background: rgba(142, 203, 255, 0.1);
+  border: 1px solid rgba(142, 203, 255, 0.35);
+  color: #8ecbff;
+}
+
+.trend-badge__arrow {
+  font-style: normal;
+  line-height: 1;
+}
+
+/* ── Empty-state messaging ── */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+
+.empty-state__icon {
+  font-size: 2rem;
+  opacity: 0.6;
+}
+
+.empty-state__heading {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.empty-state__copy {
+  margin: 0;
+  color: #d8e4f7;
+  max-width: 48ch;
+}
+
+/* ── Accessible focus outlines (fill gaps) ── */
+
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #fbd34d;
+  outline-offset: 3px;
+}
+
+.choice-card input:focus-visible {
+  outline: 3px solid #fbd34d;
+  outline-offset: 2px;
+}
+
+/* ── Skip-to-content link ── */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 1000;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  background: #fbd34d;
+  color: #08111f;
+  font-weight: 700;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.skip-link:focus {
+  top: 0.5rem;
+  opacity: 1;
+}
+
+/* ── Screen reader only utility ── */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Metric card retro polish ── */
+
+.metric-card strong {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.04em;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -586,6 +914,121 @@ button:focus-visible,
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Calibration ── */
+
+.calibration-progress {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-block: 1rem;
+}
+
+.calibration-note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  min-width: 3.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid transparent;
+  background: none;
+  color: inherit;
+  cursor: default;
+}
+
+button.calibration-note {
+  cursor: pointer;
+}
+
+button.calibration-note:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.calibration-note--pending {
+  opacity: 0.5;
+}
+
+.calibration-note--capturing {
+  color: var(--color-warning, #ffc107);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.calibration-note--captured {
+  color: var(--color-success, #4caf50);
+}
+
+.calibration-note--skipped {
+  color: var(--color-warning, #fbd34d);
+  opacity: 0.7;
+}
+
+.calibration-note--current {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.hold-progress {
+  width: 100%;
+  max-width: 300px;
+  height: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-block: 0.75rem;
+}
+
+.hold-progress__fill {
+  height: 100%;
+  background: var(--color-success, #4caf50);
+  transition: width 0.1s linear;
+  border-radius: 0.75rem;
+}
+
+.frequency-display {
+  font-family: 'Courier New', monospace;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  text-align: center;
+  min-height: 3rem;
+  margin: 0.75rem 0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Responsive: ≥1280px optimal HUD spacing ── */
+
+@media (min-width: 1280px) {
+  .screen-grid--game {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hud-meter + .hud-meter {
+    margin-top: 1.15rem;
+  }
+
+  .hud-meter__header {
+    font-size: 0.95rem;
+  }
+
+  .run-stat-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .prompt-card__solfege {
+    font-size: clamp(3rem, 5vw, 4.5rem);
   }
 }
 

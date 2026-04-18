@@ -69,6 +69,10 @@ function getEventCopy(activeEvent: GameplayEventInstance | null) {
   };
 }
 
+function isClimbing(rocketMode: RocketFlightMode | null) {
+  return rocketMode === 'boosting' || rocketMode === 'steady';
+}
+
 export function RocketFlightCard({
   altitudePercent,
   altitudeText,
@@ -79,6 +83,10 @@ export function RocketFlightCard({
 }: RocketFlightCardProps) {
   const normalizedAltitude = clampPercent(altitudePercent);
   const eventCopy = getEventCopy(activeEvent);
+  const climbing = isClimbing(rocketMode);
+  const rocketClass = climbing
+    ? 'rocket-track__rocket rocket-track__rocket--climbing'
+    : 'rocket-track__rocket';
 
   return (
     <article aria-labelledby="rocket-flight-heading" className="panel rocket-flight-card">
@@ -107,7 +115,7 @@ export function RocketFlightCard({
           </span>
           <span
             aria-hidden="true"
-            className="rocket-track__rocket"
+            className={rocketClass}
             style={{ bottom: `calc(${normalizedAltitude}% - 1.3rem)` }}
           >
             🚀
@@ -116,7 +124,9 @@ export function RocketFlightCard({
         </div>
 
         <div className="rocket-flight-card__summary">
-          <p className="rocket-flight-card__altitude">{altitudeText}</p>
+          <p className="rocket-flight-card__altitude" aria-live="polite" aria-atomic="true">
+            {altitudeText}
+          </p>
           <p className="rocket-flight-card__caption">Climb higher by staying on the current solfege note.</p>
 
           <div className="rocket-flight-card__event">

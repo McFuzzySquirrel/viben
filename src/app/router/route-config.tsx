@@ -1,5 +1,6 @@
 import type { RouteObject } from 'react-router-dom';
 import { RootLayout } from '@app/router/RootLayout';
+import { CalibrationScreen } from '@screens/CalibrationScreen/CalibrationScreen';
 import { GameScreen } from '@screens/GameScreen/GameScreen';
 import { HomeScreen } from '@screens/HomeScreen/HomeScreen';
 import { NotFoundScreen } from '@screens/NotFoundScreen/NotFoundScreen';
@@ -27,6 +28,10 @@ export const appRoutes: RouteObject[] = [
       {
         path: APP_ROUTE_SEGMENTS.progress,
         element: <ProgressScreen />,
+      },
+      {
+        path: APP_ROUTE_SEGMENTS.calibration,
+        element: <CalibrationScreen />,
       },
       {
         path: '*',

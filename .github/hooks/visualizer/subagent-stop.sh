@@ -14,18 +14,22 @@ _vjq() { echo "$_VIZ_STDIN" | jq -r "$1" 2>/dev/null || true; }
 # Extract fields from stdin JSON into env vars (stdin fills unset vars)
 : "${TOOL_NAME:=$(_vjq '.tool_name // .toolName // empty')}"
 : "${SESSION_ID:=$(_vjq '.session_id // .sessionId // empty')}"
-: "${AGENT_NAME:=$(_vjq '.agent_name // .agentName // .name // empty')}"
-: "${SUBAGENT_NAME:=$(_vjq '.subagent_name // .agent_name // .agentName // empty')}"
-: "${AGENT_DISPLAY_NAME:=$(_vjq '.agent_display_name // .agentDisplayName // .display_name // .displayName // empty')}"
-: "${SUBAGENT_DISPLAY_NAME:=$(_vjq '.agent_display_name // .agentDisplayName // .display_name // .displayName // empty')}"
-: "${AGENT_DESCRIPTION:=$(_vjq '.agent_description // .agentDescription // .description // empty')}"
-: "${SUBAGENT_DESCRIPTION:=$(_vjq '.agent_description // .agentDescription // .description // empty')}"
-: "${TASK_DESC:=$(_vjq '.task_description // .taskDescription // .task // empty')}"
-: "${AGENT_MESSAGE:=$(_vjq '.message // empty')}"
-: "${MESSAGE:=$(_vjq '.error.message // .message // empty')}"
-: "${SUMMARY:=$(_vjq '.summary // empty')}"
+: "${AGENT_NAME:=$(_vjq '.agent_name // .agentName // .active_agent // .activeAgent // .active_agent.name // .activeAgent.name // .active_agent.id // .activeAgent.id // .agent.name // .agent.id // .agent.slug // .actor.name // .name // empty')}"
+: "${AGENT_TYPE:=$(_vjq '.agent_type // .agentType // .active_agent.type // .activeAgent.type // .toolArgs.agent_type // .tool_args.agent_type // empty')}"
+: "${AGENT_TASK_NAME:=$(_vjq '.toolArgs.name // .tool_args.name // .task_name // .taskName // .task_description // .taskDescription // .task // .description // .name // empty')}"
+: "${SUBAGENT_NAME:=$(_vjq '.subagent_name // .subagentName // .subagent.name // .subagent.id // .agent_name // .agentName // .agent.name // empty')}"
+: "${AGENT_ID:=$(_vjq '.agent_id // .agentId // .agent.id // .actor.id // empty')}"
+: "${SUBAGENT_ID:=$(_vjq '.subagent_id // .subagentId // .subagent.id // empty')}"
+: "${AGENT_DISPLAY_NAME:=$(_vjq '.agent_display_name // .agentDisplayName // .agent.display_name // .agent.displayName // .actor.display_name // .display_name // .displayName // empty')}"
+: "${SUBAGENT_DISPLAY_NAME:=$(_vjq '.subagent_display_name // .subagentDisplayName // .subagent.display_name // .subagent.displayName // .agent_display_name // .agentDisplayName // .display_name // .displayName // empty')}"
+: "${AGENT_DESCRIPTION:=$(_vjq '.agent_description // .agentDescription // .agent.description // .actor.description // .description // empty')}"
+: "${SUBAGENT_DESCRIPTION:=$(_vjq '.subagent_description // .subagentDescription // .subagent.description // .agent_description // .agentDescription // .description // empty')}"
+: "${TASK_DESC:=$(_vjq '.task_description // .taskDescription // .task // .toolArgs.description // .tool_args.description // empty')}"
+: "${AGENT_MESSAGE:=$(_vjq '.agent.message // .agent.finalMessage // .agent.output.summary // .message // empty')}"
+: "${MESSAGE:=$(_vjq '.error.message // .message // .output.message // .final_message // .finalMessage // empty')}"
+: "${SUMMARY:=$(_vjq '.summary // .output.summary // .final_summary // .finalSummary // empty')}"
 : "${RESULT:=$(_vjq '.result // empty')}"
-: "${REASON:=$(_vjq '.reason // empty')}"
+: "${REASON:=$(_vjq '.reason // .stopReason // .stop_reason // .resultType // .status // empty')}"
 : "${STATUS:=$(_vjq '.toolResult.resultType // .status // .tool_status // empty')}"
 : "${ERROR_SUMMARY:=$(_vjq '.error.message // .error_summary // .errorSummary // empty')}"
 : "${TOOL_ARGS:=$(_vjq '.toolArgs // empty')}"
@@ -40,7 +44,7 @@ _vjq() { echo "$_VIZ_STDIN" | jq -r "$1" 2>/dev/null || true; }
 
 # --- Visualizer emit (auto-wired by bootstrap-existing-repo) ---
 if [ -x "${REPO_ROOT}/.visualizer/emit-event.sh" ]; then
-  _VIZ_PAYLOAD=$(jq -nc --arg agent "${AGENT_NAME:-${SUBAGENT_NAME:-${AGENT_DISPLAY_NAME:-${SUBAGENT_DISPLAY_NAME:-${TASK_DESC:-unknown}}}}}" --arg task "${TASK_DESC:-}" --arg message "${AGENT_MESSAGE:-${MESSAGE:-${SUMMARY:-${RESULT:-}}}}" '{"agentName":$agent,"taskDescription":$task,"message":$message,"summary":$message,"result":$message}' 2>/dev/null || echo '{}')
+  _VIZ_PAYLOAD=$(jq -nc --arg agent "${AGENT_NAME:-${SUBAGENT_NAME:-${AGENT_TYPE:-${AGENT_TASK_NAME:-${AGENT_DISPLAY_NAME:-${SUBAGENT_DISPLAY_NAME:-${TASK_DESC:-unknown}}}}}}}" --arg task "${TASK_DESC:-}" --arg message "${AGENT_MESSAGE:-${MESSAGE:-${SUMMARY:-${RESULT:-${TASK_DESC:-}}}}}" '{"agentName":$agent,"taskDescription":$task,"description":$task,"message":$message,"summary":$message,"result":$message}' 2>/dev/null || echo '{}')
   "${REPO_ROOT}/.visualizer/emit-event.sh" subagentStop "${_VIZ_PAYLOAD}" "${SESSION_ID:-run-$$}" >&2 || true
 fi
 

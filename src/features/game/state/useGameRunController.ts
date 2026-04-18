@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { AudioSetupStatus } from '@features/audio';
 import { useGameplayAudioInput } from '@features/audio';
-import { getDifficultyCalibration, type DifficultyId } from '@shared/config/difficulty';
+import { buildVoiceProfileDifficultyWindows, getDifficultyCalibration, type DifficultyId } from '@shared/config/difficulty';
+import { loadVoiceProfile } from '@shared/persistence/voice-profile-storage';
 import {
   createGameplayAudioFrame,
   createPromptSequence,
@@ -42,7 +43,17 @@ export function useGameRunController(difficultyId: DifficultyId): GameRunControl
   const previousDifficultyRef = useRef(difficultyId);
   const currentPrompt = selectCurrentPrompt(state);
   const calibration = useMemo(() => getDifficultyCalibration(difficultyId), [difficultyId]);
-  const audio = useGameplayAudioInput(currentPrompt?.noteId ?? null, calibration);
+
+  // Load voice profile once and build custom windows for the active difficulty.
+  // When a profile exists, gameplay uses the player's captured frequencies
+  // instead of standard A4-derived note windows.
+  const customWindows = useMemo(() => {
+    const { profile } = loadVoiceProfile();
+    if (!profile) return undefined;
+    return buildVoiceProfileDifficultyWindows(profile, difficultyId);
+  }, [difficultyId]);
+
+  const audio = useGameplayAudioInput(currentPrompt?.noteId ?? null, calibration, customWindows);
   const gameplayAudioFrameRef = useRef<GameplayAudioFrame | null>(null);
 
   useEffect(() => {

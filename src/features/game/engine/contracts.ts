@@ -49,6 +49,8 @@ export interface PromptState {
   currentPrompt: PromptDefinition | null;
   promptAgeMs: number;
   holdProgressMs: number;
+  /** Remaining breathing pause (ms) before the next note activates. */
+  breathRemainingMs: number;
   promptsPresented: number;
   promptsCleared: number;
 }
@@ -76,6 +78,8 @@ export interface GameplayEventDefinition {
   altitudePerSecond: number;
   stabilityPerSecond: number;
   scoreDelta: number;
+  /** Minimum elapsed run time (ms) before this event can first trigger. */
+  firstAppearanceMs?: number;
 }
 
 export interface GameplayEventInstance extends GameplayEventDefinition {
