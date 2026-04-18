@@ -13,8 +13,8 @@ export function useGameplayAudioInput(
   const pitchMonitor = usePitchMonitor(microphone.session, calibration, undefined, customWindows);
   const setup = useMemo(() => selectAudioSetupStatus(microphone.state), [microphone.state]);
   const target = useMemo(
-    () => selectPitchTargetSnapshot(pitchMonitor.latestSample, targetNoteId, calibration),
-    [calibration, pitchMonitor.latestSample, targetNoteId],
+    () => selectPitchTargetSnapshot(pitchMonitor.latestSample, targetNoteId, calibration, customWindows),
+    [calibration, customWindows, pitchMonitor.latestSample, targetNoteId],
   );
 
   return {

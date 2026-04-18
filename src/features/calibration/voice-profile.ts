@@ -92,16 +92,41 @@ export function buildSolfegeWindowsFromVoiceProfile(
   profile: VoiceProfile,
   centsTolerance: number,
 ): ReadonlyArray<SolfegeWindow> {
-  return SOLFEGE_NOTE_IDS.map((noteId) => {
+  // Build raw windows: expand tolerance bounds to include the player's
+  // actual captured min/max so their full vocal range is always accepted.
+  const rawWindows = SOLFEGE_NOTE_IDS.map((noteId) => {
     const definition = SOLFEGE_NOTE_DEFINITIONS.find((d) => d.id === noteId)!;
     const calibrationData = profile.notes[noteId];
     const centerFrequencyHz = calibrationData.medianFrequencyHz;
+    const toleranceMin = toFrequencyOffset(centerFrequencyHz, -centsTolerance);
+    const toleranceMax = toFrequencyOffset(centerFrequencyHz, centsTolerance);
 
     return {
       ...definition,
       centerFrequencyHz,
-      minFrequencyHz: toFrequencyOffset(centerFrequencyHz, -centsTolerance),
-      maxFrequencyHz: toFrequencyOffset(centerFrequencyHz, centsTolerance),
+      minFrequencyHz: Math.min(toleranceMin, calibrationData.minFrequencyHz),
+      maxFrequencyHz: Math.max(toleranceMax, calibrationData.maxFrequencyHz),
     };
+  });
+
+  // Clip each window so it doesn't extend past the geometric midpoint to
+  // its neighbours.  This prevents ambiguous overlap while still honouring
+  // the player's captured range as much as possible.
+  return rawWindows.map((window, i) => {
+    let { minFrequencyHz, maxFrequencyHz } = window;
+
+    if (i > 0) {
+      const prevCenter = rawWindows[i - 1].centerFrequencyHz;
+      const midpoint = Math.sqrt(prevCenter * window.centerFrequencyHz);
+      minFrequencyHz = Math.max(minFrequencyHz, midpoint);
+    }
+
+    if (i < rawWindows.length - 1) {
+      const nextCenter = rawWindows[i + 1].centerFrequencyHz;
+      const midpoint = Math.sqrt(window.centerFrequencyHz * nextCenter);
+      maxFrequencyHz = Math.min(maxFrequencyHz, midpoint);
+    }
+
+    return { ...window, minFrequencyHz, maxFrequencyHz };
   });
 }

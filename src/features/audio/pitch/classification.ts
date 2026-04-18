@@ -120,10 +120,14 @@ export function classifyPitchSample(
     };
   }
 
+  // Use nearest-window-by-center to avoid order-dependent ambiguity when
+  // windows overlap (common with wide tolerance or voice-profile windows).
   const matchedWindow =
-    windows.find(
-      (window) => frequencyHz >= window.minFrequencyHz && frequencyHz <= window.maxFrequencyHz,
-    ) ?? null;
+    nearestWindow &&
+    frequencyHz >= nearestWindow.minFrequencyHz &&
+    frequencyHz <= nearestWindow.maxFrequencyHz
+      ? nearestWindow
+      : null;
 
   if (!matchedWindow) {
     return {

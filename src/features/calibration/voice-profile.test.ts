@@ -160,16 +160,21 @@ describe('buildSolfegeWindowsFromVoiceProfile', () => {
     }
   });
 
-  it('each window min/max are computed using cents tolerance formula', () => {
+  it('each window encompasses both tolerance bounds and captured range', () => {
     const windows = buildSolfegeWindowsFromVoiceProfile(profile, centsTolerance);
 
     for (const window of windows) {
       const center = window.centerFrequencyHz;
       const expectedMin = toFrequencyOffset(center, -centsTolerance);
       const expectedMax = toFrequencyOffset(center, centsTolerance);
+      const captured = profile.notes[window.id];
 
-      expect(window.minFrequencyHz).toBeCloseTo(expectedMin, 10);
-      expect(window.maxFrequencyHz).toBeCloseTo(expectedMax, 10);
+      // Window must include at least the tolerance-derived bounds
+      expect(window.minFrequencyHz).toBeLessThanOrEqual(expectedMin);
+      expect(window.maxFrequencyHz).toBeGreaterThanOrEqual(expectedMax);
+      // Window must also include the captured range
+      expect(window.minFrequencyHz).toBeLessThanOrEqual(captured.minFrequencyHz);
+      expect(window.maxFrequencyHz).toBeGreaterThanOrEqual(captured.maxFrequencyHz);
       // Sanity: min < center < max
       expect(window.minFrequencyHz).toBeLessThan(center);
       expect(window.maxFrequencyHz).toBeGreaterThan(center);
@@ -190,9 +195,19 @@ describe('buildSolfegeWindowsFromVoiceProfile', () => {
     }
   });
 
-  it('different cents tolerances produce different min/max bounds', () => {
-    const narrowWindows = buildSolfegeWindowsFromVoiceProfile(profile, 25);
-    const wideWindows = buildSolfegeWindowsFromVoiceProfile(profile, 75);
+  it('different cents tolerances produce different min/max bounds with narrow captured range', () => {
+    // Use narrow captured range so tolerance is the deciding factor
+    const narrowProfile = createTestVoiceProfile();
+    for (const id of SOLFEGE_NOTE_IDS) {
+      narrowProfile.notes[id] = {
+        ...narrowProfile.notes[id],
+        minFrequencyHz: narrowProfile.notes[id].medianFrequencyHz - 1,
+        maxFrequencyHz: narrowProfile.notes[id].medianFrequencyHz + 1,
+      };
+    }
+
+    const narrowWindows = buildSolfegeWindowsFromVoiceProfile(narrowProfile, 25);
+    const wideWindows = buildSolfegeWindowsFromVoiceProfile(narrowProfile, 75);
 
     for (let i = 0; i < narrowWindows.length; i++) {
       // Same center frequency
@@ -201,5 +216,30 @@ describe('buildSolfegeWindowsFromVoiceProfile', () => {
       expect(narrowWindows[i].minFrequencyHz).toBeGreaterThan(wideWindows[i].minFrequencyHz);
       expect(narrowWindows[i].maxFrequencyHz).toBeLessThan(wideWindows[i].maxFrequencyHz);
     }
+  });
+
+  it('clips windows to geometric midpoints between adjacent notes', () => {
+    // Create a profile with overlapping captured ranges
+    const overlappingProfile = createTestVoiceProfile({
+      do: 250, re: 260, mi: 310, fa: 340, sol: 370, la: 420, ti: 470,
+    });
+    // Make captured ranges very wide so they'd overlap without clipping
+    overlappingProfile.notes.do.minFrequencyHz = 230;
+    overlappingProfile.notes.do.maxFrequencyHz = 270;
+    overlappingProfile.notes.re.minFrequencyHz = 240;
+    overlappingProfile.notes.re.maxFrequencyHz = 280;
+
+    const windows = buildSolfegeWindowsFromVoiceProfile(overlappingProfile, 50);
+    const doWindow = windows.find((w) => w.id === 'do')!;
+    const reWindow = windows.find((w) => w.id === 're')!;
+
+    // The geometric midpoint between do (250) and re (260) = sqrt(250*260) ≈ 254.95
+    const midpoint = Math.sqrt(250 * 260);
+    // do's max should be clipped to the midpoint
+    expect(doWindow.maxFrequencyHz).toBeLessThanOrEqual(midpoint + 0.01);
+    // re's min should be clipped to the midpoint
+    expect(reWindow.minFrequencyHz).toBeGreaterThanOrEqual(midpoint - 0.01);
+    // No overlap
+    expect(doWindow.maxFrequencyHz).toBeLessThanOrEqual(reWindow.minFrequencyHz);
   });
 });
