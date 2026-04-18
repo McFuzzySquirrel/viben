@@ -87,9 +87,12 @@ export function useCalibrationCapture(
 
     const sample = pitchMonitor.latestSample;
 
-    // Accept any stable note classification — we record whatever frequency
-    // the user is singing regardless of which note it maps to.
-    if (sample.classification === 'note' && sample.frequencyHz !== null) {
+    // Accept ANY detected frequency — during calibration we record whatever
+    // the user sings, even if it doesn't match a predefined solfege window.
+    // Silence (null freq) and unusable (null freq) are already excluded by
+    // the frequencyHz !== null check.  The global range filter (80–1100 Hz)
+    // still applies inside classifyPitchSample, so noise is rejected.
+    if (sample.frequencyHz !== null) {
       setSamples((prev) => {
         // Stop collecting once we hit the threshold — the user will
         // confirm or the UI will auto-advance.

@@ -331,6 +331,41 @@ describe('useCalibrationCapture', () => {
     expect(result.current.holdProgress).toBe(1);
   });
 
+  // ── out-of-range acceptance ─────────────────────────────────────────
+
+  it('collects samples classified as out-of-range (not just note)', () => {
+    const customConfig = { minHoldSamples: 5 };
+    const { result, rerender } = renderHook(() =>
+      useCalibrationCapture(customConfig),
+    );
+
+    act(() => {
+      result.current.startCapture();
+    });
+
+    // Feed out-of-range samples (frequency outside predefined windows
+    // but within global bounds — this is the calibration use case)
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        latestSampleRef.current = {
+          capturedAt: Date.now(),
+          frequencyHz: 180 + i * 0.1, // 180 Hz doesn't match any standard window
+          rms: 0.1,
+          peak: 0.5,
+          classification: 'out-of-range',
+          noteId: null,
+          nearestNoteId: 'do',
+          centsFromNearest: -200,
+          matchedWindow: null,
+        };
+        rerender();
+      });
+    }
+
+    expect(result.current.currentSamples.length).toBe(5);
+    expect(result.current.holdProgress).toBe(1);
+  });
+
   // ── DEFAULT_CALIBRATION_CONFIG ────────────────────────────────────────
 
   it('exports DEFAULT_CALIBRATION_CONFIG with expected minHoldSamples', () => {
