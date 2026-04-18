@@ -14,6 +14,8 @@ export type DifficultyId = (typeof DIFFICULTY_IDS)[number];
 export interface DifficultyTuningConfig {
   noteWindowCentsTolerance: number;
   promptCadenceMs: number;
+  /** Pause (ms) between notes for the player to breathe. */
+  breathGapMs: number;
   hazardCadenceMs: number;
   boostCadenceMs: number;
   scoreMultiplier: number;
@@ -44,6 +46,7 @@ const DIFFICULTY_DEFINITION_MAP: Readonly<Record<DifficultyId, DifficultyDefinit
     tuning: {
       noteWindowCentsTolerance: 65,
       promptCadenceMs: 2800,
+      breathGapMs: 900,
       hazardCadenceMs: 9500,
       boostCadenceMs: 12000,
       scoreMultiplier: 1,
@@ -57,6 +60,7 @@ const DIFFICULTY_DEFINITION_MAP: Readonly<Record<DifficultyId, DifficultyDefinit
     tuning: {
       noteWindowCentsTolerance: 45,
       promptCadenceMs: 2200,
+      breathGapMs: 600,
       hazardCadenceMs: 8000,
       boostCadenceMs: 11000,
       scoreMultiplier: 1.15,
@@ -70,6 +74,7 @@ const DIFFICULTY_DEFINITION_MAP: Readonly<Record<DifficultyId, DifficultyDefinit
     tuning: {
       noteWindowCentsTolerance: 35,
       promptCadenceMs: 1700,
+      breathGapMs: 350,
       hazardCadenceMs: 6500,
       boostCadenceMs: 10000,
       scoreMultiplier: 1.3,

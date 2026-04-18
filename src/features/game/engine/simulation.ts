@@ -23,8 +23,13 @@ export function resolveGameplayStep(input: GameplayStepInput): GameplayStepResul
     tuning: input.tuning,
   });
   const eventResult = resolveGameplayEvent(input);
+  const isBreathing = promptResult.promptOutcome === 'breathing';
 
-  const baseResponse = getBaseResponse(input.audioFrame?.matchState ?? 'missing', input);
+  // During breathing gaps, singing input is neutral (no reward or penalty).
+  // Environmental events (hazards/boosts) still apply.
+  const baseResponse = isBreathing
+    ? { altitudeDelta: 0, stabilityDelta: 0, scoreRate: 0, thrust: 0 }
+    : getBaseResponse(input.audioFrame?.matchState ?? 'missing', input);
   const eventAltitudeDelta = (eventResult.activeEvent?.altitudePerSecond ?? 0) * seconds;
   const eventStabilityDelta = (eventResult.activeEvent?.stabilityPerSecond ?? 0) * seconds;
   const altitudeDelta = baseResponse.altitudeDelta + eventAltitudeDelta;
@@ -49,13 +54,17 @@ export function resolveGameplayStep(input: GameplayStepInput): GameplayStepResul
       criticalStabilityThreshold: input.tuning.criticalStabilityThreshold,
     }),
   } as const;
-  const metrics = updateMetrics(input.metrics, {
-    elapsedMs: input.elapsedMs,
-    matchState: input.audioFrame?.matchState ?? 'missing',
-    eventKind: eventResult.eventHistoryEntry?.kind ?? null,
-    altitude: nextAltitude,
-    stability: nextStability,
-  });
+
+  // Freeze metrics during breathing — the player shouldn't be tracked while pausing.
+  const metrics = isBreathing
+    ? input.metrics
+    : updateMetrics(input.metrics, {
+        elapsedMs: input.elapsedMs,
+        matchState: input.audioFrame?.matchState ?? 'missing',
+        eventKind: eventResult.eventHistoryEntry?.kind ?? null,
+        altitude: nextAltitude,
+        stability: nextStability,
+      });
 
   if (nextAltitude >= input.tuning.targetAltitude) {
     return {

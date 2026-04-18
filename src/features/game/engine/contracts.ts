@@ -49,6 +49,8 @@ export interface PromptState {
   currentPrompt: PromptDefinition | null;
   promptAgeMs: number;
   holdProgressMs: number;
+  /** Remaining breathing pause (ms) before the next note activates. */
+  breathRemainingMs: number;
   promptsPresented: number;
   promptsCleared: number;
 }
