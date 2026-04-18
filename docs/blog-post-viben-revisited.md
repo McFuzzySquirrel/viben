@@ -16,7 +16,7 @@ This is the story of revisiting that repo, what I found, what I built with [Agen
 
 ## Table of Contents
 
-- [The Original: A Weekend Experiment (November 2024)](#the-original-a-weekend-experiment-november-2024)
+- [The Original: A Hackathon Challenge (November 2024)](#the-original-a-hackathon-challenge-november-2024)
 - [The Question That Changed Everything](#the-question-that-changed-everything)
 - [Bringing Agent Forge to a Real Project](#bringing-agent-forge-to-a-real-project)
 - [What Got Built: Vib'N Rocket to the Moon](#what-got-built-vibn-rocket-to-the-moon)
@@ -27,11 +27,13 @@ This is the story of revisiting that repo, what I found, what I built with [Agen
 
 ---
 
-## The Original: A Weekend Experiment (November 2024)
+## The Original: A Hackathon Challenge (November 2024)
 
-Back in November 2024, I built **Vib'N** — a simple React app that listened to your microphone, detected pitch using the YIN algorithm, and matched your voice to solfege notes (Do, Re, Mi, Fa, Sol, La, Ti). It showed a circular pitch needle, colored bars for each note, and let you adjust frequency ranges manually.
+It started with a challenge. I was hosting a hackathon, and someone threw down the gauntlet: *"Can you build an app that helps people sing, in an afternoon?"*
 
-It was a classic weekend project: interesting enough to build, not polished enough to ship.
+This was November 2024. AI-assisted coding was still in its early days — useful, but nowhere near what it is today. We took the challenge anyway and built **Vib'N**: a simple React app that listened to your microphone, detected pitch using the YIN algorithm, and matched your voice to solfege notes (Do, Re, Mi, Fa, Sol, La, Ti). It showed a circular pitch needle, colored bars for each note, and let you adjust frequency ranges manually.
+
+It was rough, it was fun, and it proved the concept. We got something working in an afternoon. That alone felt like a win.
 
 **The original tech stack:**
 - React 17 with Create React App
@@ -41,6 +43,8 @@ It was a classic weekend project: interesting enough to build, not polished enou
 - A pitch needle, some colored bars, and a file upload feature that never quite worked
 
 It did one thing: listen to your voice and tell you which note you were singing. That was it. It worked, mostly, and then life moved on. The repo sat untouched for over a year.
+
+But looking back, that hackathon moment is what makes the rest of this story interesting. The same challenge — "can you build something with voice in an afternoon?" — asked today, with the tools and skills I've picked up since, produces a dramatically different answer.
 
 ---
 
