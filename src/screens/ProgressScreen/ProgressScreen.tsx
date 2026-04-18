@@ -195,13 +195,14 @@ export function ProgressScreen() {
         </article>
       </div>
 
-      {progressionSnapshot.save.milestones.length > 0 && (
+      {progressionSnapshot.save.milestones.length > 0 ? (
         <div className="screen-grid">
           {(['participation', 'performance', 'difficulty'] as const).map((kind) => {
             const milestones = milestonesByKind[kind];
             if (!milestones || milestones.length === 0) {
               return null;
             }
+            const kindIcon = kind === 'performance' ? '⭐' : kind === 'difficulty' ? '🎮' : '🏅';
             return (
               <article className="panel" key={kind} aria-label={`${milestoneKindLabels[kind]} milestones`}>
                 <div className="panel__header">
@@ -211,19 +212,42 @@ export function ProgressScreen() {
                   </div>
                   <StatusBadge label={`${milestones.length} earned`} tone="success" />
                 </div>
-                <ul className="feature-list">
+                <div className="milestone-grid">
                   {milestones.map((m) => {
                     const def = getMilestoneDefinition(m.id);
                     return (
-                      <li key={m.id}>
-                        <strong>{def?.label ?? m.id}</strong> — {def?.description ?? m.kind}
-                      </li>
+                      <div className="milestone-card" key={m.id}>
+                        <span className="milestone-card__icon" aria-hidden="true">{kindIcon}</span>
+                        <div className="milestone-card__body">
+                          <span className="milestone-card__label">{def?.label ?? m.id}</span>
+                          <span className="milestone-card__description">{def?.description ?? m.kind}</span>
+                        </div>
+                      </div>
                     );
                   })}
-                </ul>
+                </div>
               </article>
             );
           })}
+        </div>
+      ) : (
+        <div className="screen-grid">
+          <article className="panel" aria-label="Milestones">
+            <div className="panel__header">
+              <div>
+                <p className="screen__eyebrow">Milestones</p>
+                <h3>Achievements</h3>
+              </div>
+              <StatusBadge label="None yet" tone="info" />
+            </div>
+            <div className="empty-state">
+              <span className="empty-state__icon" aria-hidden="true">🏅</span>
+              <p className="empty-state__heading">No milestones earned yet</p>
+              <p className="empty-state__copy">
+                Complete runs, reach score targets, and try new difficulties to unlock your first achievements.
+              </p>
+            </div>
+          </article>
         </div>
       )}
 
@@ -231,7 +255,6 @@ export function ProgressScreen() {
         {difficultyRecords.map((record) => {
           const completionRate = getCompletionRate(progressionSnapshot.save.runHistory, record.difficultyId);
           const trend = getRecentTrend(progressionSnapshot.save.runHistory, record.difficultyId);
-          const trendLabel = trend === 'improving' ? '📈 Improving' : trend === 'declining' ? '📉 Declining' : trend === 'stable' ? '➡️ Stable' : '—';
 
           return (
           <article className="panel" key={record.difficultyId}>
@@ -277,7 +300,26 @@ export function ProgressScreen() {
               </div>
               <div>
                 <dt>Recent trend</dt>
-                <dd>{trendLabel}</dd>
+                <dd>
+                  {trend === 'improving' ? (
+                    <span className="trend-badge trend-badge--improving">
+                      <em className="trend-badge__arrow" aria-hidden="true">▲</em>
+                      Improving
+                    </span>
+                  ) : trend === 'declining' ? (
+                    <span className="trend-badge trend-badge--declining">
+                      <em className="trend-badge__arrow" aria-hidden="true">▼</em>
+                      Declining
+                    </span>
+                  ) : trend === 'stable' ? (
+                    <span className="trend-badge trend-badge--stable">
+                      <em className="trend-badge__arrow" aria-hidden="true">▸</em>
+                      Stable
+                    </span>
+                  ) : (
+                    '—'
+                  )}
+                </dd>
               </div>
             </dl>
           </article>

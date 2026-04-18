@@ -228,7 +228,9 @@ export function GameScreen() {
             <StatusBadge label={`Difficulty: ${selectedDifficulty.label}`} tone="success" />
             <StatusBadge label={runStatus.label} tone={runStatus.tone} />
             <StatusBadge label={`Mic: ${audio.setup.stage}`} tone={microphoneTone} />
-            <StatusBadge label={`Score: ${hud?.score ?? 0}`} tone="info" />
+            <span aria-live="polite" aria-atomic="true">
+              <StatusBadge label={`Score: ${hud?.score ?? 0}`} tone="info" />
+            </span>
           </div>
 
           <p

@@ -27,9 +27,42 @@ function getMatchSymbol(matchState: PitchTargetMatchState) {
     case 'correct':
       return '✓';
     case 'incorrect':
-      return '↕';
+      return '✗';
     default:
-      return '🎤';
+      return '⊘';
+  }
+}
+
+function getMatchStateLabel(matchState: PitchTargetMatchState) {
+  switch (matchState) {
+    case 'correct':
+      return 'Correct note';
+    case 'incorrect':
+      return 'Wrong note';
+    default:
+      return 'Need input';
+  }
+}
+
+function getSolfegeGlowClass(matchState: PitchTargetMatchState) {
+  switch (matchState) {
+    case 'correct':
+      return 'prompt-card__solfege--correct';
+    case 'incorrect':
+      return 'prompt-card__solfege--incorrect';
+    default:
+      return 'prompt-card__solfege--waiting';
+  }
+}
+
+function getSymbolClass(matchState: PitchTargetMatchState) {
+  switch (matchState) {
+    case 'correct':
+      return 'prompt-card__symbol prompt-card__symbol--correct';
+    case 'incorrect':
+      return 'prompt-card__symbol prompt-card__symbol--incorrect';
+    default:
+      return 'prompt-card__symbol prompt-card__symbol--waiting';
   }
 }
 
@@ -52,12 +85,15 @@ export function PromptFocusCard({
         <StatusBadge label={feedbackLabel} tone={getMatchTone(matchState)} />
       </div>
 
-      <p className="prompt-card__solfege">
-        <span aria-hidden="true" className="prompt-card__symbol">
-          {getMatchSymbol(matchState)}
-        </span>
-        <span>{promptLabel}</span>
-      </p>
+      <div aria-live="polite" aria-atomic="true">
+        <p className={`prompt-card__solfege ${getSolfegeGlowClass(matchState)}`}>
+          <span aria-hidden="true" className={getSymbolClass(matchState)}>
+            {getMatchSymbol(matchState)}
+          </span>
+          <span>{promptLabel}</span>
+        </p>
+        <p className="sr-only">{getMatchStateLabel(matchState)}: sing {promptLabel}</p>
+      </div>
       <p className="prompt-card__pitch">{promptScientificPitch} target window</p>
 
       <p aria-live="polite" className="prompt-card__feedback">

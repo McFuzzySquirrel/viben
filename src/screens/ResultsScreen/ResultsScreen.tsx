@@ -220,9 +220,9 @@ export function ResultsScreen() {
         ))}
       </div>
 
-      {(newMilestones.length > 0 || (personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak))) && (
+      {(newMilestones.length > 0 || (personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak))) ? (
         <div className="screen-grid">
-          {newMilestones.length > 0 && (
+          {newMilestones.length > 0 ? (
             <article className="panel" aria-label="New milestones">
               <div className="panel__header">
                 <div>
@@ -231,20 +231,25 @@ export function ResultsScreen() {
                 </div>
                 <StatusBadge label={`${newMilestones.length} new`} tone="success" />
               </div>
-              <ul className="feature-list">
+              <div className="milestone-grid">
                 {newMilestones.map((m) => {
                   const def = getMilestoneDefinition(m.id);
+                  const icon = m.kind === 'performance' ? '⭐' : m.kind === 'difficulty' ? '🎮' : '🏅';
                   return (
-                    <li key={m.id}>
-                      <strong>{def?.label ?? m.id}</strong> — {def?.description ?? `Milestone ${m.kind}`}
-                    </li>
+                    <div className="milestone-card milestone-card--new" key={m.id}>
+                      <span className="milestone-card__icon" aria-hidden="true">{icon}</span>
+                      <div className="milestone-card__body">
+                        <span className="milestone-card__label">{def?.label ?? m.id}</span>
+                        <span className="milestone-card__description">{def?.description ?? `Milestone ${m.kind}`}</span>
+                      </div>
+                    </div>
                   );
                 })}
-              </ul>
+              </div>
             </article>
-          )}
+          ) : null}
 
-          {personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak) && (
+          {personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak) ? (
             <article className="panel" aria-label="Personal bests">
               <div className="panel__header">
                 <div>
@@ -253,15 +258,49 @@ export function ResultsScreen() {
                 </div>
                 <StatusBadge label="New record!" tone="success" />
               </div>
-              <ul className="feature-list">
-                {personalBests.isNewBestScore && <li>🏆 New best score on {selectedDifficulty.label}!</li>}
-                {personalBests.isNewBestAccuracy && <li>🎯 New best accuracy on {selectedDifficulty.label}!</li>}
-                {personalBests.isNewBestStreak && <li>🔥 New best streak on {selectedDifficulty.label}!</li>}
-              </ul>
+              <div className="pb-grid">
+                {personalBests.isNewBestScore && (
+                  <span className="pb-badge pb-badge--trophy">
+                    <em className="pb-badge__icon" aria-hidden="true">🏆</em>
+                    New best score on {selectedDifficulty.label}
+                  </span>
+                )}
+                {personalBests.isNewBestAccuracy && (
+                  <span className="pb-badge pb-badge--accuracy">
+                    <em className="pb-badge__icon" aria-hidden="true">🎯</em>
+                    New best accuracy on {selectedDifficulty.label}
+                  </span>
+                )}
+                {personalBests.isNewBestStreak && (
+                  <span className="pb-badge pb-badge--streak">
+                    <em className="pb-badge__icon" aria-hidden="true">🔥</em>
+                    New best streak on {selectedDifficulty.label}
+                  </span>
+                )}
+              </div>
             </article>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : routeRun ? (
+        <div className="screen-grid">
+          <article className="panel" aria-label="Milestones">
+            <div className="panel__header">
+              <div>
+                <p className="screen__eyebrow">Achievements</p>
+                <h3>Milestones</h3>
+              </div>
+              <StatusBadge label="Keep going" tone="info" />
+            </div>
+            <div className="empty-state">
+              <span className="empty-state__icon" aria-hidden="true">🚀</span>
+              <p className="empty-state__heading">No new milestones this run</p>
+              <p className="empty-state__copy">
+                Keep flying — milestones unlock as you hit score targets, complete runs, and try harder difficulties.
+              </p>
+            </div>
+          </article>
+        </div>
+      ) : null}
 
       <div className="screen-grid">
         <article className="panel">
