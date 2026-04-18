@@ -30,6 +30,41 @@ const BASE_GAMEPLAY_TUNING: Omit<GameplayTuning, keyof DifficultyTuningConfig | 
   completionBonus: 1000,
 };
 
+/**
+ * Difficulty-specific overrides applied on top of BASE_GAMEPLAY_TUNING.
+ *
+ * Easy mode is significantly more forgiving — full starting stability,
+ * halved penalties, and faster recovery give casual players ~12 seconds
+ * of silence before failure instead of ~3.5 seconds.
+ */
+function getDifficultyGameplayOverrides(
+  difficultyId: DifficultyId,
+): Partial<Omit<GameplayTuning, keyof DifficultyTuningConfig | 'difficultyId'>> {
+  switch (difficultyId) {
+    case 'easy':
+      return {
+        startingStability: 100,
+        correctStabilityPerSecond: 25,
+        incorrectStabilityPenaltyPerSecond: 10,
+        missingStabilityPenaltyPerSecond: 8,
+        incorrectAltitudePenaltyPerSecond: 30,
+        missingAltitudePenaltyPerSecond: 35,
+        hazardStabilityPenaltyPerSecond: 8,
+        hazardAltitudePenaltyPerSecond: 30,
+        criticalStabilityThreshold: 15,
+      };
+    case 'hard':
+      return {
+        startingStability: 70,
+        correctStabilityPerSecond: 16,
+        incorrectStabilityPenaltyPerSecond: 28,
+        missingStabilityPenaltyPerSecond: 26,
+      };
+    default:
+      return {};
+  }
+}
+
 export const DEFAULT_HAZARD_ID = 'asteroid-drift';
 export const SOLAR_FLARE_HAZARD_ID = 'solar-flare';
 export const GRAVITY_WELL_HAZARD_ID = 'gravity-well';
@@ -46,6 +81,7 @@ export function buildGameplayTuning(
     difficultyId,
     ...definition.tuning,
     ...BASE_GAMEPLAY_TUNING,
+    ...getDifficultyGameplayOverrides(difficultyId),
     ...overrides,
   };
 }

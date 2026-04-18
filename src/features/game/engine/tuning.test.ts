@@ -69,18 +69,14 @@ describe('buildGameplayTuning — merged tuning per difficulty', () => {
     expect(tuning.difficultyId).toBe('normal');
   });
 
-  it('shares identical base values across all difficulties', () => {
+  it('easy mode is more forgiving than hard mode', () => {
     const easy = buildGameplayTuning('easy');
-    const normal = buildGameplayTuning('normal');
     const hard = buildGameplayTuning('hard');
 
-    // Base gameplay tuning values should be the same across difficulties
-    expect(easy.targetAltitude).toBe(normal.targetAltitude);
-    expect(normal.targetAltitude).toBe(hard.targetAltitude);
-    expect(easy.startingStability).toBe(normal.startingStability);
-    expect(normal.startingStability).toBe(hard.startingStability);
-    expect(easy.completionBonus).toBe(normal.completionBonus);
-    expect(normal.completionBonus).toBe(hard.completionBonus);
+    expect(easy.startingStability).toBeGreaterThan(hard.startingStability);
+    expect(easy.missingStabilityPenaltyPerSecond).toBeLessThan(hard.missingStabilityPenaltyPerSecond);
+    expect(easy.incorrectStabilityPenaltyPerSecond).toBeLessThan(hard.incorrectStabilityPenaltyPerSecond);
+    expect(easy.correctStabilityPerSecond).toBeGreaterThan(hard.correctStabilityPerSecond);
   });
 });
 

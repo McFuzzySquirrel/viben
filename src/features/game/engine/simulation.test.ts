@@ -39,7 +39,7 @@ describe('gameplay simulation', () => {
     expect(result.didClearPrompt).toBe(true);
     expect(result.promptState.promptsCleared).toBe(1);
     expect(result.rocket.altitude).toBeGreaterThan(0);
-    expect(result.rocket.stability).toBeGreaterThan(tuning.startingStability);
+    expect(result.rocket.stability).toBeGreaterThanOrEqual(tuning.startingStability);
     expect(result.scoreDelta).toBeGreaterThan(0);
     expect(result.outcome).toBe('active');
   });
@@ -153,13 +153,21 @@ describe('gameplay simulation', () => {
 });
 
 describe('updated base tuning values', () => {
-  it('uses the updated base tuning defaults', () => {
+  it('uses the expected base tuning defaults for normal difficulty', () => {
     const tuning = buildGameplayTuning('normal');
     expect(tuning.startingStability).toBe(80);
     expect(tuning.missingAltitudePenaltyPerSecond).toBe(80);
     expect(tuning.missingStabilityPenaltyPerSecond).toBe(22);
     expect(tuning.criticalStabilityThreshold).toBe(20);
     expect(tuning.completionBonus).toBe(1000);
+  });
+
+  it('easy difficulty has much gentler penalties than normal', () => {
+    const easy = buildGameplayTuning('easy');
+    expect(easy.startingStability).toBe(100);
+    expect(easy.missingStabilityPenaltyPerSecond).toBe(8);
+    expect(easy.incorrectStabilityPenaltyPerSecond).toBe(10);
+    expect(easy.missingAltitudePenaltyPerSecond).toBe(35);
   });
 
   it('enters critical mode at the updated lower threshold', () => {
