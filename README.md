@@ -1,68 +1,121 @@
-# Exploring Ideas Through Code: One Experiment at a Time
+<div align="center">
+  <img src="viben-logo.png" width="128" alt="Vib'N logo">
 
-## About These Projects
+  # Vib'N: Rocket to the Moon
 
-All of my projects exist for one main reason: **learning through experimentation**.  
-Each repository is a result of me asking questions like:  
-> “Is this possible?”  
-> “I wonder if…?”  
+  *A retro singing game where your voice powers a rocket to the moon*
 
-Sometimes they’re attempts to solve real problems I’ve come across, other times they’re just me following curiosity down a rabbit hole.  
-This is my **learning playground**, a space where I test ideas, try new things, and learn by doing.  
+  ![Node.js](https://img.shields.io/badge/Node.js->=20-3c873a?style=flat-square)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6?style=flat-square)
+  ![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square)
+  ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
 
-I share them here in case they help or inspire someone else.  
-So expect some projects to be **messy**, others **well-structured**, all of them are honest reflections of learning in progress.  
+  [Features](#features) • [Getting Started](#getting-started) • [How to Play](#how-to-play) • [Architecture](#architecture) • [Tech Stack](#tech-stack)
 
-Feel free to **use**, **modify**, or **build on** anything here. 
+</div>
 
-So here we go:
-
-# Vib'N
-
-Vib'N is an app that allows users to practice holding musical notes and track their progress over multiple sessions. Users can compete with each other to see who can hold notes the longest.
-
-## Note
-
-This is just something I am playing with, still alot of work to be done, so take it as it is with all its defects (I have just been putting in some test frequencies).
+Vib'N turns solfege note matching into an arcade-style rocket flight challenge. Sing **do, re, mi, fa, sol, la, ti** into your microphone to keep a rocket stable, dodge hazards, collect boosts, and reach the moon. Real-time browser pitch detection powers the entire experience — no server, no uploads, no accounts.
 
 ## Features
 
-- **Voice Input**: Detect and display the pitch of the user's voice in real-time.
-- **Session Tracking**: Track multiple sessions to observe improvement over time.
-- **Competition Mode**: Users can compete to see who can hold notes the longest.
-- **Pitch Visualization**: Visualize pitches with bars and a pitch needle.
-- **Session Statistics**: View detailed statistics for each session.
+- **Real-time pitch detection** — Browser-based microphone analysis with sub-150ms latency using the Web Audio API and `pitchfinder`
+- **Solfege gameplay** — Match prompted notes (do through ti) to control your rocket's altitude and stability
+- **Dynamic hazards and boosts** — Asteroid Drift, Solar Flare, Gravity Well, Starlight Burst, and Nebula Shield keep every run different
+- **Three difficulty levels** — Easy, Normal, and Hard with scaled note windows, prompt cadence, and event intensity
+- **Calibration presets** — Default, Sensitive, and Strict tuning profiles for different skill levels and environments
+- **Local progression** — Run history, personal bests, completion rates, trends, and 12 earnable milestones stored in `localStorage`
+- **Retro arcade HUD** — Monospace styling, glow effects, and smooth rocket animations with `prefers-reduced-motion` support
+- **Accessible by default** — Keyboard navigation, skip links, `aria-live` regions, WCAG AA contrast, and match indicators that don't rely on color alone
+- **Privacy-first** — All audio is processed locally and discarded. Only derived gameplay metrics are stored. No accounts, no cloud, no telemetry
 
-*Note: The **Upload Song** feature is currently under development.*
+## Getting Started
 
+### Prerequisites
 
-## Installation
+- [Node.js](https://nodejs.org/) v20.19 or later
+- A browser with microphone support (Chrome, Edge, or Firefox recommended)
 
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   ```
-2. Navigate to the project directory:
-   ```
-   cd react-vibration-app
-   ```
-3. Install the dependencies:
-   ```
-   npm install
-   ```
+### Installation
 
-## Usage
+```bash
+git clone https://github.com/McFuzzySquirrel/viben.git
+cd viben
+npm install
+```
 
-1. Start the development server:
-   ```
-   npm start
-   ```
-2. Open your browser and go to `http://localhost:3000`.
+### Development
 
-## Contributing
+```bash
+npm run dev
+```
 
-Contributions are welcome! Please open an issue or submit a pull request for any improvements or features.
+Open the URL shown in your terminal (usually `http://localhost:5173`).
 
-## License
+### Build and preview
 
-This project is licensed under the MIT License.
+```bash
+npm run build
+npm run preview
+```
+
+### Verify
+
+```bash
+npm run typecheck    # Type-check with TypeScript
+npm run test         # Run the full test suite (207 tests)
+npm run build        # Production build
+```
+
+## How to Play
+
+1. **Choose difficulty** — Pick Easy, Normal, or Hard on the home screen
+2. **Grant mic access** — Click "Check Mic" and allow browser microphone permission
+3. **Launch** — Hit the launch button to start your run
+4. **Sing the note** — A solfege prompt appears (e.g. "Do", "Re", "Mi") — sing it to climb
+5. **Stay stable** — Correct pitch boosts your rocket; wrong notes or silence cause drift and stability loss
+6. **Survive events** — Dodge hazards and ride boosts as they appear throughout the run
+7. **Reach the moon** — Hit the target altitude to complete the mission, or lose all stability to fail
+8. **Review results** — See your score, accuracy, milestones earned, and personal bests
+
+> [!TIP]
+> Start on **Easy** difficulty to get comfortable with the mic setup and note matching before moving up.
+
+## Architecture
+
+The project uses a feature-based module structure:
+
+```
+src/
+  app/              # Router, providers, shell
+  features/
+    audio/          # Microphone input, pitch detection, classification
+    game/
+      engine/       # Simulation, prompts, hazards, tuning (pure functions)
+      state/        # Reducer, selectors, run controller
+      components/   # HUD — meters, prompt card, rocket, status badge
+    progression/    # Milestones, selectors, run history
+    settings/       # Difficulty selection state
+  screens/          # Home, Game, Results, Progress, NotFound
+  shared/
+    config/         # Solfege windows, difficulty definitions, privacy
+    persistence/    # localStorage adapter with schema versioning
+  styles/           # Global CSS with retro dark theme
+```
+
+Key design decisions:
+
+- **Deterministic gameplay engine** — All simulation logic is pure functions, making it fully testable without browser APIs
+- **Feature isolation** — Audio, game, and progression modules communicate through typed contracts, not direct imports
+- **Privacy by architecture** — Audio buffers are never stored; only pitch classification results flow out of the audio module
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| UI | React 19, React Router 7 |
+| Language | TypeScript 6 |
+| Build | Vite 8 |
+| Pitch Detection | pitchfinder + Web Audio API |
+| Testing | Vitest + React Testing Library |
+| Persistence | localStorage (structured, versioned) |
+| Styling | CSS with custom properties (no framework) |
