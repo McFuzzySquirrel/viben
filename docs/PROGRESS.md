@@ -4,7 +4,7 @@
 **Mode**: Full Build  
 **Phase**: Phase 3 — Replayability and Polish  
 **Status**: ✅ Complete  
-**Last Updated**: 2026-04-15  
+**Last Updated**: 2026-04-18  
 **PRD**: `docs/PRD.md`
 
 ## Completed Tasks
@@ -42,11 +42,12 @@
 - [x] Phase 3, Task 3.4: Tune hazards, boosts, and run-loop balance (@gameplay-systems-engineer)
   - Files: `src/features/game/engine/contracts.ts`, `src/features/game/engine/tuning.ts`, `src/features/game/engine/simulation.ts`, `src/features/game/engine/simulation.test.ts`, `src/features/game/engine/index.ts`
 
-## Current Task
-None — all phases complete.
-
 - [x] Phase 3, Task 3.5: Final regression, cross-browser, and playtest validation (@qa-test-engineer)
   - Files: `src/app/AppShell.phase3.test.tsx`, `src/features/game/engine/tuning.test.ts`, `src/features/audio/pitch/calibration-integration.test.ts`, `docs/PLAYTEST-CHECKLIST.md`
+- [x] README.md: Comprehensive rewrite with project overview, features, getting started, architecture, and tech stack
+
+## Current Task
+None — all phases complete. Branch pushed to remote.
 
 ## Phase Dependencies
 
@@ -150,11 +151,7 @@ None — all phases complete.
 | `qa-test-engineer` | Test harness, acceptance/regression coverage, playtest and cross-browser validation | Phase 1 |
 
 ## Remaining
-- [ ] Phase 3, Task 3.1: Implement difficulty progression and comparison
-- [ ] Phase 3, Task 3.2: Polish HUD and accessibility/readability
-- [ ] Phase 3, Task 3.3: Refine calibration and latency behavior
-- [ ] Phase 3, Task 3.4: Tune hazards, boosts, and run-loop balance
-- [ ] Phase 3, Task 3.5: Final regression, cross-browser, and playtest validation
+None — all tasks complete.
 
 ## Blockers
 - None
@@ -175,3 +172,10 @@ None — all phases complete.
 - Task 2.3 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 35 total tests after upgrading the Home/Game launch flow, in-run HUD, and UI route coverage.
 - Task 2.4 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 38 total tests after wiring real results persistence, route-backed results summaries, and local progress/history comparison views.
 - Task 2.5 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 40 total tests after adding Phase 2 app-shell acceptance coverage for full run-to-results persistence and denied-microphone recovery.
+- Task 3.1 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 84 total tests after adding milestone detection, enhanced selectors, and difficulty progression.
+- Task 3.2 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 84 total tests after polishing retro HUD, improving accessibility (aria-live, skip-link, focus-visible), and refining Results/Progress UX.
+- Task 3.3 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 104 total tests after adding calibration presets, confidence scoring, and latency optimization.
+- Task 3.4 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 122 total tests after adding new hazards/boosts and rebalancing gameplay tuning.
+- Task 3.5 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 207 total tests after final regression, integration, calibration, and privacy assertion tests.
+- All 3 phases (17 tasks) complete. 207 tests across 18 test files. Build output: 378 KB JS, 12 KB CSS.
+- Branch `feat/rework-rocket` pushed to remote on 2026-04-18.
