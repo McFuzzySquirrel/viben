@@ -153,3 +153,12 @@ Key design decisions:
 | Testing | Vitest + React Testing Library |
 | Persistence | localStorage (structured, versioned) |
 | Styling | CSS with custom properties (no framework) |
+
+## Project History
+
+Vib'N started during a hackathon in 2023 with a challenge: *"Can you build an app that helps people sing, in an afternoon?"* The original prototype used Create React App with a simple pitch needle and frequency bars. After a playtest session in 2024, the idea evolved into a rocket-themed singing game.
+
+In April 2026, the project was rebuilt from scratch using [McFuzzy Agent Forge](https://github.com/McFuzzySquirrel/mcfuzzy-agent-forge) — 8 specialist AI agents working across 3 implementation phases to deliver 266 tests and a complete game experience.
+
+- 📖 **[Read the full story](docs/blog-post-viben-revisited.md)** — A blog post about revisiting the project after 17 months
+- 🗂️ **[Original code](https://github.com/McFuzzySquirrel/viben/tree/archive/the-original-viben)** — The hackathon prototype lives on the `archive/the-original-viben` branch

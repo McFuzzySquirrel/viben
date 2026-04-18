@@ -46,8 +46,32 @@
   - Files: `src/app/AppShell.phase3.test.tsx`, `src/features/game/engine/tuning.test.ts`, `src/features/audio/pitch/calibration-integration.test.ts`, `docs/PLAYTEST-CHECKLIST.md`
 - [x] README.md: Comprehensive rewrite with project overview, features, getting started, architecture, and tech stack
 
+### Post-Phase 3: Voice Calibration Feature
+- [x] Feature PRD: Voice calibration for custom frequency profiles (`docs/features/voice-calibration.md`)
+- [x] Phase F1: Calibration data layer — capture types, voice profile builder, localStorage persistence
+  - Files: `src/features/calibration/types.ts`, `src/features/calibration/voice-profile.ts`, `src/features/calibration/useCalibrationCapture.ts`, `src/shared/persistence/voice-profile-storage.ts`
+- [x] Phase F2: Calibration UI — CalibrationScreen, NoteCaptureCard, CalibrationProgress components
+  - Files: `src/screens/CalibrationScreen/CalibrationScreen.tsx`, `src/features/calibration/components/NoteCaptureCard.tsx`, `src/features/calibration/components/CalibrationProgress.tsx`
+- [x] Phase F3: Gameplay integration — pitch classification uses voice profiles, difficulty config supports custom ranges
+  - Files: `src/features/audio/pitch/classification.ts`, `src/shared/config/difficulty.ts`, `src/shared/config/solfege.ts`, `src/features/audio/pitch/usePitchMonitor.ts`
+- [x] Phase F4: Testing — unit, integration, and acceptance tests for calibration flow
+  - Files: `src/features/calibration/types.test.ts`, `src/features/calibration/voice-profile.test.ts`, `src/features/calibration/useCalibrationCapture.test.ts`, `src/shared/persistence/voice-profile-storage.test.ts`, `src/features/audio/pitch/calibration-integration.test.ts`
+
+### Post-Phase 3: Accessibility Tuning
+- [x] Wider note windows: Easy ±65 cents, Normal ±45, Hard ±35
+- [x] Breathing gaps between notes: Easy 900ms, Normal 600ms, Hard 350ms
+- [x] Human voice frequency filtering (85–1100 Hz)
+- [x] Prompt engine breath gap support in `src/features/game/engine/prompt.ts`
+
+### Documentation & Polish
+- [x] Solfege frequency design document (`docs/solfege-frequency-design.md`)
+- [x] Blog post: "Revisiting Vib'N" (`docs/blog-post-viben-revisited.md`)
+- [x] Playwright screenshot capture for all screens (`docs/screenshots/`)
+- [x] README walkthrough section with screenshots
+- [x] Original code archived on `archive/the-original-viben` branch
+
 ## Current Task
-None — all phases complete. Branch pushed to remote.
+None — all phases and features complete. Merged to `main`.
 
 ## Phase Dependencies
 
