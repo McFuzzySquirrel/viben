@@ -102,5 +102,25 @@ describe('difficulty config', () => {
         expect(easyWindows[i].maxFrequencyHz).toBeGreaterThan(hardWindows[i].maxFrequencyHz);
       }
     });
+
+    it('builds windows from voice profile frequencies, not standard A4 frequencies', () => {
+      const customProfile = createTestVoiceProfile();
+      // Override 'do' to a frequency far from equal-temperament C4 (~261 Hz)
+      customProfile.notes.do = {
+        noteId: 'do',
+        medianFrequencyHz: 200,
+        minFrequencyHz: 195,
+        maxFrequencyHz: 205,
+        sampleCount: 10,
+        capturedAt: '2026-01-01T00:00:00.000Z',
+      };
+
+      const windows = buildVoiceProfileDifficultyWindows(customProfile, 'easy');
+      const doWindow = windows.find((w) => w.id === 'do');
+
+      expect(doWindow).toBeDefined();
+      // Should use the profile's median (200), not the standard ~261 Hz
+      expect(doWindow!.centerFrequencyHz).toBe(200);
+    });
   });
 });

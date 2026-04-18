@@ -9,6 +9,7 @@ import {
   getSolfegeWindow,
   type CalibrationPresetId,
   type SolfegeCalibrationConfig,
+  type SolfegeWindow,
 } from '@shared/config/solfege';
 import {
   classifyPitchSample,
@@ -294,5 +295,52 @@ describe('threshold constants', () => {
 
     expect(result.classification).toBe('note');
     expect(result.confidence).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Custom windows override (F2 voice calibration)
+// ---------------------------------------------------------------------------
+
+describe('classifyPitchSample with customWindows', () => {
+  it('uses custom windows when provided instead of building from calibration', () => {
+    const customWindows: SolfegeWindow[] = [
+      {
+        id: 'do',
+        label: 'Do',
+        scientificPitch: 'C4',
+        semitoneOffsetFromA4: -9,
+        centerFrequencyHz: 200, // Custom frequency, NOT the standard ~261 Hz
+        minFrequencyHz: 190,
+        maxFrequencyHz: 210,
+      },
+    ];
+
+    const stats = createStats();
+    const sample = classifyPitchSample(200, stats, DEFAULT_SOLFEGE_CALIBRATION, customWindows);
+
+    expect(sample.classification).toBe('note');
+    expect(sample.noteId).toBe('do');
+  });
+
+  it('custom window rejects frequencies outside its bounds', () => {
+    const customWindows: SolfegeWindow[] = [
+      {
+        id: 'do',
+        label: 'Do',
+        scientificPitch: 'C4',
+        semitoneOffsetFromA4: -9,
+        centerFrequencyHz: 200,
+        minFrequencyHz: 190,
+        maxFrequencyHz: 210,
+      },
+    ];
+
+    const stats = createStats();
+    // 300 Hz is well outside the 190–210 Hz window
+    const sample = classifyPitchSample(300, stats, DEFAULT_SOLFEGE_CALIBRATION, customWindows);
+
+    expect(sample.noteId).toBeNull();
+    expect(sample.classification).not.toBe('note');
   });
 });
