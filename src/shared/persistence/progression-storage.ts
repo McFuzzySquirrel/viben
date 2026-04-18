@@ -11,6 +11,7 @@ import {
   type RunPerformanceMetrics,
   type RunResultSummary,
 } from '@features/progression';
+import { detectNewMilestones } from '@features/progression/milestones';
 import {
   DEFAULT_DIFFICULTY_ID,
   DIFFICULTY_IDS,
@@ -427,12 +428,26 @@ export function persistRunSummary(
     .sort((left, right) => Date.parse(right.recordedAt) - Date.parse(left.recordedAt))
     .slice(0, MAX_RUN_HISTORY_ENTRIES);
 
+  const nextDifficultyRecords = buildDifficultyRecords(nextRunHistory, current.difficultyRecords);
+
+  // Detect new milestones based on updated state
+  const intermediateSnapshot: ProgressionSnapshot = {
+    selectedDifficultyId: sanitizedRunSummary.difficultyId,
+    lastUpdatedAt: sanitizedRunSummary.recordedAt,
+    runHistory: nextRunHistory,
+    difficultyRecords: nextDifficultyRecords,
+    milestones: current.milestones,
+  };
+
+  const newMilestones = detectNewMilestones(intermediateSnapshot);
+
   const nextSave: VibenLocalSave = {
     ...current,
     selectedDifficultyId: sanitizedRunSummary.difficultyId,
     lastUpdatedAt: sanitizedRunSummary.recordedAt,
     runHistory: nextRunHistory,
-    difficultyRecords: buildDifficultyRecords(nextRunHistory, current.difficultyRecords),
+    difficultyRecords: nextDifficultyRecords,
+    milestones: [...current.milestones, ...newMilestones],
   };
 
   return persistSnapshot(nextSave, storage);

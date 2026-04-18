@@ -1,7 +1,15 @@
 import { Link } from 'react-router-dom';
 import { StatusBadge } from '@features/game/components';
-import { buildLocalRunComparison, getBestRunSummary } from '@features/progression';
-import { getDifficultyDefinition } from '@shared/config/difficulty';
+import {
+  buildLocalRunComparison,
+  getBestRunSummary,
+  getCompletionRate,
+  getMilestoneDefinition,
+  getOverallProgressSummary,
+  getRecentTrend,
+  type ProgressMilestoneRecord,
+} from '@features/progression';
+import { getDifficultyDefinition, DIFFICULTY_IDS } from '@shared/config/difficulty';
 import { loadProgressionState } from '@shared/persistence';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
@@ -46,6 +54,27 @@ export function ProgressScreen() {
     limit: 5,
   });
   const overallBestRun = getBestRunSummary(progressionSnapshot.save.runHistory);
+  const overallSummary = getOverallProgressSummary(progressionSnapshot.save);
+  const overallCompletionRate = getCompletionRate(progressionSnapshot.save.runHistory);
+
+  // Group milestones by kind
+  const milestonesByKind = progressionSnapshot.save.milestones.reduce<
+    Record<string, ProgressMilestoneRecord[]>
+  >(
+    (acc, m) => {
+      const group = acc[m.kind] ?? [];
+      group.push(m);
+      acc[m.kind] = group;
+      return acc;
+    },
+    {},
+  );
+
+  const milestoneKindLabels: Record<string, string> = {
+    participation: 'Participation',
+    performance: 'Performance',
+    difficulty: 'Difficulty',
+  };
 
   return (
     <section className="screen">
@@ -88,8 +117,16 @@ export function ProgressScreen() {
           <strong>{overallBestRun ? overallBestRun.score : '—'}</strong>
         </article>
         <article className="panel metric-card">
-          <p>Best local rating</p>
-          <strong>{overallBestRun ? `${overallBestRun.stars} / 3 stars` : '—'}</strong>
+          <p>Completion rate</p>
+          <strong>{overallCompletionRate > 0 ? `${overallCompletionRate}%` : '—'}</strong>
+        </article>
+        <article className="panel metric-card">
+          <p>Milestones earned</p>
+          <strong>{overallSummary.totalMilestones}</strong>
+        </article>
+        <article className="panel metric-card">
+          <p>Favorite difficulty</p>
+          <strong>{overallSummary.favoriteDifficulty ? getDifficultyDefinition(overallSummary.favoriteDifficulty).label : '—'}</strong>
         </article>
         <article className="panel metric-card">
           <p>Save issues</p>
@@ -158,8 +195,45 @@ export function ProgressScreen() {
         </article>
       </div>
 
+      {progressionSnapshot.save.milestones.length > 0 && (
+        <div className="screen-grid">
+          {(['participation', 'performance', 'difficulty'] as const).map((kind) => {
+            const milestones = milestonesByKind[kind];
+            if (!milestones || milestones.length === 0) {
+              return null;
+            }
+            return (
+              <article className="panel" key={kind} aria-label={`${milestoneKindLabels[kind]} milestones`}>
+                <div className="panel__header">
+                  <div>
+                    <p className="screen__eyebrow">Milestones</p>
+                    <h3>{milestoneKindLabels[kind]}</h3>
+                  </div>
+                  <StatusBadge label={`${milestones.length} earned`} tone="success" />
+                </div>
+                <ul className="feature-list">
+                  {milestones.map((m) => {
+                    const def = getMilestoneDefinition(m.id);
+                    return (
+                      <li key={m.id}>
+                        <strong>{def?.label ?? m.id}</strong> — {def?.description ?? m.kind}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
       <div className="screen-grid">
-        {difficultyRecords.map((record) => (
+        {difficultyRecords.map((record) => {
+          const completionRate = getCompletionRate(progressionSnapshot.save.runHistory, record.difficultyId);
+          const trend = getRecentTrend(progressionSnapshot.save.runHistory, record.difficultyId);
+          const trendLabel = trend === 'improving' ? '📈 Improving' : trend === 'declining' ? '📉 Declining' : trend === 'stable' ? '➡️ Stable' : '—';
+
+          return (
           <article className="panel" key={record.difficultyId}>
             <div className="panel__header">
               <div>
@@ -182,6 +256,10 @@ export function ProgressScreen() {
                 <dd>{record.completedRunCount}</dd>
               </div>
               <div>
+                <dt>Completion rate</dt>
+                <dd>{record.runCount > 0 ? `${completionRate}%` : '—'}</dd>
+              </div>
+              <div>
                 <dt>Best score</dt>
                 <dd>{formatNullableValue(record.bestScore)}</dd>
               </div>
@@ -197,9 +275,14 @@ export function ProgressScreen() {
                 <dt>Best target time</dt>
                 <dd>{formatNullableValue(record.bestTimeOnTargetMs, ' ms')}</dd>
               </div>
+              <div>
+                <dt>Recent trend</dt>
+                <dd>{trendLabel}</dd>
+              </div>
             </dl>
           </article>
-        ))}
+          );
+        })}
       </div>
 
       <div className="screen-grid">
