@@ -15,8 +15,34 @@ export interface PitchDetectionSample {
   matchedWindow: SolfegeWindow | null;
 }
 
+/**
+ * Extended pitch sample that includes a confidence score.
+ *
+ * The gameplay engine can use `confidence` (0–1) to weight pitch matches —
+ * e.g. a confident note hit may award full points, while a low-confidence
+ * match near a window edge may award partial credit.
+ */
+export interface PitchDetectionSampleWithConfidence extends PitchDetectionSample {
+  /** 0–1 confidence score for the classification result. */
+  confidence: number;
+}
+
 export interface PitchDetectionOptions extends SolfegeCalibrationConfig {
   yinThreshold: number;
+}
+
+/** Configuration for the pitch monitor analysis loop. */
+export interface PitchMonitorConfig {
+  /**
+   * Target interval in milliseconds between successive pitch analysis ticks.
+   *
+   * Lower values increase CPU usage but decrease perceived latency.
+   * The default of 80 ms keeps the full capture → classify → report path
+   * well within the NF-01 150 ms budget while being gentle on CPU.
+   *
+   * Recommended range: 60–100 ms.
+   */
+  analysisIntervalMs: number;
 }
 
 export interface PitchMonitorState {
