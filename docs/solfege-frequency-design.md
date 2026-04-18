@@ -193,19 +193,75 @@ the standard `buildSolfegeWindows()` pipeline:
 The **cents tolerance still comes from difficulty** — Easy at ±65,
 Normal at ±45, Hard at ±35.  Only the center frequency changes.
 
+#### Expanded Windows: Honouring the Full Captured Range
+
+The tolerance-derived bounds (`median ± cents`) may be narrower than
+the player's actual vocal range for a note.  To prevent rejecting
+frequencies the player just demonstrated they can sing, custom windows
+are **expanded** to encompass the full captured range:
+
+```
+toleranceMin = median × 2^(−cents / 1200)
+toleranceMax = median × 2^(+cents / 1200)
+
+windowMin = min(toleranceMin, capturedMinFrequencyHz)
+windowMax = max(toleranceMax, capturedMaxFrequencyHz)
+```
+
+This means the window is always **at least as wide** as the player's
+observed range during calibration.
+
+#### Overlap Prevention: Geometric Midpoint Clipping
+
+Expanding windows could cause adjacent notes to overlap.  To prevent
+this, each window is clipped so its bounds never extend past the
+**geometric midpoint** to its neighbours:
+
+```
+midpoint(noteA, noteB) = √(centerA × centerB)
+```
+
+The geometric mean is used instead of arithmetic because frequency
+perception is logarithmic — equal distances in cents correspond to
+equal ratios, not equal Hz differences.
+
 Example: a player whose "Do" median is 185 Hz on Easy difficulty:
 
 ```
-center = 185.0 Hz  (captured, not computed)
-min    = 185.0 × 2^(−65/1200) ≈ 178.2 Hz
-max    = 185.0 × 2^(+65/1200) ≈ 192.1 Hz
+center     = 185.0 Hz  (captured, not computed)
+tolerance  = ±65 cents
+tolerMin   = 185.0 × 2^(−65/1200) ≈ 178.2 Hz
+tolerMax   = 185.0 × 2^(+65/1200) ≈ 192.1 Hz
+capturedMin = 175.0 Hz  (their lowest sample)
+capturedMax = 195.0 Hz  (their highest sample)
+
+windowMin  = min(178.2, 175.0) = 175.0 Hz  ← expanded to captured
+windowMax  = max(192.1, 195.0) = 195.0 Hz  ← expanded to captured
+(then clipped to geometric midpoints with Re, if needed)
 ```
 
 Compare with standard: center = 261.6 Hz, min ≈ 252 Hz, max ≈ 272 Hz.
 The player's actual "Do" (185 Hz) would be classified `out-of-range`
 with standard windows — but hits perfectly with custom windows.
 
-### 7.3 Integration Into Gameplay
+### 7.3 Nearest-Window Classifier
+
+When windows could overlap (especially with expanded voice-profile
+windows or wide Easy-mode tolerance), the classifier uses a
+**nearest-window-by-center** strategy instead of matching the first
+window whose bounds contain the frequency:
+
+1. Find the window whose **center frequency** is closest to the
+   detected pitch (using the existing `findNearestWindow()` helper).
+2. Check whether the pitch falls within that window's min/max bounds.
+3. If yes → classification is `'note'` with that window's `noteId`.
+4. If no → classification is `'out-of-range'`.
+
+This eliminates order-dependent ambiguity: if a frequency happens to
+fall inside two overlapping windows, it is always assigned to the note
+whose center is closer — which is the musically correct choice.
+
+### 7.4 Integration Into Gameplay
 
 When the game starts, `useGameRunController` checks for a saved voice
 profile:
@@ -224,6 +280,7 @@ useGameRunController
   → useGameplayAudioInput(targetNote, calibration, customWindows)
     → usePitchMonitor(session, calibration, monitorConfig, customWindows)
       → classifyPitchSample(freq, stats, calibration, customWindows)
+    → selectPitchTargetSnapshot(sample, targetNote, calibration, customWindows)
 ```
 
 In `classifyPitchSample`, when `customWindows` is provided, the engine
@@ -231,7 +288,31 @@ skips `buildSolfegeWindows(calibration)` and uses the custom array
 directly.  Everything else — silence detection, RMS thresholds,
 confidence scoring — stays the same.
 
-### 7.4 Calibration Capture: Why All Frequencies Are Accepted
+`selectPitchTargetSnapshot` also receives `customWindows` so that the
+`centsOffTarget` value (used for UI feedback) is calculated against the
+player's actual center frequency, not the standard A4-derived one.
+
+### 7.5 Dual-Mode Design: Standard and Custom Coexist
+
+The voice calibration system is **purely opt-in** and the standard
+solfege experience is fully preserved:
+
+| Scenario | Windows used | How it works |
+|----------|-------------|--------------|
+| **No voice profile saved** (default) | Standard A4-based | `customWindows` is `undefined`; classifier falls through to `buildSolfegeWindows(calibration)` |
+| **Voice profile saved** | Player's captured frequencies | `customWindows` are built from profile; classifier uses them directly |
+| **Profile deleted** | Standard A4-based | Deleting the profile returns the player to the standard path |
+
+Players who want the "official" equal-temperament experience never need
+to calibrate — the standard path has **zero code changes** and remains
+the default.  Players who struggle to hit standard pitch windows can
+calibrate and get personalised windows that match their actual voice.
+
+Both paths produce the same data structure (`SolfegeWindow[7]`), so the
+rest of the engine — gameplay scoring, prompt matching, stability
+tracking — is completely mode-agnostic.
+
+### 7.6 Calibration Capture: Why All Frequencies Are Accepted
 
 During calibration (but NOT during gameplay), the capture hook accepts
 any sample where `frequencyHz !== null`.  This is intentional:
@@ -265,8 +346,12 @@ calibration, filtering out noise and non-vocal sounds.
 │                                                                  │
 │  ↓                                                               │
 │  classifyPitchSample(freq, stats, calibration, windows?)         │
+│    → Uses nearest-window-by-center matching                      │
 │    → 'silence' | 'unusable' | 'out-of-range' | 'note'           │
 │    → noteId, confidence, centsFromNearest                        │
+│                                                                  │
+│  selectPitchTargetSnapshot(sample, target, cal, windows?)        │
+│    → centsOffTarget calculated against correct window centers    │
 │                                                                  │
 │  ↓                                                               │
 │  Gameplay engine: stability, altitude, score                     │
@@ -281,7 +366,8 @@ calibration, filtering out noise and non-vocal sounds.
 |------|---------|
 | `src/shared/config/solfege.ts` | Note definitions, calibration config, `buildSolfegeWindows()`, presets |
 | `src/shared/config/difficulty.ts` | Difficulty tuning including cents tolerance, `buildVoiceProfileDifficultyWindows()` |
-| `src/features/audio/pitch/classification.ts` | `classifyPitchSample()` — the core frequency→note classifier |
+| `src/features/audio/pitch/classification.ts` | `classifyPitchSample()` — nearest-window-by-center frequency→note classifier |
+| `src/features/audio/pitch/selectors.ts` | `selectPitchTargetSnapshot()` — computes `centsOffTarget` using custom windows when available |
 | `src/features/calibration/voice-profile.ts` | `aggregateCalibrationSamples()`, `buildSolfegeWindowsFromVoiceProfile()` |
 | `src/features/calibration/useCalibrationCapture.ts` | Hook managing the note-by-note capture flow |
 | `src/features/calibration/types.ts` | `VoiceProfile`, `NoteCalibrationData` types |
