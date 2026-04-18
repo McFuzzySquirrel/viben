@@ -167,6 +167,9 @@ export function HomeScreen() {
             <Link className="button button--secondary" to={APP_ROUTE_PATHS.progress}>
               Review local progress
             </Link>
+            <Link className="button button--secondary" to={APP_ROUTE_PATHS.calibration}>
+              Calibrate voice
+            </Link>
           </div>
         </div>
 
