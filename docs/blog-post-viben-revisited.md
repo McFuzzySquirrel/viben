@@ -6,11 +6,11 @@ categories: [personal, project]
 tags: [agent forge, game development, voice, AI orchestration, revisiting projects]
 ---
 
-> *A forgotten pitch-matching experiment, a kid's question about rockets, and a framework I'd been itching to test on something real — this is the story of what happened when all three collided.*
+> *A hackathon challenge, a kid's idea about rockets, and seventeen months of "I'll get to it eventually" — this is the story of what happened when I finally did.*
 
-Seventeen months. That's how long a little React app called Vib'N sat untouched in a repo before my son asked the question that changed everything: *"Dad, what happened to that old voice thing you built? Can we change it into a rocket game?"*
+It started at a hackathon in November 2024: someone challenged me to build an app that helps people sing, in an afternoon. We did it. My son play-tested it with me, the dogs lost their minds, and between the laughter he asked: *"Can we change it into a rocket game?"*
 
-This is the story of revisiting that repo, what I found, what I built with [Agent Forge](https://mcfuzzysquirrel.github.io/personal/update/2026/03/20/story-of-agent-forge.html), and what I learned about the gap between "technically correct" and "actually playable."
+Seventeen months later, I finally had the answer — and the tools to build it. This is the story of revisiting that repo, what I found, what I built with [Agent Forge](https://mcfuzzysquirrel.github.io/personal/update/2026/03/20/story-of-agent-forge.html), and what I learned about the gap between "technically correct" and "actually playable."
 
 ---
 
@@ -58,13 +58,17 @@ But looking back, that hackathon moment is what makes the rest of this story int
 
 ## The Question That Changed Everything
 
-Fast forward to April 2026. My son, who'd seen me tinkering with the original, asked the question that sparked everything:
+My son play-tested the original with me right after that hackathon. We stood in the lounge singing Do, Re, Mi into a laptop while the dogs — convinced we were in some kind of distress — barked and circled us. It was such a good laugh. And somewhere between the chaos and the off-key singing, he asked:
 
-> *"What happened to that old voice thing you built? Can we change it into a rocket game?"*
+> *"Can we change it into a rocket game?"*
+
+I always meant to revisit it. Life got in the way, as it does. The repo sat untouched for over a year.
+
+Fast forward to April 2026. I'd spent the intervening months building **[Agent Forge](https://mcfuzzysquirrel.github.io/personal/update/2026/03/20/story-of-agent-forge.html)** — a framework for turning ideas into coordinated AI development teams. I'd been itching to test it on something real. And my son's question was still sitting there, unanswered.
 
 A rocket game. Powered by singing. The idea was immediately compelling: keep the core mechanic (sing a note, get feedback) but wrap it in something that feels like a *game*. A rocket that climbs when you hit the right notes. Hazards when you miss. A score. A reason to try again.
 
-But I also had something I didn't have 17 months ago: **[Agent Forge](https://mcfuzzysquirrel.github.io/personal/update/2026/03/20/story-of-agent-forge.html)** — the framework I built for turning ideas into coordinated AI development teams. This was the perfect test case. Not a toy demo, but a real project with audio constraints, browser APIs, game logic, and accessibility requirements.
+This was the perfect test case. Not a toy demo, but a real project with audio constraints, browser APIs, game logic, and accessibility requirements.
 
 Could a team of AI specialists, orchestrated through a PRD, actually rebuild this thing into a real game?
 
