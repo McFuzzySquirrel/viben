@@ -76,6 +76,8 @@ export interface GameplayEventDefinition {
   altitudePerSecond: number;
   stabilityPerSecond: number;
   scoreDelta: number;
+  /** Minimum elapsed run time (ms) before this event can first trigger. */
+  firstAppearanceMs?: number;
 }
 
 export interface GameplayEventInstance extends GameplayEventDefinition {

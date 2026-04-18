@@ -150,6 +150,10 @@ function getTriggeredEvent(
   elapsedMs: number,
   nowMs: number,
 ): GameplayEventInstance | null {
+  if (definition.firstAppearanceMs != null && elapsedRunMs < definition.firstAppearanceMs) {
+    return null;
+  }
+
   const previousElapsedMs = Math.max(0, elapsedRunMs - elapsedMs);
   const previousCycle = Math.floor(previousElapsedMs / definition.cadenceMs);
   const currentCycle = Math.floor(elapsedRunMs / definition.cadenceMs);

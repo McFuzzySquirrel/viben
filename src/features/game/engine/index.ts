@@ -35,5 +35,8 @@ export {
   createInitialRocketState,
   DEFAULT_BOOST_ID,
   DEFAULT_HAZARD_ID,
+  GRAVITY_WELL_HAZARD_ID,
+  NEBULA_SHIELD_BOOST_ID,
+  SOLAR_FLARE_HAZARD_ID,
 } from './tuning';
 export { resolveGameplayStep } from './simulation';
