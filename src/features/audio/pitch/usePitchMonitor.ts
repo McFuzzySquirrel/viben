@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { DEFAULT_SOLFEGE_CALIBRATION, type SolfegeCalibrationConfig } from '@shared/config/solfege';
+import { DEFAULT_SOLFEGE_CALIBRATION, type SolfegeCalibrationConfig, type SolfegeWindow } from '@shared/config/solfege';
 import type { AudioInputSession } from '@features/audio/input/session';
 import { classifyPitchSample, createPitchDetector, DEFAULT_PITCH_DETECTION_OPTIONS } from './classification';
 import type { PitchDetectionSample, PitchDetectionOptions, PitchMonitorConfig, PitchMonitorState } from './types';
@@ -40,6 +40,7 @@ export function usePitchMonitor(
   session: AudioInputSession | null,
   calibration: SolfegeCalibrationConfig = DEFAULT_SOLFEGE_CALIBRATION,
   monitorConfig: PitchMonitorConfig = DEFAULT_PITCH_MONITOR_CONFIG,
+  customWindows?: ReadonlyArray<SolfegeWindow>,
 ): PitchMonitorState {
   const [latestSample, setLatestSample] = useState<PitchDetectionSample | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -74,7 +75,7 @@ export function usePitchMonitor(
 
       const frame = session.readFrame();
       const frequencyHz = detector(frame.timeDomainData) ?? null;
-      setLatestSample(classifyPitchSample(frequencyHz, frame.stats, calibration));
+      setLatestSample(classifyPitchSample(frequencyHz, frame.stats, calibration, customWindows));
     };
 
     // Use setInterval for consistent cadence. Unlike rAF, setInterval is
@@ -96,6 +97,7 @@ export function usePitchMonitor(
     };
   }, [
     calibration,
+    customWindows,
     detector,
     monitorConfig.analysisIntervalMs,
     session,

@@ -67,8 +67,9 @@ export function classifyPitchSample(
   frequencyHz: number | null,
   stats: AudioCaptureStats,
   calibration: SolfegeCalibrationConfig = DEFAULT_SOLFEGE_CALIBRATION,
+  customWindows?: ReadonlyArray<SolfegeWindow>,
 ): PitchDetectionSample {
-  const windows = buildSolfegeWindows(calibration);
+  const windows = customWindows ?? buildSolfegeWindows(calibration);
   const nearestWindow = findNearestWindow(frequencyHz, windows);
 
   // AC-06 — RMS below the silence threshold means the mic is not picking up
@@ -182,8 +183,9 @@ export function classifyWithConfidence(
   frequencyHz: number | null,
   stats: AudioCaptureStats,
   calibration: SolfegeCalibrationConfig = DEFAULT_SOLFEGE_CALIBRATION,
+  customWindows?: ReadonlyArray<SolfegeWindow>,
 ): PitchDetectionSampleWithConfidence {
-  const sample = classifyPitchSample(frequencyHz, stats, calibration);
+  const sample = classifyPitchSample(frequencyHz, stats, calibration, customWindows);
   return { ...sample, confidence: computeConfidence(sample, calibration) };
 }
 

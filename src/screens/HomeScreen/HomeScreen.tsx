@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { selectAudioSetupStatus, useAudioInput } from '@features/audio';
 import { StatusBadge } from '@features/game/components';
 import { useDifficultySelection } from '@features/settings';
+import { loadVoiceProfile } from '@shared/persistence/voice-profile-storage';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
 interface GameLaunchRouteState {
@@ -118,6 +119,7 @@ export function HomeScreen() {
   const microphoneTone = getSetupTone(setup.stage);
   const persistenceTone = persistenceIssues.length > 0 ? 'warning' : 'success';
   const setupGuidance = getSetupGuidance(setup, microphone.state.lastError?.message ?? null);
+  const hasVoiceProfile = loadVoiceProfile().profile !== null;
 
   const startRunFromHome = () => {
     navigate(APP_ROUTE_PATHS.game, {
@@ -143,6 +145,10 @@ export function HomeScreen() {
             <StatusBadge label={`Difficulty: ${selectedDifficulty.label}`} tone="success" />
             <StatusBadge label={formatSetupLabel(setup.stage)} tone={microphoneTone} />
             <StatusBadge label={`Save status: ${persistenceStatus}`} tone={persistenceTone} />
+            <StatusBadge
+              label={hasVoiceProfile ? 'Voice profile: active' : 'Voice profile: none'}
+              tone={hasVoiceProfile ? 'success' : 'info'}
+            />
           </div>
 
           <p
