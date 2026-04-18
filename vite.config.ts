@@ -22,6 +22,7 @@ export default defineConfig({
         url: 'http://localhost/',
       },
     },
+    exclude: ['scripts/**', 'node_modules/**'],
     setupFiles: './src/test/setup.ts',
     clearMocks: true,
     mockReset: true,

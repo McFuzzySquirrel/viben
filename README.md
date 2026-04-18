@@ -10,7 +10,7 @@
   ![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square)
   ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
 
-  [Features](#features) • [Getting Started](#getting-started) • [How to Play](#how-to-play) • [Architecture](#architecture) • [Tech Stack](#tech-stack)
+  [Features](#features) • [Walkthrough](#walkthrough) • [Getting Started](#getting-started) • [How to Play](#how-to-play) • [Architecture](#architecture) • [Tech Stack](#tech-stack)
 
 </div>
 
@@ -27,6 +27,40 @@ Vib'N turns solfege note matching into an arcade-style rocket flight challenge. 
 - **Retro arcade HUD** — Monospace styling, glow effects, and smooth rocket animations with `prefers-reduced-motion` support
 - **Accessible by default** — Keyboard navigation, skip links, `aria-live` regions, WCAG AA contrast, and match indicators that don't rely on color alone
 - **Privacy-first** — All audio is processed locally and discarded. Only derived gameplay metrics are stored. No accounts, no cloud, no telemetry
+
+## Walkthrough
+
+### Home — Launch Pad
+
+Pick a difficulty, check your microphone, and launch a singing run. The home screen shows your current setup status at a glance including difficulty, mic permission, save state, and voice profile.
+
+![Home screen — choose difficulty and launch](docs/screenshots/01-home.png)
+
+### Game — Active Mission
+
+The game HUD shows the current solfege prompt, rocket altitude, stability meters, and live mic readout. Sing the prompted note to climb; wrong notes or silence cause drift.
+
+![Game screen — HUD with prompt, rocket, and meters](docs/screenshots/02-game.png)
+
+### Voice Calibration
+
+Teach the game your singing range one note at a time. Sing each solfege note (Do through Ti) and hold it steady. The game records your natural frequencies to build a personalised voice profile.
+
+![Calibration screen — capture your voice range](docs/screenshots/03-calibration.png)
+
+### Results — Run Review
+
+After each run, review your score, star rating, accuracy, and comparison against previous attempts. New milestones and personal bests are highlighted when earned.
+
+![Results screen — score, accuracy, and comparison](docs/screenshots/04-results.png)
+
+### Progress — History & Milestones
+
+Track your run history, completion rates, difficulty records, trends, and earned milestones. All data stays local in the browser.
+
+![Progress screen — history, milestones, and records](docs/screenshots/05-progress.png)
+
+> **Regenerate screenshots:** `npm run screenshots` uses Playwright to capture fresh screenshots of every screen.
 
 ## Getting Started
 
@@ -62,7 +96,7 @@ npm run preview
 
 ```bash
 npm run typecheck    # Type-check with TypeScript
-npm run test         # Run the full test suite (207 tests)
+npm run test         # Run the full test suite (266 tests)
 npm run build        # Production build
 ```
 
