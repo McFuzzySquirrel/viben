@@ -30,8 +30,8 @@ describe('Game screen HUD flow', () => {
 
     expect(screen.getByRole('progressbar', { name: 'Moon progress' })).toBeInTheDocument();
     expect(screen.getByRole('progressbar', { name: 'Rocket stability' })).toBeInTheDocument();
-    expect(screen.getByRole('progressbar', { name: 'Prompt hold' })).toBeInTheDocument();
-    expect(screen.getByRole('progressbar', { name: 'Engine thrust' })).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar', { name: 'Prompt hold' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('progressbar', { name: 'Engine thrust' })).not.toBeInTheDocument();
     expect(screen.getByText('Track score, time, and prompt clears at a glance')).toBeInTheDocument();
   });
 });

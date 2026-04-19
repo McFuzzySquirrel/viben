@@ -152,14 +152,6 @@ function getRunStatus(gameplay: ReturnType<typeof useGameRunController>) {
   }
 }
 
-function getActionLabel(gameplay: ReturnType<typeof useGameRunController>) {
-  if (gameplay.state.status === 'active') {
-    return 'Restart run';
-  }
-
-  return gameplay.latestSummary ? 'Retry run' : 'Start run';
-}
-
 export function GameScreen() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -184,8 +176,7 @@ export function GameScreen() {
   const altitudePercent = clampPercent(runProgress?.altitudePercent ?? hud?.altitudePercent ?? 0);
   const stabilityPercent = clampPercent(runProgress?.stabilityPercent ?? hud?.stabilityPercent ?? 0);
   const promptHoldPercent = clampPercent(runProgress?.promptProgressPercent ?? hud?.promptHoldPercent ?? 0);
-  const thrustPercent = clampPercent(hud?.thrustPercent ?? 0);
-  const actionLabel = getActionLabel(gameplay);
+  const isRunActive = state.status === 'active';
 
   useEffect(() => {
     if (!locationState?.autoStart || autoStartHandledRef.current) {
@@ -241,55 +232,68 @@ export function GameScreen() {
           </p>
 
           <div className="button-row">
-            <button
-              className="button"
-              onClick={() => void (state.status === 'active' ? gameplay.restartRun() : gameplay.startRun())}
-              type="button"
-            >
-              {actionLabel}
-            </button>
-            <button
-              className="button button--secondary"
-              disabled={!gameplay.canRetrySetup}
-              onClick={() => void gameplay.requestMicrophoneAccess()}
-              type="button"
-            >
-              {audio.state.isCapturing ? 'Refresh microphone access' : 'Request microphone access'}
-            </button>
-            <Link className="button button--secondary" to={APP_ROUTE_PATHS.home}>
-              Back to home
-            </Link>
-            <button
-              className="button button--secondary"
-              disabled={!gameplay.canAbandonRun}
-              onClick={gameplay.abandonRun}
-              type="button"
-            >
-              End run
-            </button>
-            <button
-              className="button button--secondary"
-              disabled={!audio.state.isCapturing}
-              onClick={() => void audio.stopCapture()}
-              type="button"
-            >
-              Stop mic
-            </button>
+            {isRunActive ? (
+              <>
+                <button
+                  className="button"
+                  disabled={!gameplay.canAbandonRun}
+                  onClick={gameplay.abandonRun}
+                  type="button"
+                >
+                  End run
+                </button>
+                <Link className="button button--secondary" to={APP_ROUTE_PATHS.home}>
+                  Back to home
+                </Link>
+              </>
+            ) : (
+              <>
+                <button
+                  className="button"
+                  onClick={() => void gameplay.startRun()}
+                  type="button"
+                >
+                  {gameplay.latestSummary ? 'Retry run' : 'Start run'}
+                </button>
+                <button
+                  className="button button--secondary"
+                  disabled={!gameplay.canRetrySetup}
+                  onClick={() => void gameplay.requestMicrophoneAccess()}
+                  type="button"
+                >
+                  {audio.state.isCapturing ? 'Refresh microphone access' : 'Request microphone access'}
+                </button>
+                <Link className="button button--secondary" to={APP_ROUTE_PATHS.home}>
+                  Back to home
+                </Link>
+                {audio.state.isCapturing ? (
+                  <button
+                    className="button button--secondary"
+                    onClick={() => void audio.stopCapture()}
+                    type="button"
+                  >
+                    Stop mic
+                  </button>
+                ) : null}
+              </>
+            )}
           </div>
         </div>
 
-        <aside className="panel">
-          <h3>Mission checklist</h3>
-          <ul className="feature-list">
-            <li>Watch the large solfege prompt and sing only that note.</li>
-            <li>Use the moon progress, stability, and thrust HUD to read the rocket response quickly.</li>
-            <li>If setup fails, use Back to home or retry microphone access without reloading the app.</li>
-          </ul>
-          <p className="panel__supporting-copy">
-            Keyboard users can tab through every launch, retry, end-run, and recovery action on this
-            screen.
-          </p>
-        </aside>
+        {!isRunActive && (
+          <aside className="panel">
+            <h3>Mission checklist</h3>
+            <ul className="feature-list">
+              <li>Watch the large solfege prompt and sing only that note.</li>
+              <li>Use the moon progress, stability, and thrust HUD to read the rocket response quickly.</li>
+              <li>If setup fails, use Back to home or retry microphone access without reloading the app.</li>
+            </ul>
+            <p className="panel__supporting-copy">
+              Keyboard users can tab through every launch, retry, end-run, and recovery action on this
+              screen.
+            </p>
+          </aside>
+        )}
       </div>
 
       <div className="screen-grid screen-grid--game">
@@ -298,6 +302,7 @@ export function GameScreen() {
           detectedLabel={detectedLabel}
           feedbackDetail={feedbackCopy.detail}
           feedbackLabel={feedbackCopy.badge}
+          holdPercent={promptHoldPercent}
           matchState={audio.target.matchState}
           promptLabel={currentPrompt?.label ?? 'Preparing note'}
           promptScientificPitch={currentPrompt?.scientificPitch ?? '—'}
@@ -309,6 +314,7 @@ export function GameScreen() {
           altitudeText={`${Math.round(hud?.altitude ?? 0)} / ${Math.round(hud?.targetAltitude ?? 1000)} altitude`}
           boostsTriggered={hud?.boostsTriggered ?? 0}
           hazardsTriggered={hud?.hazardsTriggered ?? 0}
+          matchState={audio.target.matchState}
           rocketMode={hud?.rocketMode ?? null}
         />
 
@@ -350,7 +356,7 @@ export function GameScreen() {
           <div className="panel__header">
             <div>
               <p className="screen__eyebrow">Rocket HUD</p>
-              <h3>Read stability, thrust, and prompt hold without relying on color alone</h3>
+              <h3>Read moon progress and stability at a glance</h3>
             </div>
             <StatusBadge label={hud?.rocketMode ?? 'awaiting launch'} tone="info" />
           </div>
@@ -369,67 +375,55 @@ export function GameScreen() {
             tone={stabilityPercent < 35 ? 'warning' : 'success'}
             valueText={`${Math.round(hud?.stability ?? 0)} / 100`}
           />
-          <HudMeter
-            hint="Prompt hold fills while you stay on the current note."
-            label="Prompt hold"
-            percent={promptHoldPercent}
-            tone={audio.target.matchState === 'correct' ? 'success' : 'warning'}
-            valueText={`${Math.round(promptHoldPercent)}%`}
-          />
-          <HudMeter
-            hint="Thrust shows how strongly the current singing result is moving the rocket."
-            label="Engine thrust"
-            percent={thrustPercent}
-            tone={audio.target.matchState === 'correct' ? 'success' : 'warning'}
-            valueText={`${Math.round(thrustPercent)}%`}
-          />
         </article>
 
-        <article className="panel">
-          <div className="panel__header">
-            <div>
-              <p className="screen__eyebrow">Mic and note readout</p>
-              <h3>See what the microphone hears and how the game classifies it</h3>
+        {!isRunActive && (
+          <article className="panel">
+            <div className="panel__header">
+              <div>
+                <p className="screen__eyebrow">Mic and note readout</p>
+                <h3>See what the microphone hears and how the game classifies it</h3>
+              </div>
+              <StatusBadge
+                label={audio.state.isCapturing ? 'Mic listening' : 'Mic idle'}
+                tone={audio.state.isCapturing ? 'success' : microphoneTone}
+              />
             </div>
-            <StatusBadge
-              label={audio.state.isCapturing ? 'Mic listening' : 'Mic idle'}
-              tone={audio.state.isCapturing ? 'success' : microphoneTone}
-            />
-          </div>
 
-          {audio.state.lastError ? (
-            <p className="inline-message inline-message--warning" role={runStatus.alert ? undefined : 'alert'}>
-              <strong>Microphone issue.</strong> {audio.state.lastError.message}
-            </p>
-          ) : null}
+            {audio.state.lastError ? (
+              <p className="inline-message inline-message--warning" role={runStatus.alert ? undefined : 'alert'}>
+                <strong>Microphone issue.</strong> {audio.state.lastError.message}
+              </p>
+            ) : null}
 
-          <dl className="detail-list">
-            <div>
-              <dt>Input status</dt>
-              <dd>{toReadableClassificationLabel(latestSample?.classification ?? null)}</dd>
-            </div>
-            <div>
-              <dt>Detected note</dt>
-              <dd>{detectedLabel}</dd>
-            </div>
-            <div>
-              <dt>Detected frequency</dt>
-              <dd>{latestSample?.frequencyHz ? `${latestSample.frequencyHz.toFixed(1)} Hz` : 'Waiting for stable pitch'}</dd>
-            </div>
-            <div>
-              <dt>Permission</dt>
-              <dd>{audio.state.permission}</dd>
-            </div>
-            <div>
-              <dt>Setup stage</dt>
-              <dd>{audio.setup.stage}</dd>
-            </div>
-            <div>
-              <dt>Privacy</dt>
-              <dd>Audio stays local in the browser and is not saved as recordings.</dd>
-            </div>
-          </dl>
-        </article>
+            <dl className="detail-list">
+              <div>
+                <dt>Input status</dt>
+                <dd>{toReadableClassificationLabel(latestSample?.classification ?? null)}</dd>
+              </div>
+              <div>
+                <dt>Detected note</dt>
+                <dd>{detectedLabel}</dd>
+              </div>
+              <div>
+                <dt>Detected frequency</dt>
+                <dd>{latestSample?.frequencyHz ? `${latestSample.frequencyHz.toFixed(1)} Hz` : 'Waiting for stable pitch'}</dd>
+              </div>
+              <div>
+                <dt>Permission</dt>
+                <dd>{audio.state.permission}</dd>
+              </div>
+              <div>
+                <dt>Setup stage</dt>
+                <dd>{audio.setup.stage}</dd>
+              </div>
+              <div>
+                <dt>Privacy</dt>
+                <dd>Audio stays local in the browser and is not saved as recordings.</dd>
+              </div>
+            </dl>
+          </article>
+        )}
       </div>
     </section>
   );

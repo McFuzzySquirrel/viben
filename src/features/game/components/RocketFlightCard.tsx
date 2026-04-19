@@ -1,4 +1,6 @@
+import type { PitchTargetMatchState } from '@features/audio';
 import type { GameplayEventInstance, RocketFlightMode } from '../engine';
+import { RocketSprite } from './RocketSprite';
 import { StatusBadge } from './StatusBadge';
 
 interface RocketFlightCardProps {
@@ -8,6 +10,7 @@ interface RocketFlightCardProps {
   activeEvent: GameplayEventInstance | null;
   hazardsTriggered: number;
   boostsTriggered: number;
+  matchState: PitchTargetMatchState;
 }
 
 function clampPercent(percent: number) {
@@ -80,6 +83,7 @@ export function RocketFlightCard({
   activeEvent,
   hazardsTriggered,
   boostsTriggered,
+  matchState,
 }: RocketFlightCardProps) {
   const normalizedAltitude = clampPercent(altitudePercent);
   const eventCopy = getEventCopy(activeEvent);
@@ -118,7 +122,11 @@ export function RocketFlightCard({
             className={rocketClass}
             style={{ bottom: `calc(${normalizedAltitude}% - 1.3rem)` }}
           >
-            🚀
+            <RocketSprite
+              boostActive={activeEvent?.kind === 'boost'}
+              matchState={matchState}
+              mode={rocketMode}
+            />
           </span>
           <span className="rocket-track__trail" style={{ height: `${normalizedAltitude}%` }} />
         </div>
