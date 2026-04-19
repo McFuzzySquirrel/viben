@@ -1238,7 +1238,9 @@ button.calibration-note:hover {
   }
 }
 
-@media (max-width: 800px) {
+/* ── F2: Responsive — Tablet ≤768px (FT-FR-07, FT-FR-08) ── */
+
+@media (max-width: 768px) {
   .shell {
     width: min(100% - 1rem, 1120px);
     padding-top: 0.75rem;
@@ -1249,8 +1251,17 @@ button.calibration-note:hover {
     flex-direction: column;
   }
 
-  .hero {
+  /* Single-column stack for hero, screen-grid, metric-grid (FT-FR-08) */
+  .hero,
+  .screen-grid,
+  .screen-grid--game,
+  .metric-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Run stat grid: single column on tablet */
+  .run-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .brand {
@@ -1273,4 +1284,227 @@ button.calibration-note:hover {
   .rocket-track {
     min-height: 12rem;
   }
+
+  /* Game screen: prompt first, rocket second via source order (already correct) */
+  .screen-grid--game > :nth-child(1) {
+    order: 1;
+  }
+
+  .screen-grid--game > :nth-child(2) {
+    order: 2;
+  }
+
+  .screen-grid--game > :nth-child(3) {
+    order: 3;
+  }
+
+  .screen-grid--game > :nth-child(4) {
+    order: 3;
+  }
+
+  /* Reduce screen padding for narrower viewports */
+  .screen {
+    padding: 1.25rem 1rem;
+  }
+
+  /* Tighten calibration progress for smaller screens */
+  .calibration-progress {
+    gap: 0.35rem;
+  }
+}
+
+/* ── F2: Responsive — Phone ≤480px (FT-FR-07, FT-FR-14) ── */
+
+@media (max-width: 480px) {
+  .shell {
+    width: min(100% - 0.5rem, 1120px);
+    padding-top: 0.5rem;
+  }
+
+  .screen {
+    border-radius: 1rem;
+    padding: 1rem 0.75rem;
+  }
+
+  .panel {
+    padding: 0.9rem 0.75rem;
+  }
+
+  .shell__header,
+  .shell__footer,
+  .support-banner {
+    border-radius: 1rem;
+    padding: 0.75rem 0.85rem;
+  }
+
+  /* Full single-column for stat grid on phone */
+  .run-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Reduce rocket track height on phones (FT-FR-07) */
+  .rocket-track {
+    min-height: 9rem;
+  }
+
+  /* Tighten solfege prompt for phone screens */
+  .prompt-card__solfege {
+    font-size: clamp(1.8rem, 8vw, 3rem);
+  }
+
+  .prompt-card__symbol {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1.1rem;
+  }
+
+  /* Tighter status row wrapping */
+  .status-row {
+    gap: 0.4rem;
+  }
+
+  .status-badge {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.55rem;
+  }
+
+  /* Smaller metric card values */
+  .metric-card strong {
+    font-size: 1.6rem;
+  }
+
+  .run-stat-card strong {
+    font-size: 1.4rem;
+  }
+
+  /* Reduce altitude heading on phone */
+  .rocket-flight-card__altitude {
+    font-size: clamp(1.3rem, 4.5vw, 1.8rem);
+  }
+
+  /* Prevent hero copy from stretching too wide */
+  .screen__lead {
+    max-width: 100%;
+  }
+
+  /* Button row: full-width buttons on phone */
+  .button-row {
+    flex-direction: column;
+  }
+
+  .button-row > .button,
+  .button-row > a.button {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Tighten calibration note cells for phone */
+  .calibration-note {
+    min-width: 2.8rem;
+    padding: 0.35rem;
+    font-size: 0.78rem;
+  }
+
+  .hold-progress {
+    max-width: 100%;
+  }
+
+  .frequency-display {
+    font-size: 1.5rem;
+  }
+}
+
+/* ── F2: Touch targets — Coarse pointer (FT-FR-09, FT-NF-04) ── */
+
+@media (pointer: coarse) {
+  /* Ensure minimum 44×44px touch targets for all interactive elements */
+  button,
+  .button,
+  a.button {
+    min-height: 2.75rem; /* 44px */
+    min-width: 2.75rem;
+    padding: 0.75rem 1.1rem;
+  }
+
+  .button--secondary {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+
+  .nav-list__link {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .status-badge {
+    min-height: 2rem;
+    min-width: 2rem;
+  }
+
+  /* Radio / choice cards need touch-friendly hit areas */
+  .choice-card {
+    padding: 1rem;
+    min-height: 2.75rem;
+  }
+
+  .choice-card__input {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Calibration note buttons need touch targets */
+  button.calibration-note {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    padding: 0.5rem;
+  }
+
+  /* Links inside lists should have enough tap area */
+  .feature-list li,
+  .step-list li {
+    padding: 0.15rem 0;
+  }
+}
+
+/* ── F2: Landscape + portrait orientation support (FT-FR-14) ── */
+
+@media (max-width: 768px) and (orientation: landscape) {
+  /* In landscape on mobile/tablet, reduce vertical spacing to avoid scroll */
+  .hero {
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .screen-grid,
+  .screen-grid--game,
+  .metric-grid {
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  /* Compact rocket track in landscape on small devices */
+  .rocket-track {
+    min-height: 8rem;
+  }
+
+  /* Reduce HUD meter vertical spacing in landscape */
+  .hud-meter + .hud-meter {
+    margin-top: 0.6rem;
+  }
+}
+
+/* ── F2: Overflow prevention (FT-FR-07 — 320px to 1440px+) ── */
+
+html {
+  overflow-x: hidden;
+}
+
+.screen,
+.panel,
+.shell,
+.shell__header,
+.shell__footer {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
