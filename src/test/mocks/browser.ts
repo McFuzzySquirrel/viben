@@ -14,6 +14,8 @@ interface BrowserTestMockOptions {
   localStorageMode?: 'available' | 'unavailable';
   audioFrameValue?: number;
   sampleRate?: number;
+  maxTouchPoints?: number;
+  visibilityState?: DocumentVisibilityState;
 }
 
 interface MockTrack {
@@ -23,7 +25,7 @@ interface MockTrack {
   stop: () => void;
 }
 
-type PropertyTarget = Window | Navigator;
+type PropertyTarget = Window | Navigator | Document;
 
 const DEFAULT_USER_AGENT =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36';
@@ -31,7 +33,7 @@ const DEFAULT_USER_AGENT =
 const originalDescriptors = new Map<string, PropertyDescriptor | undefined>();
 let activeTrack: MockTrack | null = null;
 
-function rememberDescriptor(targetName: 'window' | 'navigator', property: string, target: PropertyTarget) {
+function rememberDescriptor(targetName: 'window' | 'navigator' | 'document', property: string, target: PropertyTarget) {
   const key = `${targetName}:${property}`;
 
   if (!originalDescriptors.has(key)) {
@@ -40,7 +42,7 @@ function rememberDescriptor(targetName: 'window' | 'navigator', property: string
 }
 
 function defineProperty(
-  targetName: 'window' | 'navigator',
+  targetName: 'window' | 'navigator' | 'document',
   target: PropertyTarget,
   property: string,
   descriptor: PropertyDescriptor,
@@ -52,12 +54,12 @@ function defineProperty(
   });
 }
 
-function removeProperty(targetName: 'window' | 'navigator', target: PropertyTarget, property: string) {
+function removeProperty(targetName: 'window' | 'navigator' | 'document', target: PropertyTarget, property: string) {
   rememberDescriptor(targetName, property, target);
   Reflect.deleteProperty(target, property);
 }
 
-function restoreProperty(targetName: 'window' | 'navigator', target: PropertyTarget, property: string) {
+function restoreProperty(targetName: 'window' | 'navigator' | 'document', target: PropertyTarget, property: string) {
   const key = `${targetName}:${property}`;
   const originalDescriptor = originalDescriptors.get(key);
 
@@ -181,6 +183,8 @@ export function installBrowserTestMocks(options: BrowserTestMockOptions = {}) {
     localStorageMode: options.localStorageMode ?? 'available',
     audioFrameValue: options.audioFrameValue ?? 0,
     sampleRate: options.sampleRate ?? 48_000,
+    maxTouchPoints: options.maxTouchPoints ?? 0,
+    visibilityState: options.visibilityState ?? ('visible' as DocumentVisibilityState),
   };
 
   const queryPermissionMock = vi.fn().mockResolvedValue({
@@ -243,6 +247,15 @@ export function installBrowserTestMocks(options: BrowserTestMockOptions = {}) {
     });
   }
 
+  defineProperty('navigator', navigator, 'maxTouchPoints', {
+    value: resolvedOptions.maxTouchPoints,
+  });
+
+  defineProperty('document', document, 'visibilityState', {
+    value: resolvedOptions.visibilityState,
+    writable: true,
+  });
+
   return {
     getUserMediaMock,
     queryPermissionMock,
@@ -260,4 +273,6 @@ export function resetBrowserTestMocks() {
   restoreProperty('navigator', navigator, 'mediaDevices');
   restoreProperty('navigator', navigator, 'permissions');
   restoreProperty('navigator', navigator, 'userAgent');
+  restoreProperty('navigator', navigator, 'maxTouchPoints');
+  restoreProperty('document', document, 'visibilityState');
 }

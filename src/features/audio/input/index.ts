@@ -1,4 +1,10 @@
-export { createAudioInputSession, DEFAULT_AUDIO_CAPTURE_CONSTRAINTS } from './session';
+export {
+  createAudioInputSession,
+  DEFAULT_AUDIO_CAPTURE_CONSTRAINTS,
+  isMobileDevice,
+  resumeOnGesture,
+  type AudioInputSessionOptions,
+} from './session';
 export { selectAudioSetupStatus } from './selectors';
 export { createUnsupportedAudioError, detectAudioInputSupport, queryMicrophonePermission } from './support';
 export type {

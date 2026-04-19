@@ -71,7 +71,7 @@ function getSetupGuidance(setup: ReturnType<typeof selectAudioSetupStatus>, last
         title: 'Microphone access is blocked',
         detail:
           lastErrorMessage ??
-          'Gameplay needs microphone access. Re-enable the microphone in browser site settings, then retry.',
+          'Gameplay needs microphone access. Re-enable the microphone in browser site settings, then retry. On iPhone, tap Allow when prompted. On Android, open browser settings and allow microphone for this site.',
         tone: 'warning' as const,
         alert: true,
       };
@@ -80,7 +80,7 @@ function getSetupGuidance(setup: ReturnType<typeof selectAudioSetupStatus>, last
         title: 'This browser cannot start the singing run',
         detail:
           lastErrorMessage ??
-          'Use a secure desktop browser with MediaDevices and Web Audio support to play the run.',
+          'Use a secure browser with MediaDevices and Web Audio support. On mobile, use Safari (iPhone) or Chrome (Android). Make sure your browser tab is in the foreground.',
         tone: 'warning' as const,
         alert: true,
       };
@@ -89,7 +89,7 @@ function getSetupGuidance(setup: ReturnType<typeof selectAudioSetupStatus>, last
         title: 'The microphone check hit an error',
         detail:
           lastErrorMessage ??
-          'Retry the microphone check. If another app is using the device, close it before trying again.',
+          'Retry the microphone check. If another app is using the device, close it before trying again. On mobile, make sure no other app is using the microphone and that the browser tab is active.',
         tone: 'warning' as const,
         alert: true,
       };

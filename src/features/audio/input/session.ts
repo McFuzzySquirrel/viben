@@ -9,11 +9,67 @@ export interface AudioFrame {
   stats: AudioCaptureStats;
 }
 
+export interface AudioInputSessionOptions {
+  /** Called when the AudioContext recovers from a suspended state (e.g. after a background tab). */
+  onAudioResumed?: () => void;
+}
+
 export interface AudioInputSession {
   metrics: AudioCaptureMetrics;
   ensureRunning: () => Promise<void>;
   readFrame: () => AudioFrame;
   close: () => Promise<void>;
+}
+
+// ---------------------------------------------------------------------------
+// Mobile device detection (FT-FR-11)
+// ---------------------------------------------------------------------------
+// Uses `navigator.maxTouchPoints` rather than user-agent sniffing, per
+// Feature PRD Section 13 Q4.  Mobile devices report ≥ 1 touch points.
+// ---------------------------------------------------------------------------
+
+export function isMobileDevice(): boolean {
+  return typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
+}
+
+// ---------------------------------------------------------------------------
+// Gesture-gated AudioContext resume (FT-FR-10)
+// ---------------------------------------------------------------------------
+// iOS Safari (and some other mobile browsers) block AudioContext playback
+// until a user gesture has occurred.  `resumeOnGesture` attaches a one-shot
+// click/touchstart listener that calls `audioContext.resume()` and resolves
+// the returned promise once the context is running.
+//
+// If the context is already running the promise resolves immediately with
+// no DOM side-effects.
+// ---------------------------------------------------------------------------
+
+export function resumeOnGesture(audioContext: AudioContext): Promise<void> {
+  if (audioContext.state === 'running') {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve) => {
+    const handleGesture = () => {
+      document.removeEventListener('click', handleGesture, true);
+      document.removeEventListener('touchstart', handleGesture, true);
+
+      void audioContext.resume().then(() => {
+        resolve();
+      });
+    };
+
+    document.addEventListener('click', handleGesture, { capture: true, once: false });
+    document.addEventListener('touchstart', handleGesture, { capture: true, once: false });
+
+    // Also check for a race where the context resumed between our check and
+    // listener registration.
+    if (audioContext.state === 'running') {
+      document.removeEventListener('click', handleGesture, true);
+      document.removeEventListener('touchstart', handleGesture, true);
+      resolve();
+    }
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -28,7 +84,9 @@ export interface AudioInputSession {
 // • noiseSuppression: false – the browser's noise gate can clip quiet
 //                             singing.  We handle noise at the classification
 //                             layer using RMS thresholds.
-// • autoGainControl: false  – AGC can distort sustained notes.
+// • autoGainControl: false  – AGC can distort sustained notes on desktop;
+//                             on mobile the default flips to `true` because
+//                             built-in phone mics benefit from AGC (FT-FR-11).
 // • analyserFftSize: 2048   – yields 2048 time-domain samples per frame.
 //                             At 48 kHz this is ~42 ms of audio — enough
 //                             for reliable YIN pitch detection down to
@@ -73,14 +131,21 @@ export const DEFAULT_AUDIO_CAPTURE_CONSTRAINTS: AudioCaptureConstraints = {
 
 export async function createAudioInputSession(
   overrides: Partial<AudioCaptureConstraints> = {},
+  options: AudioInputSessionOptions = {},
 ): Promise<AudioInputSession> {
-  const captureConstraints = {
+  // FT-FR-11 — mobile-aware autoGainControl default.  If the caller hasn't
+  // explicitly set `autoGainControl`, use `true` on mobile (phone mics
+  // benefit from AGC) and `false` on desktop (external mics don't).
+  const mobileAwareAudio: MediaTrackConstraints = {
+    ...DEFAULT_AUDIO_CAPTURE_CONSTRAINTS.audio,
+    autoGainControl: isMobileDevice(),
+    ...overrides.audio,
+  };
+
+  const captureConstraints: AudioCaptureConstraints = {
     ...DEFAULT_AUDIO_CAPTURE_CONSTRAINTS,
     ...overrides,
-    audio: {
-      ...DEFAULT_AUDIO_CAPTURE_CONSTRAINTS.audio,
-      ...overrides.audio,
-    },
+    audio: mobileAwareAudio,
   };
 
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -107,6 +172,27 @@ export async function createAudioInputSession(
   analyser.smoothingTimeConstant = captureConstraints.analyserSmoothingTimeConstant;
   source.connect(analyser);
 
+  // FT-FR-10 — kick-start a suspended AudioContext (iOS Safari gesture gate).
+  if (audioContext.state === 'suspended') {
+    void resumeOnGesture(audioContext);
+  }
+
+  // -------------------------------------------------------------------------
+  // Background-tab recovery (visibilitychange)
+  // -------------------------------------------------------------------------
+  // When the user switches back to the tab, the AudioContext may have been
+  // suspended by the browser.  Re-resume it and notify the caller so they
+  // can show a brief "Audio resumed" indicator (Section 13 Q5).
+  // -------------------------------------------------------------------------
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible' && audioContext.state === 'suspended') {
+      void audioContext.resume().then(() => {
+        options.onAudioResumed?.();
+      });
+    }
+  };
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
   const metrics: AudioCaptureMetrics = {
     sampleRate: audioContext.sampleRate,
     frameSize: analyser.fftSize,
@@ -117,7 +203,14 @@ export async function createAudioInputSession(
     metrics,
     ensureRunning: async () => {
       if (audioContext.state === 'suspended') {
+        // First attempt: direct resume (works on most browsers).
         await audioContext.resume();
+
+        // FT-FR-10 fallback — if the context is still suspended after
+        // resume() (iOS gesture gate), wait for a user gesture.
+        if (audioContext.state === 'suspended') {
+          await resumeOnGesture(audioContext);
+        }
       }
     },
     readFrame: () => {
@@ -144,6 +237,7 @@ export async function createAudioInputSession(
       };
     },
     close: async () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       source.disconnect();
       stream.getTracks().forEach((track) => track.stop());
 
