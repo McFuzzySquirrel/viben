@@ -190,7 +190,9 @@ function screenshotPath(name: string) {
 // ---------------------------------------------------------------------------
 
 test.describe('Walkthrough screenshots', () => {
-  test.beforeEach(async ({ context }) => {
+  test.beforeEach(async ({ context }, testInfo) => {
+    test.skip(testInfo.project.name === 'screenshots-mobile', 'Desktop-only tests');
+
     // Grant microphone permission so calibration and game screens render fully
     await context.grantPermissions(['microphone']);
     // Seed localStorage before any page loads
@@ -235,6 +237,45 @@ test.describe('Walkthrough screenshots', () => {
     await page.waitForSelector('.screen');
     await page.waitForTimeout(500);
     await page.screenshot({ path: screenshotPath('05-progress'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Mobile walkthrough screenshots (iPhone 14 viewport)
+// ---------------------------------------------------------------------------
+
+test.describe('Mobile walkthrough screenshots', () => {
+  test.beforeEach(async ({ context }, testInfo) => {
+    test.skip(testInfo.project.name !== 'screenshots-mobile', 'Mobile-only tests');
+
+    // Grant microphone permission so calibration and game screens render fully
+    await context.grantPermissions(['microphone']);
+    // Seed localStorage before any page loads
+    await context.addInitScript(seedStorageScript(SEED_PROGRESSION, SEED_VOICE_PROFILE));
+  });
+
+  test('06 — Home screen (mobile)', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.screen');
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: screenshotPath('06-home-mobile'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+
+  test('07 — Game screen (mobile)', async ({ page }) => {
+    await page.goto('/game');
+    await page.waitForSelector('.screen');
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: screenshotPath('07-game-mobile'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+
+  test('08 — Calibration screen (mobile)', async ({ page }) => {
+    await page.goto('/calibration');
+    await page.waitForSelector('.screen');
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: screenshotPath('08-calibration-mobile'), fullPage: true });
     await expect(page.locator('.screen')).toBeVisible();
   });
 });

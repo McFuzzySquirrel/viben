@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './scripts',
@@ -13,6 +13,19 @@ export default defineConfig({
     {
       name: 'screenshots',
       use: {
+        browserName: 'chromium',
+        launchOptions: {
+          args: [
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+          ],
+        },
+      },
+    },
+    {
+      name: 'screenshots-mobile',
+      use: {
+        ...devices['iPhone 14'],
         browserName: 'chromium',
         launchOptions: {
           args: [
