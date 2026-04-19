@@ -62,15 +62,7 @@ Track your run history, completion rates, difficulty records, trends, and earned
 
 ### Mobile Views
 
-The same screens adapt to phone-sized viewports:
-
-![Home screen on mobile — single-column layout with touch-friendly controls](docs/screenshots/06-home-mobile.png)
-
-![Game screen on mobile — compact HUD with rocket and prompt card](docs/screenshots/07-game-mobile.png)
-
-![Calibration screen on mobile — note capture in portrait layout](docs/screenshots/08-calibration-mobile.png)
-
-> **Regenerate screenshots:** `npm run screenshots` uses Playwright to capture fresh screenshots of every screen.
+tbd
 
 ## Getting Started
 
