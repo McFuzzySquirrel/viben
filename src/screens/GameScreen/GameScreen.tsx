@@ -9,6 +9,8 @@ import {
 } from '@features/game/components';
 import { selectRunProgress, useGameRunController } from '@features/game';
 import { useDifficultySelection } from '@features/settings';
+import { Tooltip } from '@shared/components/Tooltip';
+import { useFirstRunTooltips } from '@shared/hooks';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
 interface GameLaunchRouteState {
@@ -178,6 +180,15 @@ export function GameScreen() {
   const promptHoldPercent = clampPercent(runProgress?.promptProgressPercent ?? hud?.promptHoldPercent ?? 0);
   const isRunActive = state.status === 'active';
 
+  // First-run tooltip refs
+  const promptCardRef = useRef<HTMLDivElement>(null);
+  const stabilityMeterRef = useRef<HTMLDivElement>(null);
+  const rocketCardRef = useRef<HTMLDivElement>(null);
+  const moonProgressRef = useRef<HTMLDivElement>(null);
+
+  // First-run tooltip state — only shown during active gameplay
+  const tooltips = useFirstRunTooltips();
+
   useEffect(() => {
     if (!locationState?.autoStart || autoStartHandledRef.current) {
       return;
@@ -297,26 +308,30 @@ export function GameScreen() {
       </div>
 
       <div className="screen-grid screen-grid--game">
-        <PromptFocusCard
-          classificationLabel={toReadableClassificationLabel(latestSample?.classification ?? null)}
-          detectedLabel={detectedLabel}
-          feedbackDetail={feedbackCopy.detail}
-          feedbackLabel={feedbackCopy.badge}
-          holdPercent={promptHoldPercent}
-          matchState={audio.target.matchState}
-          promptLabel={currentPrompt?.label ?? 'Preparing note'}
-          promptScientificPitch={currentPrompt?.scientificPitch ?? '—'}
-        />
+        <div ref={promptCardRef}>
+          <PromptFocusCard
+            classificationLabel={toReadableClassificationLabel(latestSample?.classification ?? null)}
+            detectedLabel={detectedLabel}
+            feedbackDetail={feedbackCopy.detail}
+            feedbackLabel={feedbackCopy.badge}
+            holdPercent={promptHoldPercent}
+            matchState={audio.target.matchState}
+            promptLabel={currentPrompt?.label ?? 'Preparing note'}
+            promptScientificPitch={currentPrompt?.scientificPitch ?? '—'}
+          />
+        </div>
 
-        <RocketFlightCard
-          activeEvent={hud?.activeEvent ?? null}
-          altitudePercent={altitudePercent}
-          altitudeText={`${Math.round(hud?.altitude ?? 0)} / ${Math.round(hud?.targetAltitude ?? 1000)} altitude`}
-          boostsTriggered={hud?.boostsTriggered ?? 0}
-          hazardsTriggered={hud?.hazardsTriggered ?? 0}
-          matchState={audio.target.matchState}
-          rocketMode={hud?.rocketMode ?? null}
-        />
+        <div ref={rocketCardRef}>
+          <RocketFlightCard
+            activeEvent={hud?.activeEvent ?? null}
+            altitudePercent={altitudePercent}
+            altitudeText={`${Math.round(hud?.altitude ?? 0)} / ${Math.round(hud?.targetAltitude ?? 1000)} altitude`}
+            boostsTriggered={hud?.boostsTriggered ?? 0}
+            hazardsTriggered={hud?.hazardsTriggered ?? 0}
+            matchState={audio.target.matchState}
+            rocketMode={hud?.rocketMode ?? null}
+          />
+        </div>
 
         <article className="panel">
           <div className="panel__header">
@@ -361,20 +376,24 @@ export function GameScreen() {
             <StatusBadge label={hud?.rocketMode ?? 'awaiting launch'} tone="info" />
           </div>
 
-          <HudMeter
-            hint="Higher moon progress means the rocket is closer to the finish."
-            label="Moon progress"
-            percent={altitudePercent}
-            tone={audio.target.matchState === 'correct' ? 'success' : 'neutral'}
-            valueText={`${Math.round(altitudePercent)}%`}
-          />
-          <HudMeter
-            hint="If stability falls too low, the run will fail."
-            label="Rocket stability"
-            percent={stabilityPercent}
-            tone={stabilityPercent < 35 ? 'warning' : 'success'}
-            valueText={`${Math.round(hud?.stability ?? 0)} / 100`}
-          />
+          <div ref={moonProgressRef}>
+            <HudMeter
+              hint="Higher moon progress means the rocket is closer to the finish."
+              label="Moon progress"
+              percent={altitudePercent}
+              tone={audio.target.matchState === 'correct' ? 'success' : 'neutral'}
+              valueText={`${Math.round(altitudePercent)}%`}
+            />
+          </div>
+          <div ref={stabilityMeterRef}>
+            <HudMeter
+              hint="If stability falls too low, the run will fail."
+              label="Rocket stability"
+              percent={stabilityPercent}
+              tone={stabilityPercent < 35 ? 'warning' : 'success'}
+              valueText={`${Math.round(hud?.stability ?? 0)} / 100`}
+            />
+          </div>
         </article>
 
         {!isRunActive && (
@@ -425,6 +444,44 @@ export function GameScreen() {
           </article>
         )}
       </div>
+
+      {/* First-run contextual tooltips — shown only during active gameplay */}
+      {isRunActive ? (
+        <>
+          <Tooltip
+            content="Sing the note shown here to control your rocket!"
+            onDismiss={() => tooltips.dismiss('prompt-card')}
+            onSkipAll={tooltips.dismissAll}
+            position="bottom"
+            targetRef={promptCardRef}
+            visible={tooltips.shouldShow('prompt-card')}
+          />
+          <Tooltip
+            content="Keep your pitch steady to maintain stability"
+            onDismiss={() => tooltips.dismiss('stability-meter')}
+            onSkipAll={tooltips.dismissAll}
+            position="top"
+            targetRef={stabilityMeterRef}
+            visible={tooltips.shouldShow('stability-meter')}
+          />
+          <Tooltip
+            content="Watch the rocket's flame — it shows how well you're matching"
+            onDismiss={() => tooltips.dismiss('rocket-feedback')}
+            onSkipAll={tooltips.dismissAll}
+            position="bottom"
+            targetRef={rocketCardRef}
+            visible={tooltips.shouldShow('rocket-feedback')}
+          />
+          <Tooltip
+            content="This tracks your journey to the moon"
+            onDismiss={() => tooltips.dismiss('moon-progress')}
+            onSkipAll={tooltips.dismissAll}
+            position="top"
+            targetRef={moonProgressRef}
+            visible={tooltips.shouldShow('moon-progress')}
+          />
+        </>
+      ) : null}
     </section>
   );
 }
