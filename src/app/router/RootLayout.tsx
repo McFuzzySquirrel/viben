@@ -35,7 +35,7 @@ export function RootLayout() {
 
       <header className="shell__header">
         <div className="brand">
-          <img className="brand__logo" src="/viben-logo.png" alt="" />
+          <img className="brand__logo" src={`${import.meta.env.BASE_URL}viben-logo.png`} alt="" />
           <div>
             <p className="brand__eyebrow">Phase 1 foundation</p>
             <h1>Vib&apos;N: Rocket to the Moon</h1>
