@@ -689,6 +689,212 @@ button:focus-visible,
   animation: rocket-climb 0.9s ease-in-out infinite;
 }
 
+/* ── RocketSprite visual feedback ── */
+
+.rocket-sprite {
+  display: inline-block;
+  width: 2rem;
+  height: 3rem;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Body, nose, window, and fin default fills */
+.rocket-sprite__body {
+  fill: rgba(142, 203, 255, 0.85);
+}
+
+.rocket-sprite__nose {
+  fill: rgba(106, 183, 255, 0.95);
+}
+
+.rocket-sprite__window {
+  fill: rgba(15, 22, 51, 0.9);
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 1;
+}
+
+.rocket-sprite__fin {
+  fill: rgba(106, 183, 255, 0.7);
+}
+
+/* ── Flame base + size variants ── */
+
+.rocket-sprite__flame {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.rocket-sprite__flame-outer {
+  fill: rgba(255, 180, 80, 0.9);
+}
+
+.rocket-sprite__flame-inner {
+  fill: rgba(255, 240, 180, 0.95);
+}
+
+.rocket-sprite__flame--large {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.rocket-sprite__flame--small {
+  opacity: 0.7;
+  transform: scaleY(0.6);
+  transform-origin: 16px 38px;
+}
+
+.rocket-sprite__flame--none {
+  opacity: 0.15;
+  transform: scaleY(0.25);
+  transform-origin: 16px 38px;
+}
+
+/* ── Match-state color shifts ── */
+
+.rocket-sprite--correct .rocket-sprite__flame-outer {
+  fill: rgba(106, 183, 255, 0.9);
+}
+
+.rocket-sprite--correct .rocket-sprite__flame-inner {
+  fill: rgba(120, 234, 195, 0.95);
+}
+
+.rocket-sprite--correct .rocket-sprite__body {
+  fill: rgba(120, 234, 195, 0.8);
+}
+
+.rocket-sprite--incorrect .rocket-sprite__flame-outer {
+  fill: rgba(255, 149, 175, 0.85);
+}
+
+.rocket-sprite--incorrect .rocket-sprite__flame-inner {
+  fill: rgba(255, 200, 150, 0.9);
+}
+
+.rocket-sprite--incorrect .rocket-sprite__body {
+  fill: rgba(255, 149, 175, 0.65);
+}
+
+.rocket-sprite--silence .rocket-sprite__body {
+  fill: rgba(160, 170, 190, 0.55);
+}
+
+.rocket-sprite--silence .rocket-sprite__flame-outer {
+  fill: rgba(160, 170, 190, 0.3);
+}
+
+.rocket-sprite--silence .rocket-sprite__flame-inner {
+  fill: rgba(200, 210, 220, 0.3);
+}
+
+/* ── Mode animations ── */
+
+@keyframes rocket-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-1.5px); }
+  80% { transform: translateX(1.5px); }
+}
+
+@keyframes rocket-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(2deg); }
+  75% { transform: rotate(-2deg); }
+}
+
+@keyframes rocket-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(120, 234, 195, 0.4)); }
+  50% { filter: drop-shadow(0 0 12px rgba(120, 234, 195, 0.8)); }
+}
+
+@keyframes rocket-flicker {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+.rocket-sprite--steady {
+  filter: drop-shadow(0 0 6px rgba(106, 183, 255, 0.45));
+}
+
+.rocket-sprite--boosting {
+  animation: rocket-glow-pulse 0.8s ease-in-out infinite;
+}
+
+.rocket-sprite--drifting {
+  animation: rocket-wobble 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 3px rgba(142, 203, 255, 0.25));
+}
+
+.rocket-sprite--critical {
+  animation: rocket-shake 0.3s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(255, 149, 175, 0.5));
+}
+
+.rocket-sprite--offline {
+  filter: grayscale(0.8) opacity(0.5);
+}
+
+.rocket-sprite--offline .rocket-sprite__flame {
+  opacity: 0;
+}
+
+.rocket-sprite--boost-active {
+  filter: drop-shadow(0 0 10px rgba(120, 234, 195, 0.6))
+          drop-shadow(0 0 20px rgba(120, 234, 195, 0.3));
+}
+
+/* Combine boost-active glow with mode animations */
+.rocket-sprite--boosting.rocket-sprite--boost-active {
+  animation: rocket-glow-pulse 0.5s ease-in-out infinite;
+}
+
+/* ── RocketSprite reduced-motion guard ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .rocket-sprite--boosting,
+  .rocket-sprite--drifting,
+  .rocket-sprite--critical {
+    animation: none;
+  }
+
+  .rocket-sprite--boosting.rocket-sprite--boost-active {
+    animation: none;
+  }
+
+  .rocket-sprite__flame {
+    transition: none;
+  }
+
+  /* Keep static visual indicators for state — color and filter only */
+  .rocket-sprite--critical {
+    filter: drop-shadow(0 0 6px rgba(255, 149, 175, 0.5));
+  }
+
+  .rocket-sprite--boosting {
+    filter: drop-shadow(0 0 8px rgba(120, 234, 195, 0.6));
+  }
+}
+
+/* ── Prompt-card hold bar ── */
+
+.prompt-card__hold-bar {
+  overflow: hidden;
+  width: 100%;
+  height: 4px;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.prompt-card__hold-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(120, 234, 195, 0.95), rgba(106, 183, 255, 0.75));
+  transition: width 0.1s linear;
+}
+
 /* ── Milestone & achievement cards ── */
 
 .milestone-card {

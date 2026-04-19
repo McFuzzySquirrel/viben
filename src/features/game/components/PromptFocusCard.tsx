@@ -9,6 +9,8 @@ interface PromptFocusCardProps {
   feedbackDetail: string;
   detectedLabel: string;
   classificationLabel: string;
+  /** Optional hold-progress percentage (0–100). Shows inline bar when > 0. */
+  holdPercent?: number;
 }
 
 function getMatchTone(matchState: PitchTargetMatchState) {
@@ -66,6 +68,10 @@ function getSymbolClass(matchState: PitchTargetMatchState) {
   }
 }
 
+function clampPercent(value: number) {
+  return Math.max(0, Math.min(100, value));
+}
+
 export function PromptFocusCard({
   promptLabel,
   promptScientificPitch,
@@ -74,7 +80,9 @@ export function PromptFocusCard({
   feedbackDetail,
   detectedLabel,
   classificationLabel,
+  holdPercent,
 }: PromptFocusCardProps) {
+  const showHoldBar = holdPercent != null && holdPercent > 0;
   return (
     <article aria-labelledby="prompt-focus-heading" className="panel prompt-card">
       <div className="prompt-card__header">
@@ -94,6 +102,21 @@ export function PromptFocusCard({
         </p>
         <p className="sr-only">{getMatchStateLabel(matchState)}: sing {promptLabel}</p>
       </div>
+      {showHoldBar ? (
+        <div
+          aria-label="Note hold progress"
+          aria-valuemax={100}
+          aria-valuemin={0}
+          aria-valuenow={Math.round(clampPercent(holdPercent))}
+          className="prompt-card__hold-bar"
+          role="progressbar"
+        >
+          <span
+            className="prompt-card__hold-fill"
+            style={{ width: `${clampPercent(holdPercent)}%` }}
+          />
+        </div>
+      ) : null}
       <p className="prompt-card__pitch">{promptScientificPitch} target window</p>
 
       <p aria-live="polite" className="prompt-card__feedback">
