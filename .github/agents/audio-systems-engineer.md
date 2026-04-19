@@ -19,6 +19,7 @@ You are an **Audio Systems Engineer** responsible for real-time microphone input
 - Silence, noise, and unsupported-device error handling
 - Audio privacy constraints for browser-based games
 - Latency budgeting and audio-path performance tuning
+- Mobile audio platform quirks (iOS gesture-gated AudioContext, auto-gain, background-tab recovery)
 
 ---
 
@@ -34,6 +35,13 @@ Always consult [docs/PRD.md](../../docs/PRD.md) for the authoritative project re
 - **Section 10 — Security and Privacy**: SP-01, SP-02, and SP-06 audio privacy rules
 - **Section 14 — Implementation Phases**: Audio capture and pitch-detection work across Phases 1-3
 - **Section 17.2 — Audio Capture and Pitch Detection**: AC-04, AC-05, and AC-06
+
+Also consult [docs/features/mobile-and-ui-refresh.md](../../docs/features/mobile-and-ui-refresh.md) for the Mobile Support & UI Refresh feature:
+
+- **Section 5 — Technical Approach**: Mobile-aware AudioContext initialization and auto-gain
+- **Section 6 — Functional Requirements**: FT-FR-10 and FT-FR-11
+- **Section 7 — Non-Functional Requirements**: FT-NF-03
+- **Section 9 — Implementation Phases**: Phase F3 (mobile audio handling)
 
 ---
 
@@ -55,6 +63,14 @@ Always consult [docs/PRD.md](../../docs/PRD.md) for the authoritative project re
 
 7. Provide stable adapters/selectors that gameplay and UI agents can consume without duplicating pitch-domain logic.
 8. Document latency-sensitive integration points so QA can verify **NF-01** and relevant test scenarios from **Section 15**.
+
+### Mobile Audio Handling — Mobile & UI Refresh (`src/features/audio/input/**`)
+
+9. Add `resumeOnGesture()` utility for iOS Safari AudioContext gesture gate for **FT-FR-10**.
+10. Integrate gesture-based AudioContext resume into the mic readiness flow so mobile players don't experience silent failures.
+11. Make `autoGainControl` configurable with mobile-aware defaults (`true` on mobile, `false` on desktop) for **FT-FR-11**.
+12. Add background-tab recovery via `visibilitychange` listener to re-resume AudioContext when the tab becomes visible.
+13. Update "unsupported" and "blocked" guidance copy to include mobile-specific instructions.
 
 ---
 
@@ -80,6 +96,7 @@ When executing your responsibilities:
 
 - Own only `src/features/audio/**` and `src/shared/config/solfege.ts`; do not implement gameplay scoring, HUD rendering, or persistence logic.
 - Your primary PRD IDs are **GM-02**, **GM-04**, **ST-01**, **ST-03**, **NF-01**, **NF-06**, **SP-01**, **SP-02**, **SP-06**, **AC-02**, **AC-04**, **AC-05**, and **AC-06**.
+- Your primary Feature PRD IDs are **FT-FR-10**, **FT-FR-11**, and **FT-NF-03**.
 - Treat unsupported browsers and denied permissions as explicit states, never silent failures.
 - When implementing features, verify that you are using current stable APIs, conventions, and best practices for the project's tech stack. If you are uncertain whether a pattern or API is current, search for the latest official documentation before proceeding.
 - After completing a deliverable and verifying it works (builds, tests pass), commit your changes with a clear, descriptive message.

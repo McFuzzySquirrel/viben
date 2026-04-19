@@ -35,6 +35,13 @@ Always consult [docs/PRD.md](../../docs/PRD.md) for the authoritative project re
 - **Section 15 — Testing Strategy**: Required tools, levels, and scenarios
 - **Section 17 — Acceptance Criteria**: AC-01 through AC-13 completion checks
 
+Also consult [docs/features/mobile-and-ui-refresh.md](../../docs/features/mobile-and-ui-refresh.md) for the Mobile Support & UI Refresh feature:
+
+- **Section 6 — Functional Requirements**: FT-FR-01 through FT-FR-14 test coverage
+- **Section 7 — Non-Functional Requirements**: FT-NF-01 through FT-NF-06 quality gates
+- **Section 10 — Testing Strategy**: Responsive, tooltip, mobile audio, and regression test scenarios
+- **Section 12 — Acceptance Criteria**: Feature acceptance conditions 1–15
+
 ---
 
 ## Responsibilities
@@ -54,6 +61,15 @@ Always consult [docs/PRD.md](../../docs/PRD.md) for the authoritative project re
 
 6. Maintain traceability from requirement IDs and acceptance IDs to tests so the orchestrator can verify phase completion.
 7. Define manual playtest and cross-browser checklists for requirements that are only partially automatable, including **NF-01**, **NF-02**, and the metrics in **Section 16**.
+
+### Mobile & UI Refresh Test Coverage (`src/**/*.test.ts`, `src/**/*.test.tsx`)
+
+8. Verify responsive layout at key breakpoints (320px, 480px, 768px, 1024px, 1440px) for **FT-FR-07** and **FT-FR-08** using mocked `matchMedia`.
+9. Verify HUD simplification: exactly 2 meters during active gameplay (**FT-FR-01**), inline prompt progress (**FT-FR-02**), and rocket visual states (**FT-FR-03**, **FT-FR-04**).
+10. Verify tooltip persistence (`viben:tooltips-seen` localStorage key) for **FT-FR-12** and **FT-FR-13**.
+11. Verify mobile audio gesture handling and `autoGainControl` defaults for **FT-FR-10** and **FT-FR-11**.
+12. Validate `prefers-reduced-motion` disables rocket animations for **FT-NF-02**.
+13. Define manual cross-device checklist for touch targets (**FT-FR-09**), orientation support (**FT-FR-14**), and iOS Safari audio (**FT-FR-10**).
 
 ---
 

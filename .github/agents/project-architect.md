@@ -34,6 +34,11 @@ Always consult [docs/PRD.md](../../docs/PRD.md) for the authoritative project re
 - **Section 14 — Implementation Phases**: Phase 1 foundation deliverables and component traceability
 - **Section 17.5 — Architecture and Delivery**: AC-13 long-term stack acceptance criteria
 
+Also consult [docs/features/mobile-and-ui-refresh.md](../../docs/features/mobile-and-ui-refresh.md) for the Mobile Support & UI Refresh feature:
+
+- **Section 5.2 — New Components**: `useViewport` shared hook specification
+- **Section 9 — Implementation Phases**: Phase F2 (responsive layout) shared infrastructure
+
 ---
 
 ## Responsibilities
@@ -54,6 +59,10 @@ Always consult [docs/PRD.md](../../docs/PRD.md) for the authoritative project re
 
 7. Prevent introduction of third-party telemetry or ad SDKs prohibited by **SP-07**.
 8. Review new shared abstractions proposed by other agents and approve only those that preserve clear ownership boundaries from **Section 7.5**.
+
+### Shared Responsive Infrastructure — Mobile & UI Refresh (`src/shared/hooks/**`)
+
+9. Create and maintain the `useViewport` hook (`src/shared/hooks/useViewport.ts`) providing `matchMedia`-based breakpoint detection (mobile ≤480px, tablet ≤768px, desktop >768px) and orientation awareness for the Mobile & UI Refresh feature.
 
 ---
 
