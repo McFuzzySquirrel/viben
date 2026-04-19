@@ -4,7 +4,7 @@
 **Mode**: Feature Increment — Mobile Support & UI Refresh  
 **Feature PRD**: `docs/features/mobile-and-ui-refresh.md`  
 **Original PRD**: `docs/PRD.md` (all 3 phases complete)  
-**Phase**: Phase F2 — Responsive Layout & Touch Support  
+**Phase**: All feature phases complete  
 **Status**: ✅ Complete  
 **Last Updated**: 2026-04-19
 
@@ -72,7 +72,7 @@
 - [x] Original code archived on `archive/the-original-viben` branch
 
 ## Current Task
-None — Phase F2 complete. Next up: Phase F3 (Mobile Audio Handling) and Phase F4 (First-Run Tooltips).
+None — all 4 feature phases (F1–F4) complete. Mobile Support & UI Refresh feature fully implemented.
 
 ## Phase Dependencies
 
@@ -215,8 +215,8 @@ None — all tasks complete.
 |-------|------|--------|
 | F1 | HUD Simplification & Rocket Visual Feedback | ✅ Complete |
 | F2 | Responsive Layout & Touch Support | ✅ Complete |
-| F3 | Mobile Audio Handling | ⏳ Pending |
-| F4 | First-Run Contextual Tooltips | ⏳ Pending |
+| F3 | Mobile Audio Handling | ✅ Complete |
+| F4 | First-Run Contextual Tooltips | ✅ Complete |
 
 ### Phase F1 — Completed Tasks
 
@@ -270,3 +270,48 @@ None — all tasks complete.
 - Touch targets coexist with existing `:focus-visible` keyboard styling (FT-NF-04)
 - Replaced old 800px breakpoint with comprehensive 768px/480px system
 - `useViewport` hook uses `matchMedia` (not `resize` events) to stay in sync with CSS breakpoints
+
+### Phase F3 — Completed Tasks
+
+- [x] F3.1: Add `resumeOnGesture()` utility to `session.ts` for iOS Safari AudioContext gesture gate
+- [x] F3.2: Integrate gesture-based AudioContext resume into `createAudioInputSession()` and `ensureRunning()`
+- [x] F3.3: Add `isMobileDevice()` helper and mobile-aware `autoGainControl` defaults (true on mobile, false on desktop)
+- [x] F3.4: Add background-tab recovery via `visibilitychange` with `onAudioResumed` callback
+- [x] F3.5: Update HomeScreen guidance copy with mobile-specific instructions for blocked/unsupported/error states
+- [x] F3.6: Add 17 unit tests for mobile audio features (`src/features/audio/input/session.test.ts`)
+
+### Phase F3 — Verification
+
+| Check | Result |
+|-------|--------|
+| `npm run typecheck` | ✅ Pass |
+| `npm run test -- --run` | ✅ 313 passed, 0 failures |
+| `npm run build` | ✅ Built successfully |
+
+### Phase F3 — Notes
+- `isMobileDevice()` uses `navigator.maxTouchPoints > 0` (not user-agent sniffing)
+- `resumeOnGesture()` attaches one-shot `click`/`touchstart` listeners — no per-frame cost
+- `visibilitychange` listener cleaned up in `close()`
+- No changes to the `readFrame()` hot path — NF-01 latency budget preserved
+
+### Phase F4 — Completed Tasks
+
+- [x] F4.1: Create `Tooltip` component (`src/shared/components/Tooltip.tsx`) — viewport-aware positioning, keyboard accessible (Escape), "Got it" + "Skip all tips"
+- [x] F4.2: Create `useFirstRunTooltips` hook (`src/shared/hooks/useFirstRunTooltips.ts`) — sequenced display, localStorage persistence, corrupt data recovery
+- [x] F4.3: Add tooltip triggers to GameScreen — refs on PromptFocusCard, Stability meter, RocketFlightCard, Moon Progress meter
+- [x] F4.4: Add tooltip CSS to `global.css` — retro aesthetic, responsive, `prefers-reduced-motion` guard, z-index 2000
+- [x] F4.5: Add 24 tests — 13 for useFirstRunTooltips, 11 for Tooltip component
+
+### Phase F4 — Verification
+
+| Check | Result |
+|-------|--------|
+| `npm run typecheck` | ✅ Pass |
+| `npm run test -- --run` | ✅ 313 passed (272 + 41 new across F3+F4), 0 failures |
+| `npm run build` | ✅ Built successfully (402 KB JS, 20.5 KB CSS) |
+
+### Phase F4 — Notes
+- Tooltips show sequentially: prompt-card → stability-meter → rocket-feedback → moon-progress
+- Only displayed during active gameplay (not pre-run or post-run)
+- `viben:tooltips-seen` follows existing persistence conventions with graceful error recovery
+- Tooltip component uses `aria-live="polite"` and auto-focuses dismiss button for screen readers
