@@ -1,11 +1,12 @@
 # Project Progress
 
 ## Current State
-**Mode**: Full Build  
-**Phase**: Phase 3 — Replayability and Polish  
+**Mode**: Feature Increment — Mobile Support & UI Refresh  
+**Feature PRD**: `docs/features/mobile-and-ui-refresh.md`  
+**Original PRD**: `docs/PRD.md` (all 3 phases complete)  
+**Phase**: Phase F1 — HUD Simplification & Rocket Visual Feedback  
 **Status**: ✅ Complete  
-**Last Updated**: 2026-04-18  
-**PRD**: `docs/PRD.md`
+**Last Updated**: 2026-04-19
 
 ## Completed Tasks
 - [x] Execution planning completed (@project-orchestrator)
@@ -203,3 +204,42 @@ None — all tasks complete.
 - Task 3.5 verification: `npm run typecheck`, `npm run test`, and `npm run build` passed with 207 total tests after final regression, integration, calibration, and privacy assertion tests.
 - All 3 phases (17 tasks) complete. 207 tests across 18 test files. Build output: 378 KB JS, 12 KB CSS.
 - Branch `feat/rework-rocket` pushed to remote on 2026-04-18.
+
+---
+
+## Feature: Mobile Support & UI Refresh
+
+### Feature Phase Progress
+
+| Phase | Name | Status |
+|-------|------|--------|
+| F1 | HUD Simplification & Rocket Visual Feedback | ✅ Complete |
+| F2 | Responsive Layout & Touch Support | ⏳ Pending |
+| F3 | Mobile Audio Handling | ⏳ Pending |
+| F4 | First-Run Contextual Tooltips | ⏳ Pending |
+
+### Phase F1 — Completed Tasks
+
+- [x] F1.1: Create RocketSprite component (`src/features/game/components/RocketSprite.tsx`)
+- [x] F1.7: Add rocket animation CSS (`src/styles/global.css`)
+- [x] F1.3: Add inline prompt-hold to PromptFocusCard (`src/features/game/components/PromptFocusCard.tsx`)
+- [x] F1.2: Update RocketFlightCard to use RocketSprite (`src/features/game/components/RocketFlightCard.tsx`)
+- [x] F1.4: Remove Thrust and Prompt Hold HudMeters from GameScreen
+- [x] F1.5: Hide Mission Checklist and Mic Readout during active gameplay
+- [x] F1.6: Consolidate action buttons (context-sensitive button row)
+- [x] F1.8: Update existing tests for simplified HUD (`src/screens/GameScreen/GameScreen.test.tsx`)
+- [x] Export RocketSprite from barrel (`src/features/game/components/index.ts`)
+
+### Phase F1 — Verification
+
+| Check | Result |
+|-------|--------|
+| `npm run typecheck` | ✅ Pass |
+| `npm run test -- --run` | ✅ 266 passed, 0 failures |
+| `npm run build` | ✅ Built successfully |
+
+### Phase F1 — Notes
+- RocketSprite uses `matchState` (not normalized thrustPercent) for flame color
+- All rocket animations respect `prefers-reduced-motion`
+- 3 pre-existing test failures (AppShell ×2, ResultsScreen ×1) were resolved by button consolidation
+- Branch `feat/ui-mobile-suppot` pushed to remote on 2026-04-19.
