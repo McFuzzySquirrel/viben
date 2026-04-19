@@ -70,9 +70,11 @@
 - [x] Playwright screenshot capture for all screens (`docs/screenshots/`)
 - [x] README walkthrough section with screenshots
 - [x] Original code archived on `archive/the-original-viben` branch
+- [x] Mobile viewport screenshots (iPhone 14, 390×844) added to Playwright and README
+  - Files: `playwright.config.ts`, `scripts/capture-screenshots.spec.ts`, `README.md`, `docs/screenshots/06-home-mobile.png`, `docs/screenshots/07-game-mobile.png`, `docs/screenshots/08-calibration-mobile.png`
 
 ## Current Task
-None — all 4 feature phases (F1–F4) complete. Mobile Support & UI Refresh feature fully implemented.
+None — all feature work and documentation complete.
 
 ## Phase Dependencies
 
