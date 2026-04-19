@@ -4,7 +4,7 @@
 **Mode**: Feature Increment — Mobile Support & UI Refresh  
 **Feature PRD**: `docs/features/mobile-and-ui-refresh.md`  
 **Original PRD**: `docs/PRD.md` (all 3 phases complete)  
-**Phase**: Phase F1 — HUD Simplification & Rocket Visual Feedback  
+**Phase**: Phase F2 — Responsive Layout & Touch Support  
 **Status**: ✅ Complete  
 **Last Updated**: 2026-04-19
 
@@ -72,7 +72,7 @@
 - [x] Original code archived on `archive/the-original-viben` branch
 
 ## Current Task
-None — all phases and features complete. Merged to `main`.
+None — Phase F2 complete. Next up: Phase F3 (Mobile Audio Handling) and Phase F4 (First-Run Tooltips).
 
 ## Phase Dependencies
 
@@ -214,7 +214,7 @@ None — all tasks complete.
 | Phase | Name | Status |
 |-------|------|--------|
 | F1 | HUD Simplification & Rocket Visual Feedback | ✅ Complete |
-| F2 | Responsive Layout & Touch Support | ⏳ Pending |
+| F2 | Responsive Layout & Touch Support | ✅ Complete |
 | F3 | Mobile Audio Handling | ⏳ Pending |
 | F4 | First-Run Contextual Tooltips | ⏳ Pending |
 
@@ -243,3 +243,30 @@ None — all tasks complete.
 - All rocket animations respect `prefers-reduced-motion`
 - 3 pre-existing test failures (AppShell ×2, ResultsScreen ×1) were resolved by button consolidation
 - Branch `feat/ui-mobile-suppot` pushed to remote on 2026-04-19.
+
+### Phase F2 — Completed Tasks
+
+- [x] F2.1: Add responsive CSS breakpoints — tablet ≤768px, phone ≤480px (`src/styles/global.css`)
+- [x] F2.2: Convert `.hero` grid to single-column stack on mobile
+- [x] F2.3: Convert `.screen-grid`, `.metric-grid`, `.run-stat-grid` to responsive single-column on mobile
+- [x] F2.4: Implement `@media (pointer: coarse)` rules for 44×44px minimum touch targets
+- [x] F2.5: Create `useViewport` hook with `matchMedia`-based breakpoint detection (`src/shared/hooks/useViewport.ts`)
+- [x] F2.6: Add portrait and landscape orientation support via `@media (orientation: landscape)`
+- [x] F2.7: Adjust `.rocket-track` min-height for mobile (12rem tablet, 9rem phone, 8rem landscape)
+- [x] F2.8: Add overflow prevention (`overflow-x: hidden` on html, `overflow-wrap: break-word`)
+- [x] F2.9: Add useViewport tests (`src/shared/hooks/useViewport.test.ts` — 6 tests)
+- [x] F2.10: Create barrel export (`src/shared/hooks/index.ts`)
+
+### Phase F2 — Verification
+
+| Check | Result |
+|-------|--------|
+| `npm run typecheck` | ✅ Pass |
+| `npm run test -- --run` | ✅ 272 passed (266 + 6 new), 0 failures |
+| `npm run build` | ✅ Built successfully (396 KB JS, 18.6 KB CSS) |
+
+### Phase F2 — Notes
+- All responsive behavior is CSS-only (no JSX changes needed) — best for performance (FT-NF-01)
+- Touch targets coexist with existing `:focus-visible` keyboard styling (FT-NF-04)
+- Replaced old 800px breakpoint with comprehensive 768px/480px system
+- `useViewport` hook uses `matchMedia` (not `resize` events) to stay in sync with CSS breakpoints
