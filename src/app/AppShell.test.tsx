@@ -40,6 +40,9 @@ describe('App shell foundation coverage', () => {
   it('AC-03 persists the selected difficulty and carries it into the game shell route', async () => {
     const { router } = renderApp();
 
+    // Switch to the Difficulty tab to access the radio buttons
+    fireEvent.click(screen.getByRole('tab', { name: 'Difficulty' }));
+
     fireEvent.click(screen.getByRole('radio', { name: /hard/i }));
 
     await waitFor(() => {

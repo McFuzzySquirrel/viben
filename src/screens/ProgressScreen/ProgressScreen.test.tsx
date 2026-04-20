@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { VIBEN_LOCAL_SAVE_KEY, VIBEN_LOCAL_SAVE_VERSION } from '@shared/persistence';
 import { renderApp } from '../../test/render-app';
@@ -69,6 +69,10 @@ describe('Progress screen local comparison', () => {
         name: 'Local run history and comparison.',
       }),
     ).toBeInTheDocument();
+
+    // Switch to the Comparison tab to see comparison data
+    fireEvent.click(screen.getByRole('tab', { name: 'Comparison' }));
+
     expect(screen.getByText('Compare recent Normal runs')).toBeInTheDocument();
     expect(
       screen
@@ -80,6 +84,10 @@ describe('Progress screen local comparison', () => {
           ),
         ),
     ).toBe(true);
+
+    // Switch to the Overview tab to see recent runs
+    fireEvent.click(screen.getByRole('tab', { name: 'Overview' }));
+
     expect(
       screen
         .getAllByRole('listitem')

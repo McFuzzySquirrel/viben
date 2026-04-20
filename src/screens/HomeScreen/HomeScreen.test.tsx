@@ -8,14 +8,10 @@ describe('Home screen launch flow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Start singing run' }));
 
-    expect(
-      await screen.findByRole('heading', {
-        name: 'Sing the prompt and steer the rocket to the moon.',
-      }),
-    ).toBeInTheDocument();
-
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'End run' })).toBeEnabled();
     });
+
+    expect(screen.getByText('Run in progress')).toBeInTheDocument();
   });
 });

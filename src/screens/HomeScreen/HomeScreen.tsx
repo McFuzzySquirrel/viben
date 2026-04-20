@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { selectAudioSetupStatus, useAudioInput } from '@features/audio';
 import { StatusBadge } from '@features/game/components';
 import { useDifficultySelection } from '@features/settings';
+import { TabPanel } from '@shared/components/TabPanel';
 import { loadVoiceProfile } from '@shared/persistence/voice-profile-storage';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
@@ -193,77 +194,95 @@ export function HomeScreen() {
         </aside>
       </div>
 
-      <div className="screen-grid">
-        <article className="panel">
-          <fieldset className="selection-group">
-            <legend>Choose a launch difficulty</legend>
-            <p className="panel__supporting-copy" id="difficulty-help">
-              This choice carries into the run and stays saved locally for the next visit.
-            </p>
-            <div aria-describedby="difficulty-help" className="choice-grid">
-              {availableDifficulties.map((difficulty) => {
-                const isSelected = difficulty.id === selectedDifficultyId;
+      <TabPanel
+        label="Home screen sections"
+        tabs={[
+          {
+            id: 'setup',
+            label: 'Setup',
+            content: (
+              <div className="screen-grid">
+                <article className="panel">
+                  <h3>Microphone requirement</h3>
+                  <p className="panel__supporting-copy">
+                    You need microphone access to fly the rocket. The game screen will never silently fail;
+                    it will either confirm readiness or show a clear blocked message with a way back home.
+                  </p>
+                  <dl className="detail-list">
+                    <div>
+                      <dt>Browser support</dt>
+                      <dd>{microphone.state.support.isSupported ? 'Ready for microphone APIs' : 'Missing required browser APIs'}</dd>
+                    </div>
+                    <div>
+                      <dt>Permission</dt>
+                      <dd>{microphone.state.permission}</dd>
+                    </div>
+                    <div>
+                      <dt>Setup state</dt>
+                      <dd>{formatSetupLabel(setup.stage)}</dd>
+                    </div>
+                    <div>
+                      <dt>Current capture</dt>
+                      <dd>{microphone.state.isCapturing ? 'Live input detected' : 'Not yet capturing'}</dd>
+                    </div>
+                  </dl>
+                </article>
 
-                return (
-                  <label
-                    className={isSelected ? 'choice-card choice-card--selected' : 'choice-card'}
-                    key={difficulty.id}
-                  >
-                    <input
-                      checked={isSelected}
-                      className="choice-card__input"
-                      name="difficulty"
-                      onChange={() => setSelectedDifficulty(difficulty.id)}
-                      type="radio"
-                      value={difficulty.id}
-                    />
-                    <span className="choice-card__title-row">
-                      <span>{difficulty.label}</span>
-                      {isSelected ? <StatusBadge label="Selected" tone="success" /> : null}
-                    </span>
-                    <span className="choice-card__description">{difficulty.summary}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </fieldset>
-        </article>
+                <article className="panel">
+                  <h3>Keyboard-friendly launch tips</h3>
+                  <ul className="feature-list">
+                    <li>Use Tab and Shift+Tab to move between difficulty cards and action buttons.</li>
+                    <li>Press Space or Enter on a radio button to change difficulty.</li>
+                    <li>Use Start singing run to move straight into the playable HUD without pointer-only steps.</li>
+                  </ul>
+                </article>
+              </div>
+            ),
+          },
+          {
+            id: 'difficulty',
+            label: 'Difficulty',
+            content: (
+              <div className="screen-grid">
+                <article className="panel">
+                  <fieldset className="selection-group">
+                    <legend>Choose a launch difficulty</legend>
+                    <p className="panel__supporting-copy" id="difficulty-help">
+                      This choice carries into the run and stays saved locally for the next visit.
+                    </p>
+                    <div aria-describedby="difficulty-help" className="choice-grid">
+                      {availableDifficulties.map((difficulty) => {
+                        const isSelected = difficulty.id === selectedDifficultyId;
 
-        <article className="panel">
-          <h3>Microphone requirement</h3>
-          <p className="panel__supporting-copy">
-            You need microphone access to fly the rocket. The game screen will never silently fail;
-            it will either confirm readiness or show a clear blocked message with a way back home.
-          </p>
-          <dl className="detail-list">
-            <div>
-              <dt>Browser support</dt>
-              <dd>{microphone.state.support.isSupported ? 'Ready for microphone APIs' : 'Missing required browser APIs'}</dd>
-            </div>
-            <div>
-              <dt>Permission</dt>
-              <dd>{microphone.state.permission}</dd>
-            </div>
-            <div>
-              <dt>Setup state</dt>
-              <dd>{formatSetupLabel(setup.stage)}</dd>
-            </div>
-            <div>
-              <dt>Current capture</dt>
-              <dd>{microphone.state.isCapturing ? 'Live input detected' : 'Not yet capturing'}</dd>
-            </div>
-          </dl>
-        </article>
-
-        <article className="panel">
-          <h3>Keyboard-friendly launch tips</h3>
-          <ul className="feature-list">
-            <li>Use Tab and Shift+Tab to move between difficulty cards and action buttons.</li>
-            <li>Press Space or Enter on a radio button to change difficulty.</li>
-            <li>Use Start singing run to move straight into the playable HUD without pointer-only steps.</li>
-          </ul>
-        </article>
-      </div>
+                        return (
+                          <label
+                            className={isSelected ? 'choice-card choice-card--selected' : 'choice-card'}
+                            key={difficulty.id}
+                          >
+                            <input
+                              checked={isSelected}
+                              className="choice-card__input"
+                              name="difficulty"
+                              onChange={() => setSelectedDifficulty(difficulty.id)}
+                              type="radio"
+                              value={difficulty.id}
+                            />
+                            <span className="choice-card__title-row">
+                              <span>{difficulty.label}</span>
+                              {isSelected ? <StatusBadge label="Selected" tone="success" /> : null}
+                            </span>
+                            <span className="choice-card__description">{difficulty.summary}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+                </article>
+              </div>
+            ),
+          },
+        ]}
+      />
     </section>
   );
 }

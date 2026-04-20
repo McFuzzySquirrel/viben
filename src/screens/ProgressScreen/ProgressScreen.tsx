@@ -10,6 +10,7 @@ import {
   type ProgressMilestoneRecord,
 } from '@features/progression';
 import { getDifficultyDefinition, DIFFICULTY_IDS } from '@shared/config/difficulty';
+import { TabPanel } from '@shared/components/TabPanel';
 import { loadProgressionState } from '@shared/persistence';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
@@ -107,251 +108,276 @@ export function ProgressScreen() {
         </aside>
       </div>
 
-      <div className="metric-grid">
-        <article className="panel metric-card">
-          <p>Stored runs</p>
-          <strong>{progressionSnapshot.save.runHistory.length}</strong>
-        </article>
-        <article className="panel metric-card">
-          <p>Best local score</p>
-          <strong>{overallBestRun ? overallBestRun.score : '—'}</strong>
-        </article>
-        <article className="panel metric-card">
-          <p>Completion rate</p>
-          <strong>{overallCompletionRate > 0 ? `${overallCompletionRate}%` : '—'}</strong>
-        </article>
-        <article className="panel metric-card">
-          <p>Milestones earned</p>
-          <strong>{overallSummary.totalMilestones}</strong>
-        </article>
-        <article className="panel metric-card">
-          <p>Favorite difficulty</p>
-          <strong>{overallSummary.favoriteDifficulty ? getDifficultyDefinition(overallSummary.favoriteDifficulty).label : '—'}</strong>
-        </article>
-        <article className="panel metric-card">
-          <p>Save issues</p>
-          <strong>{progressionSnapshot.issues.length}</strong>
-        </article>
-      </div>
-
-      <div className="screen-grid">
-        <article className="panel">
-          <div className="panel__header">
-            <div>
-              <p className="screen__eyebrow">Recent sessions</p>
-              <h3>Recent local runs</h3>
-            </div>
-            <StatusBadge label={recentRuns.length > 0 ? 'Read back from save' : 'No history yet'} tone="info" />
-          </div>
-
-          {recentRuns.length > 0 ? (
-            <ul className="feature-list">
-              {recentRuns.map((run) => (
-                <li key={run.id}>
-                  <strong>{run.score}</strong> on {getDifficultyDefinition(run.difficultyId).label} •{' '}
-                  {formatOutcome(run.outcome)} • {formatDuration(run.durationMs)} •{' '}
-                  {formatNullableValue(run.performance.accuracyPercent, '%')} accuracy •{' '}
-                  {formatNullableValue(run.performance.promptsCleared)} /{' '}
-                  {formatNullableValue(run.performance.promptsPresented)} prompts • {run.hazardsFaced}{' '}
-                  hazards • {run.boostsCaught} boosts
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="panel__supporting-copy">
-              Finish a run to start building the first refresh-safe local history list.
-            </p>
-          )}
-        </article>
-
-        <article className="panel">
-          <div className="panel__header">
-            <div>
-              <p className="screen__eyebrow">Same-device comparison</p>
-              <h3>Compare recent {selectedDifficulty.label} runs</h3>
-            </div>
-            <StatusBadge
-              label={selectedDifficultyComparison.entries.length > 1 ? 'Deltas ready' : 'Needs two runs'}
-              tone="success"
-            />
-          </div>
-
-          {selectedDifficultyComparison.entries.length > 0 ? (
-            <ul className="feature-list">
-              {selectedDifficultyComparison.entries.map((entry) => (
-                <li key={entry.runId}>
-                  <strong>{entry.score}</strong> score ({entry.stars} stars) •{' '}
-                  {formatOutcome(entry.outcome)} • Δ score {formatDelta(entry.scoreDelta)} • Δ accuracy{' '}
-                  {formatDelta(entry.accuracyDeltaPercent, '%')} • Δ target time{' '}
-                  {formatDelta(entry.timeOnTargetDeltaMs, ' ms')}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="panel__supporting-copy">
-              Save at least one {selectedDifficulty.label.toLowerCase()} run to unlock this view.
-            </p>
-          )}
-        </article>
-      </div>
-
-      {progressionSnapshot.save.milestones.length > 0 ? (
-        <div className="screen-grid">
-          {(['participation', 'performance', 'difficulty'] as const).map((kind) => {
-            const milestones = milestonesByKind[kind];
-            if (!milestones || milestones.length === 0) {
-              return null;
-            }
-            const kindIcon = kind === 'performance' ? '⭐' : kind === 'difficulty' ? '🎮' : '🏅';
-            return (
-              <article className="panel" key={kind} aria-label={`${milestoneKindLabels[kind]} milestones`}>
-                <div className="panel__header">
-                  <div>
-                    <p className="screen__eyebrow">Milestones</p>
-                    <h3>{milestoneKindLabels[kind]}</h3>
-                  </div>
-                  <StatusBadge label={`${milestones.length} earned`} tone="success" />
+      <TabPanel
+        label="Progress sections"
+        tabs={[
+          {
+            id: 'overview',
+            label: 'Overview',
+            content: (
+              <>
+                <div className="metric-grid">
+                  <article className="panel metric-card">
+                    <p>Stored runs</p>
+                    <strong>{progressionSnapshot.save.runHistory.length}</strong>
+                  </article>
+                  <article className="panel metric-card">
+                    <p>Best local score</p>
+                    <strong>{overallBestRun ? overallBestRun.score : '—'}</strong>
+                  </article>
+                  <article className="panel metric-card">
+                    <p>Completion rate</p>
+                    <strong>{overallCompletionRate > 0 ? `${overallCompletionRate}%` : '—'}</strong>
+                  </article>
+                  <article className="panel metric-card">
+                    <p>Milestones earned</p>
+                    <strong>{overallSummary.totalMilestones}</strong>
+                  </article>
+                  <article className="panel metric-card">
+                    <p>Favorite difficulty</p>
+                    <strong>{overallSummary.favoriteDifficulty ? getDifficultyDefinition(overallSummary.favoriteDifficulty).label : '—'}</strong>
+                  </article>
+                  <article className="panel metric-card">
+                    <p>Save issues</p>
+                    <strong>{progressionSnapshot.issues.length}</strong>
+                  </article>
                 </div>
-                <div className="milestone-grid">
-                  {milestones.map((m) => {
-                    const def = getMilestoneDefinition(m.id);
-                    return (
-                      <div className="milestone-card" key={m.id}>
-                        <span className="milestone-card__icon" aria-hidden="true">{kindIcon}</span>
-                        <div className="milestone-card__body">
-                          <span className="milestone-card__label">{def?.label ?? m.id}</span>
-                          <span className="milestone-card__description">{def?.description ?? m.kind}</span>
-                        </div>
+
+                <div className="screen-grid">
+                  <article className="panel">
+                    <div className="panel__header">
+                      <div>
+                        <p className="screen__eyebrow">Recent sessions</p>
+                        <h3>Recent local runs</h3>
                       </div>
+                      <StatusBadge label={recentRuns.length > 0 ? 'Read back from save' : 'No history yet'} tone="info" />
+                    </div>
+
+                    {recentRuns.length > 0 ? (
+                      <ul className="feature-list">
+                        {recentRuns.map((run) => (
+                          <li key={run.id}>
+                            <strong>{run.score}</strong> on {getDifficultyDefinition(run.difficultyId).label} •{' '}
+                            {formatOutcome(run.outcome)} • {formatDuration(run.durationMs)} •{' '}
+                            {formatNullableValue(run.performance.accuracyPercent, '%')} accuracy •{' '}
+                            {formatNullableValue(run.performance.promptsCleared)} /{' '}
+                            {formatNullableValue(run.performance.promptsPresented)} prompts • {run.hazardsFaced}{' '}
+                            hazards • {run.boostsCaught} boosts
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="panel__supporting-copy">
+                        Finish a run to start building the first refresh-safe local history list.
+                      </p>
+                    )}
+                  </article>
+
+                  <article className="panel">
+                    <h3>Save recovery</h3>
+                    {progressionSnapshot.issues.length > 0 ? (
+                      <ul className="feature-list">
+                        {progressionSnapshot.issues.map((issue) => (
+                          <li key={issue}>{issue}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="panel__supporting-copy">
+                        No save recovery issues were detected when reloading local run history.
+                      </p>
+                    )}
+                  </article>
+                </div>
+              </>
+            ),
+          },
+          {
+            id: 'comparison',
+            label: 'Comparison',
+            content: (
+              <div className="screen-grid">
+                <article className="panel">
+                  <div className="panel__header">
+                    <div>
+                      <p className="screen__eyebrow">Same-device comparison</p>
+                      <h3>Compare recent {selectedDifficulty.label} runs</h3>
+                    </div>
+                    <StatusBadge
+                      label={selectedDifficultyComparison.entries.length > 1 ? 'Deltas ready' : 'Needs two runs'}
+                      tone="success"
+                    />
+                  </div>
+
+                  {selectedDifficultyComparison.entries.length > 0 ? (
+                    <ul className="feature-list">
+                      {selectedDifficultyComparison.entries.map((entry) => (
+                        <li key={entry.runId}>
+                          <strong>{entry.score}</strong> score ({entry.stars} stars) •{' '}
+                          {formatOutcome(entry.outcome)} • Δ score {formatDelta(entry.scoreDelta)} • Δ accuracy{' '}
+                          {formatDelta(entry.accuracyDeltaPercent, '%')} • Δ target time{' '}
+                          {formatDelta(entry.timeOnTargetDeltaMs, ' ms')}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="panel__supporting-copy">
+                      Save at least one {selectedDifficulty.label.toLowerCase()} run to unlock this view.
+                    </p>
+                  )}
+                </article>
+
+                <article className="panel">
+                  <h3>Next comparison checks</h3>
+                  <ul className="feature-list">
+                    <li>Verify repeated runs keep history sorted newest-first.</li>
+                    <li>Verify refresh still restores recent runs and difficulty records.</li>
+                    <li>Verify failed, abandoned, and completed runs all read back safely.</li>
+                  </ul>
+                </article>
+              </div>
+            ),
+          },
+          {
+            id: 'records',
+            label: 'Records',
+            content: (
+              <>
+                {progressionSnapshot.save.milestones.length > 0 ? (
+                  <div className="screen-grid">
+                    {(['participation', 'performance', 'difficulty'] as const).map((kind) => {
+                      const milestones = milestonesByKind[kind];
+                      if (!milestones || milestones.length === 0) {
+                        return null;
+                      }
+                      const kindIcon = kind === 'performance' ? '⭐' : kind === 'difficulty' ? '🎮' : '🏅';
+                      return (
+                        <article className="panel" key={kind} aria-label={`${milestoneKindLabels[kind]} milestones`}>
+                          <div className="panel__header">
+                            <div>
+                              <p className="screen__eyebrow">Milestones</p>
+                              <h3>{milestoneKindLabels[kind]}</h3>
+                            </div>
+                            <StatusBadge label={`${milestones.length} earned`} tone="success" />
+                          </div>
+                          <div className="milestone-grid">
+                            {milestones.map((m) => {
+                              const def = getMilestoneDefinition(m.id);
+                              return (
+                                <div className="milestone-card" key={m.id}>
+                                  <span className="milestone-card__icon" aria-hidden="true">{kindIcon}</span>
+                                  <div className="milestone-card__body">
+                                    <span className="milestone-card__label">{def?.label ?? m.id}</span>
+                                    <span className="milestone-card__description">{def?.description ?? m.kind}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="screen-grid">
+                    <article className="panel" aria-label="Milestones">
+                      <div className="panel__header">
+                        <div>
+                          <p className="screen__eyebrow">Milestones</p>
+                          <h3>Achievements</h3>
+                        </div>
+                        <StatusBadge label="None yet" tone="info" />
+                      </div>
+                      <div className="empty-state">
+                        <span className="empty-state__icon" aria-hidden="true">🏅</span>
+                        <p className="empty-state__heading">No milestones earned yet</p>
+                        <p className="empty-state__copy">
+                          Complete runs, reach score targets, and try new difficulties to unlock your first achievements.
+                        </p>
+                      </div>
+                    </article>
+                  </div>
+                )}
+
+                <div className="screen-grid">
+                  {difficultyRecords.map((record) => {
+                    const completionRate = getCompletionRate(progressionSnapshot.save.runHistory, record.difficultyId);
+                    const trend = getRecentTrend(progressionSnapshot.save.runHistory, record.difficultyId);
+
+                    return (
+                    <article className="panel" key={record.difficultyId}>
+                      <div className="panel__header">
+                        <div>
+                          <p className="screen__eyebrow">Difficulty record</p>
+                          <h3>{getDifficultyDefinition(record.difficultyId).label}</h3>
+                        </div>
+                        <StatusBadge
+                          label={record.isUnlocked ? 'Unlocked' : 'Locked'}
+                          tone={record.isUnlocked ? 'success' : 'warning'}
+                        />
+                      </div>
+
+                      <dl className="detail-list">
+                        <div>
+                          <dt>Runs played</dt>
+                          <dd>{record.runCount}</dd>
+                        </div>
+                        <div>
+                          <dt>Completed runs</dt>
+                          <dd>{record.completedRunCount}</dd>
+                        </div>
+                        <div>
+                          <dt>Completion rate</dt>
+                          <dd>{record.runCount > 0 ? `${completionRate}%` : '—'}</dd>
+                        </div>
+                        <div>
+                          <dt>Best score</dt>
+                          <dd>{formatNullableValue(record.bestScore)}</dd>
+                        </div>
+                        <div>
+                          <dt>Best stars</dt>
+                          <dd>{formatNullableValue(record.bestStars)}</dd>
+                        </div>
+                        <div>
+                          <dt>Best accuracy</dt>
+                          <dd>{formatNullableValue(record.bestAccuracyPercent, '%')}</dd>
+                        </div>
+                        <div>
+                          <dt>Best target time</dt>
+                          <dd>{formatNullableValue(record.bestTimeOnTargetMs, ' ms')}</dd>
+                        </div>
+                        <div>
+                          <dt>Recent trend</dt>
+                          <dd>
+                            {trend === 'improving' ? (
+                              <span className="trend-badge trend-badge--improving">
+                                <em className="trend-badge__arrow" aria-hidden="true">▲</em>
+                                Improving
+                              </span>
+                            ) : trend === 'declining' ? (
+                              <span className="trend-badge trend-badge--declining">
+                                <em className="trend-badge__arrow" aria-hidden="true">▼</em>
+                                Declining
+                              </span>
+                            ) : trend === 'stable' ? (
+                              <span className="trend-badge trend-badge--stable">
+                                <em className="trend-badge__arrow" aria-hidden="true">▸</em>
+                                Stable
+                              </span>
+                            ) : (
+                              '—'
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
+                    </article>
                     );
                   })}
                 </div>
-              </article>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="screen-grid">
-          <article className="panel" aria-label="Milestones">
-            <div className="panel__header">
-              <div>
-                <p className="screen__eyebrow">Milestones</p>
-                <h3>Achievements</h3>
-              </div>
-              <StatusBadge label="None yet" tone="info" />
-            </div>
-            <div className="empty-state">
-              <span className="empty-state__icon" aria-hidden="true">🏅</span>
-              <p className="empty-state__heading">No milestones earned yet</p>
-              <p className="empty-state__copy">
-                Complete runs, reach score targets, and try new difficulties to unlock your first achievements.
-              </p>
-            </div>
-          </article>
-        </div>
-      )}
-
-      <div className="screen-grid">
-        {difficultyRecords.map((record) => {
-          const completionRate = getCompletionRate(progressionSnapshot.save.runHistory, record.difficultyId);
-          const trend = getRecentTrend(progressionSnapshot.save.runHistory, record.difficultyId);
-
-          return (
-          <article className="panel" key={record.difficultyId}>
-            <div className="panel__header">
-              <div>
-                <p className="screen__eyebrow">Difficulty record</p>
-                <h3>{getDifficultyDefinition(record.difficultyId).label}</h3>
-              </div>
-              <StatusBadge
-                label={record.isUnlocked ? 'Unlocked' : 'Locked'}
-                tone={record.isUnlocked ? 'success' : 'warning'}
-              />
-            </div>
-
-            <dl className="detail-list">
-              <div>
-                <dt>Runs played</dt>
-                <dd>{record.runCount}</dd>
-              </div>
-              <div>
-                <dt>Completed runs</dt>
-                <dd>{record.completedRunCount}</dd>
-              </div>
-              <div>
-                <dt>Completion rate</dt>
-                <dd>{record.runCount > 0 ? `${completionRate}%` : '—'}</dd>
-              </div>
-              <div>
-                <dt>Best score</dt>
-                <dd>{formatNullableValue(record.bestScore)}</dd>
-              </div>
-              <div>
-                <dt>Best stars</dt>
-                <dd>{formatNullableValue(record.bestStars)}</dd>
-              </div>
-              <div>
-                <dt>Best accuracy</dt>
-                <dd>{formatNullableValue(record.bestAccuracyPercent, '%')}</dd>
-              </div>
-              <div>
-                <dt>Best target time</dt>
-                <dd>{formatNullableValue(record.bestTimeOnTargetMs, ' ms')}</dd>
-              </div>
-              <div>
-                <dt>Recent trend</dt>
-                <dd>
-                  {trend === 'improving' ? (
-                    <span className="trend-badge trend-badge--improving">
-                      <em className="trend-badge__arrow" aria-hidden="true">▲</em>
-                      Improving
-                    </span>
-                  ) : trend === 'declining' ? (
-                    <span className="trend-badge trend-badge--declining">
-                      <em className="trend-badge__arrow" aria-hidden="true">▼</em>
-                      Declining
-                    </span>
-                  ) : trend === 'stable' ? (
-                    <span className="trend-badge trend-badge--stable">
-                      <em className="trend-badge__arrow" aria-hidden="true">▸</em>
-                      Stable
-                    </span>
-                  ) : (
-                    '—'
-                  )}
-                </dd>
-              </div>
-            </dl>
-          </article>
-          );
-        })}
-      </div>
-
-      <div className="screen-grid">
-        <article className="panel">
-          <h3>Save recovery</h3>
-          {progressionSnapshot.issues.length > 0 ? (
-            <ul className="feature-list">
-              {progressionSnapshot.issues.map((issue) => (
-                <li key={issue}>{issue}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="panel__supporting-copy">
-              No save recovery issues were detected when reloading local run history.
-            </p>
-          )}
-        </article>
-
-        <article className="panel">
-          <h3>Next comparison checks</h3>
-          <ul className="feature-list">
-            <li>Verify repeated runs keep history sorted newest-first.</li>
-            <li>Verify refresh still restores recent runs and difficulty records.</li>
-            <li>Verify failed, abandoned, and completed runs all read back safely.</li>
-          </ul>
-        </article>
-      </div>
+              </>
+            ),
+          },
+        ]}
+      />
 
       <div className="button-row">
         <Link className="button" to={APP_ROUTE_PATHS.home}>

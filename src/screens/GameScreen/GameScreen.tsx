@@ -217,81 +217,63 @@ export function GameScreen() {
 
   return (
     <section className="screen">
-      <div className="hero">
-        <div className="hero__copy">
-          <p className="screen__eyebrow">Active mission</p>
-          <h2>Sing the prompt and steer the rocket to the moon.</h2>
-          <p className="screen__lead">
-            One note prompt stays in focus at a time. Correct singing lifts the rocket, missing or
-            wrong input causes visible drift, and hazards or boosts appear in the same run loop.
-          </p>
+      {!isRunActive && (
+        <div className="hero">
+          <div className="hero__copy">
+            <p className="screen__eyebrow">Active mission</p>
+            <h2>Sing the prompt and steer the rocket to the moon.</h2>
+            <p className="screen__lead">
+              One note prompt stays in focus at a time. Correct singing lifts the rocket, missing or
+              wrong input causes visible drift, and hazards or boosts appear in the same run loop.
+            </p>
 
-          <div className="status-row" aria-label="Live run summary">
-            <StatusBadge label={`Difficulty: ${selectedDifficulty.label}`} tone="success" />
-            <StatusBadge label={runStatus.label} tone={runStatus.tone} />
-            <StatusBadge label={`Mic: ${audio.setup.stage}`} tone={microphoneTone} />
-            <span aria-live="polite" aria-atomic="true">
-              <StatusBadge label={`Score: ${hud?.score ?? 0}`} tone="info" />
-            </span>
-          </div>
+            <div className="status-row" aria-label="Live run summary">
+              <StatusBadge label={`Difficulty: ${selectedDifficulty.label}`} tone="success" />
+              <StatusBadge label={runStatus.label} tone={runStatus.tone} />
+              <StatusBadge label={`Mic: ${audio.setup.stage}`} tone={microphoneTone} />
+              <span aria-live="polite" aria-atomic="true">
+                <StatusBadge label={`Score: ${hud?.score ?? 0}`} tone="info" />
+              </span>
+            </div>
 
-          <p
-            className={`inline-message inline-message--${runStatus.tone}`}
-            role={runStatus.alert ? 'alert' : undefined}
-          >
-            <strong>{runStatus.label}.</strong> {runStatus.detail}
-          </p>
+            <p
+              className={`inline-message inline-message--${runStatus.tone}`}
+              role={runStatus.alert ? 'alert' : undefined}
+            >
+              <strong>{runStatus.label}.</strong> {runStatus.detail}
+            </p>
 
-          <div className="button-row">
-            {isRunActive ? (
-              <>
-                <button
-                  className="button"
-                  disabled={!gameplay.canAbandonRun}
-                  onClick={gameplay.abandonRun}
-                  type="button"
-                >
-                  End run
-                </button>
-                <Link className="button button--secondary" to={APP_ROUTE_PATHS.home}>
-                  Back to home
-                </Link>
-              </>
-            ) : (
-              <>
-                <button
-                  className="button"
-                  onClick={() => void gameplay.startRun()}
-                  type="button"
-                >
-                  {gameplay.latestSummary ? 'Retry run' : 'Start run'}
-                </button>
+            <div className="button-row">
+              <button
+                className="button"
+                onClick={() => void gameplay.startRun()}
+                type="button"
+              >
+                {gameplay.latestSummary ? 'Retry run' : 'Start run'}
+              </button>
+              <button
+                className="button button--secondary"
+                disabled={!gameplay.canRetrySetup}
+                onClick={() => void gameplay.requestMicrophoneAccess()}
+                type="button"
+              >
+                {audio.state.isCapturing ? 'Refresh microphone access' : 'Request microphone access'}
+              </button>
+              <Link className="button button--secondary" to={APP_ROUTE_PATHS.home}>
+                Back to home
+              </Link>
+              {audio.state.isCapturing ? (
                 <button
                   className="button button--secondary"
-                  disabled={!gameplay.canRetrySetup}
-                  onClick={() => void gameplay.requestMicrophoneAccess()}
+                  onClick={() => void audio.stopCapture()}
                   type="button"
                 >
-                  {audio.state.isCapturing ? 'Refresh microphone access' : 'Request microphone access'}
+                  Stop mic
                 </button>
-                <Link className="button button--secondary" to={APP_ROUTE_PATHS.home}>
-                  Back to home
-                </Link>
-                {audio.state.isCapturing ? (
-                  <button
-                    className="button button--secondary"
-                    onClick={() => void audio.stopCapture()}
-                    type="button"
-                  >
-                    Stop mic
-                  </button>
-                ) : null}
-              </>
-            )}
+              ) : null}
+            </div>
           </div>
-        </div>
 
-        {!isRunActive && (
           <aside className="panel">
             <h3>Mission checklist</h3>
             <ul className="feature-list">
@@ -304,8 +286,26 @@ export function GameScreen() {
               screen.
             </p>
           </aside>
-        )}
-      </div>
+        </div>
+      )}
+
+      {isRunActive && (
+        <div className="status-row" aria-label="Live run summary">
+          <StatusBadge label={`Difficulty: ${selectedDifficulty.label}`} tone="success" />
+          <StatusBadge label={runStatus.label} tone={runStatus.tone} />
+          <span aria-live="polite" aria-atomic="true">
+            <StatusBadge label={`Score: ${hud?.score ?? 0}`} tone="info" />
+          </span>
+          <button
+            className="button"
+            disabled={!gameplay.canAbandonRun}
+            onClick={gameplay.abandonRun}
+            type="button"
+          >
+            End run
+          </button>
+        </div>
+      )}
 
       <div className="screen-grid screen-grid--game">
         <div ref={promptCardRef}>
@@ -333,115 +333,146 @@ export function GameScreen() {
           />
         </div>
 
-        <article className="panel">
-          <div className="panel__header">
-            <div>
-              <p className="screen__eyebrow">Mission stats</p>
-              <h3>Track score, time, and prompt clears at a glance</h3>
-            </div>
-            <StatusBadge label={hud?.activeEvent ? 'Event active' : 'Clear sky'} tone={hud?.activeEvent ? 'warning' : 'info'} />
-          </div>
-
-          <div className="run-stat-grid">
-            <article className="run-stat-card">
-              <span className="run-stat-card__label">Score</span>
-              <strong>{hud?.score ?? 0}</strong>
-            </article>
-            <article className="run-stat-card">
-              <span className="run-stat-card__label">Elapsed</span>
-              <strong>{formatElapsedMs(hud?.elapsedMs ?? 0)}</strong>
-            </article>
-            <article className="run-stat-card">
-              <span className="run-stat-card__label">Prompts cleared</span>
-              <strong>{hud?.promptsCleared ?? 0}</strong>
-            </article>
-            <article className="run-stat-card">
-              <span className="run-stat-card__label">Prompts shown</span>
-              <strong>{hud?.promptsPresented ?? 0}</strong>
-            </article>
-          </div>
-
-          <p className="panel__supporting-copy">
-            Correct note matches raise score and help clear prompts. Hazards and boosts stay visible
-            through the counts and live event status.
-          </p>
-        </article>
-
-        <article className="panel">
-          <div className="panel__header">
-            <div>
-              <p className="screen__eyebrow">Rocket HUD</p>
-              <h3>Read moon progress and stability at a glance</h3>
-            </div>
-            <StatusBadge label={hud?.rocketMode ?? 'awaiting launch'} tone="info" />
-          </div>
-
-          <div ref={moonProgressRef}>
-            <HudMeter
-              hint="Higher moon progress means the rocket is closer to the finish."
-              label="Moon progress"
-              percent={altitudePercent}
-              tone={audio.target.matchState === 'correct' ? 'success' : 'neutral'}
-              valueText={`${Math.round(altitudePercent)}%`}
-            />
-          </div>
-          <div ref={stabilityMeterRef}>
-            <HudMeter
-              hint="If stability falls too low, the run will fail."
-              label="Rocket stability"
-              percent={stabilityPercent}
-              tone={stabilityPercent < 35 ? 'warning' : 'success'}
-              valueText={`${Math.round(hud?.stability ?? 0)} / 100`}
-            />
-          </div>
-        </article>
-
-        {!isRunActive && (
+        {isRunActive ? (
           <article className="panel">
             <div className="panel__header">
               <div>
-                <p className="screen__eyebrow">Mic and note readout</p>
-                <h3>See what the microphone hears and how the game classifies it</h3>
+                <p className="screen__eyebrow">Rocket HUD</p>
+                <h3>Read moon progress and stability at a glance</h3>
               </div>
-              <StatusBadge
-                label={audio.state.isCapturing ? 'Mic listening' : 'Mic idle'}
-                tone={audio.state.isCapturing ? 'success' : microphoneTone}
-              />
+              <StatusBadge label={hud?.rocketMode ?? 'awaiting launch'} tone="info" />
             </div>
 
-            {audio.state.lastError ? (
-              <p className="inline-message inline-message--warning" role={runStatus.alert ? undefined : 'alert'}>
-                <strong>Microphone issue.</strong> {audio.state.lastError.message}
-              </p>
-            ) : null}
-
-            <dl className="detail-list">
-              <div>
-                <dt>Input status</dt>
-                <dd>{toReadableClassificationLabel(latestSample?.classification ?? null)}</dd>
-              </div>
-              <div>
-                <dt>Detected note</dt>
-                <dd>{detectedLabel}</dd>
-              </div>
-              <div>
-                <dt>Detected frequency</dt>
-                <dd>{latestSample?.frequencyHz ? `${latestSample.frequencyHz.toFixed(1)} Hz` : 'Waiting for stable pitch'}</dd>
-              </div>
-              <div>
-                <dt>Permission</dt>
-                <dd>{audio.state.permission}</dd>
-              </div>
-              <div>
-                <dt>Setup stage</dt>
-                <dd>{audio.setup.stage}</dd>
-              </div>
-              <div>
-                <dt>Privacy</dt>
-                <dd>Audio stays local in the browser and is not saved as recordings.</dd>
-              </div>
-            </dl>
+            <div ref={moonProgressRef}>
+              <HudMeter
+                hint="Higher moon progress means the rocket is closer to the finish."
+                label="Moon progress"
+                percent={altitudePercent}
+                tone={audio.target.matchState === 'correct' ? 'success' : 'neutral'}
+                valueText={`${Math.round(altitudePercent)}%`}
+              />
+            </div>
+            <div ref={stabilityMeterRef}>
+              <HudMeter
+                hint="If stability falls too low, the run will fail."
+                label="Rocket stability"
+                percent={stabilityPercent}
+                tone={stabilityPercent < 35 ? 'warning' : 'success'}
+                valueText={`${Math.round(hud?.stability ?? 0)} / 100`}
+              />
+            </div>
           </article>
+        ) : (
+          <>
+            <article className="panel">
+              <div className="panel__header">
+                <div>
+                  <p className="screen__eyebrow">Mission stats</p>
+                  <h3>Track score, time, and prompt clears at a glance</h3>
+                </div>
+                <StatusBadge label={hud?.activeEvent ? 'Event active' : 'Clear sky'} tone={hud?.activeEvent ? 'warning' : 'info'} />
+              </div>
+
+              <div className="run-stat-grid">
+                <article className="run-stat-card">
+                  <span className="run-stat-card__label">Score</span>
+                  <strong>{hud?.score ?? 0}</strong>
+                </article>
+                <article className="run-stat-card">
+                  <span className="run-stat-card__label">Elapsed</span>
+                  <strong>{formatElapsedMs(hud?.elapsedMs ?? 0)}</strong>
+                </article>
+                <article className="run-stat-card">
+                  <span className="run-stat-card__label">Prompts cleared</span>
+                  <strong>{hud?.promptsCleared ?? 0}</strong>
+                </article>
+                <article className="run-stat-card">
+                  <span className="run-stat-card__label">Prompts shown</span>
+                  <strong>{hud?.promptsPresented ?? 0}</strong>
+                </article>
+              </div>
+
+              <p className="panel__supporting-copy">
+                Correct note matches raise score and help clear prompts. Hazards and boosts stay visible
+                through the counts and live event status.
+              </p>
+            </article>
+
+            <article className="panel">
+              <div className="panel__header">
+                <div>
+                  <p className="screen__eyebrow">Rocket HUD</p>
+                  <h3>Read moon progress and stability at a glance</h3>
+                </div>
+                <StatusBadge label={hud?.rocketMode ?? 'awaiting launch'} tone="info" />
+              </div>
+
+              <div ref={moonProgressRef}>
+                <HudMeter
+                  hint="Higher moon progress means the rocket is closer to the finish."
+                  label="Moon progress"
+                  percent={altitudePercent}
+                  tone={audio.target.matchState === 'correct' ? 'success' : 'neutral'}
+                  valueText={`${Math.round(altitudePercent)}%`}
+                />
+              </div>
+              <div ref={stabilityMeterRef}>
+                <HudMeter
+                  hint="If stability falls too low, the run will fail."
+                  label="Rocket stability"
+                  percent={stabilityPercent}
+                  tone={stabilityPercent < 35 ? 'warning' : 'success'}
+                  valueText={`${Math.round(hud?.stability ?? 0)} / 100`}
+                />
+              </div>
+            </article>
+
+            <article className="panel">
+              <div className="panel__header">
+                <div>
+                  <p className="screen__eyebrow">Mic and note readout</p>
+                  <h3>See what the microphone hears and how the game classifies it</h3>
+                </div>
+                <StatusBadge
+                  label={audio.state.isCapturing ? 'Mic listening' : 'Mic idle'}
+                  tone={audio.state.isCapturing ? 'success' : microphoneTone}
+                />
+              </div>
+
+              {audio.state.lastError ? (
+                <p className="inline-message inline-message--warning" role={runStatus.alert ? undefined : 'alert'}>
+                  <strong>Microphone issue.</strong> {audio.state.lastError.message}
+                </p>
+              ) : null}
+
+              <dl className="detail-list">
+                <div>
+                  <dt>Input status</dt>
+                  <dd>{toReadableClassificationLabel(latestSample?.classification ?? null)}</dd>
+                </div>
+                <div>
+                  <dt>Detected note</dt>
+                  <dd>{detectedLabel}</dd>
+                </div>
+                <div>
+                  <dt>Detected frequency</dt>
+                  <dd>{latestSample?.frequencyHz ? `${latestSample.frequencyHz.toFixed(1)} Hz` : 'Waiting for stable pitch'}</dd>
+                </div>
+                <div>
+                  <dt>Permission</dt>
+                  <dd>{audio.state.permission}</dd>
+                </div>
+                <div>
+                  <dt>Setup stage</dt>
+                  <dd>{audio.setup.stage}</dd>
+                </div>
+                <div>
+                  <dt>Privacy</dt>
+                  <dd>Audio stays local in the browser and is not saved as recordings.</dd>
+                </div>
+              </dl>
+            </article>
+          </>
         )}
       </div>
 

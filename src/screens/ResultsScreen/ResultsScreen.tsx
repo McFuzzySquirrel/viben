@@ -13,6 +13,7 @@ import {
 } from '@features/progression';
 import { detectNewMilestones } from '@features/progression/milestones';
 import { getDifficultyDefinition } from '@shared/config/difficulty';
+import { TabPanel } from '@shared/components/TabPanel';
 import { loadProgressionState, persistRunSummary } from '@shared/persistence';
 import { APP_ROUTE_PATHS } from '@shared/types/routes';
 
@@ -211,194 +212,212 @@ export function ResultsScreen() {
         </aside>
       </div>
 
-      <div className="metric-grid">
-        {resultMetrics.map((metric) => (
-          <article className="panel metric-card" key={metric.label}>
-            <p>{metric.label}</p>
-            <strong>{metric.value}</strong>
-          </article>
-        ))}
-      </div>
-
-      {(newMilestones.length > 0 || (personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak))) ? (
-        <div className="screen-grid">
-          {newMilestones.length > 0 ? (
-            <article className="panel" aria-label="New milestones">
-              <div className="panel__header">
-                <div>
-                  <p className="screen__eyebrow">Achievements</p>
-                  <h3>Milestones earned this run</h3>
+      <TabPanel
+        label="Results sections"
+        tabs={[
+          {
+            id: 'summary',
+            label: 'Summary',
+            content: (
+              <>
+                <div className="metric-grid">
+                  {resultMetrics.map((metric) => (
+                    <article className="panel metric-card" key={metric.label}>
+                      <p>{metric.label}</p>
+                      <strong>{metric.value}</strong>
+                    </article>
+                  ))}
                 </div>
-                <StatusBadge label={`${newMilestones.length} new`} tone="success" />
-              </div>
-              <div className="milestone-grid">
-                {newMilestones.map((m) => {
-                  const def = getMilestoneDefinition(m.id);
-                  const icon = m.kind === 'performance' ? '⭐' : m.kind === 'difficulty' ? '🎮' : '🏅';
-                  return (
-                    <div className="milestone-card milestone-card--new" key={m.id}>
-                      <span className="milestone-card__icon" aria-hidden="true">{icon}</span>
-                      <div className="milestone-card__body">
-                        <span className="milestone-card__label">{def?.label ?? m.id}</span>
-                        <span className="milestone-card__description">{def?.description ?? `Milestone ${m.kind}`}</span>
+
+                {(newMilestones.length > 0 || (personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak))) ? (
+                  <div className="screen-grid">
+                    {newMilestones.length > 0 ? (
+                      <article className="panel" aria-label="New milestones">
+                        <div className="panel__header">
+                          <div>
+                            <p className="screen__eyebrow">Achievements</p>
+                            <h3>Milestones earned this run</h3>
+                          </div>
+                          <StatusBadge label={`${newMilestones.length} new`} tone="success" />
+                        </div>
+                        <div className="milestone-grid">
+                          {newMilestones.map((m) => {
+                            const def = getMilestoneDefinition(m.id);
+                            const icon = m.kind === 'performance' ? '⭐' : m.kind === 'difficulty' ? '🎮' : '🏅';
+                            return (
+                              <div className="milestone-card milestone-card--new" key={m.id}>
+                                <span className="milestone-card__icon" aria-hidden="true">{icon}</span>
+                                <div className="milestone-card__body">
+                                  <span className="milestone-card__label">{def?.label ?? m.id}</span>
+                                  <span className="milestone-card__description">{def?.description ?? `Milestone ${m.kind}`}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </article>
+                    ) : null}
+
+                    {personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak) ? (
+                      <article className="panel" aria-label="Personal bests">
+                        <div className="panel__header">
+                          <div>
+                            <p className="screen__eyebrow">Records</p>
+                            <h3>New personal bests</h3>
+                          </div>
+                          <StatusBadge label="New record!" tone="success" />
+                        </div>
+                        <div className="pb-grid">
+                          {personalBests.isNewBestScore && (
+                            <span className="pb-badge pb-badge--trophy">
+                              <em className="pb-badge__icon" aria-hidden="true">🏆</em>
+                              New best score on {selectedDifficulty.label}
+                            </span>
+                          )}
+                          {personalBests.isNewBestAccuracy && (
+                            <span className="pb-badge pb-badge--accuracy">
+                              <em className="pb-badge__icon" aria-hidden="true">🎯</em>
+                              New best accuracy on {selectedDifficulty.label}
+                            </span>
+                          )}
+                          {personalBests.isNewBestStreak && (
+                            <span className="pb-badge pb-badge--streak">
+                              <em className="pb-badge__icon" aria-hidden="true">🔥</em>
+                              New best streak on {selectedDifficulty.label}
+                            </span>
+                          )}
+                        </div>
+                      </article>
+                    ) : null}
+                  </div>
+                ) : routeRun ? (
+                  <div className="screen-grid">
+                    <article className="panel" aria-label="Milestones">
+                      <div className="panel__header">
+                        <div>
+                          <p className="screen__eyebrow">Achievements</p>
+                          <h3>Milestones</h3>
+                        </div>
+                        <StatusBadge label="Keep going" tone="info" />
                       </div>
+                      <div className="empty-state">
+                        <span className="empty-state__icon" aria-hidden="true">🚀</span>
+                        <p className="empty-state__heading">No new milestones this run</p>
+                        <p className="empty-state__copy">
+                          Keep flying — milestones unlock as you hit score targets, complete runs, and try harder difficulties.
+                        </p>
+                      </div>
+                    </article>
+                  </div>
+                ) : null}
+              </>
+            ),
+          },
+          {
+            id: 'details',
+            label: 'Details',
+            content: (
+              <div className="screen-grid">
+                <article className="panel">
+                  <div className="panel__header">
+                    <div>
+                      <p className="screen__eyebrow">Summary stats</p>
+                      <h3>Latest run breakdown</h3>
                     </div>
-                  );
-                })}
-              </div>
-            </article>
-          ) : null}
+                    <StatusBadge label={latestRun ? `${latestRun.stars} stars` : 'Awaiting run'} tone="success" />
+                  </div>
 
-          {personalBests && (personalBests.isNewBestScore || personalBests.isNewBestAccuracy || personalBests.isNewBestStreak) ? (
-            <article className="panel" aria-label="Personal bests">
-              <div className="panel__header">
-                <div>
-                  <p className="screen__eyebrow">Records</p>
-                  <h3>New personal bests</h3>
-                </div>
-                <StatusBadge label="New record!" tone="success" />
-              </div>
-              <div className="pb-grid">
-                {personalBests.isNewBestScore && (
-                  <span className="pb-badge pb-badge--trophy">
-                    <em className="pb-badge__icon" aria-hidden="true">🏆</em>
-                    New best score on {selectedDifficulty.label}
-                  </span>
-                )}
-                {personalBests.isNewBestAccuracy && (
-                  <span className="pb-badge pb-badge--accuracy">
-                    <em className="pb-badge__icon" aria-hidden="true">🎯</em>
-                    New best accuracy on {selectedDifficulty.label}
-                  </span>
-                )}
-                {personalBests.isNewBestStreak && (
-                  <span className="pb-badge pb-badge--streak">
-                    <em className="pb-badge__icon" aria-hidden="true">🔥</em>
-                    New best streak on {selectedDifficulty.label}
-                  </span>
-                )}
-              </div>
-            </article>
-          ) : null}
-        </div>
-      ) : routeRun ? (
-        <div className="screen-grid">
-          <article className="panel" aria-label="Milestones">
-            <div className="panel__header">
-              <div>
-                <p className="screen__eyebrow">Achievements</p>
-                <h3>Milestones</h3>
-              </div>
-              <StatusBadge label="Keep going" tone="info" />
-            </div>
-            <div className="empty-state">
-              <span className="empty-state__icon" aria-hidden="true">🚀</span>
-              <p className="empty-state__heading">No new milestones this run</p>
-              <p className="empty-state__copy">
-                Keep flying — milestones unlock as you hit score targets, complete runs, and try harder difficulties.
-              </p>
-            </div>
-          </article>
-        </div>
-      ) : null}
+                  {latestRun ? (
+                    <dl className="detail-list">
+                      <div>
+                        <dt>Outcome</dt>
+                        <dd>{formatOutcome(latestRun.outcome)}</dd>
+                      </div>
+                      <div>
+                        <dt>End reason</dt>
+                        <dd>{formatEndReason(latestRun.endReason)}</dd>
+                      </div>
+                      <div>
+                        <dt>Prompts cleared / shown</dt>
+                        <dd>
+                          {formatMetricValue(latestRun.performance.promptsCleared)} /{' '}
+                          {formatMetricValue(latestRun.performance.promptsPresented)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Hazards faced</dt>
+                        <dd>{latestRun.hazardsFaced}</dd>
+                      </div>
+                      <div>
+                        <dt>Boosts caught</dt>
+                        <dd>{latestRun.boostsCaught}</dd>
+                      </div>
+                      <div>
+                        <dt>Time on target</dt>
+                        <dd>{formatMetricValue(latestRun.performance.timeOnTargetMs, ' ms')}</dd>
+                      </div>
+                      <div>
+                        <dt>Recorded at</dt>
+                        <dd>{new Date(latestRun.recordedAt).toLocaleString()}</dd>
+                      </div>
+                    </dl>
+                  ) : (
+                    <p className="panel__supporting-copy">
+                      Start and finish a run to populate the first real mission summary here.
+                    </p>
+                  )}
+                </article>
 
-      <div className="screen-grid">
-        <article className="panel">
-          <div className="panel__header">
-            <div>
-              <p className="screen__eyebrow">Summary stats</p>
-              <h3>Latest run breakdown</h3>
-            </div>
-            <StatusBadge label={latestRun ? `${latestRun.stars} stars` : 'Awaiting run'} tone="success" />
-          </div>
+                <article className="panel">
+                  <div className="panel__header">
+                    <div>
+                      <p className="screen__eyebrow">Best on difficulty</p>
+                      <h3>{selectedDifficulty.label} local best</h3>
+                    </div>
+                    <StatusBadge
+                      label={bestDifficultyRun ? `${bestDifficultyRun.score} best score` : 'No best yet'}
+                      tone="info"
+                    />
+                  </div>
 
-          {latestRun ? (
-            <dl className="detail-list">
-              <div>
-                <dt>Outcome</dt>
-                <dd>{formatOutcome(latestRun.outcome)}</dd>
+                  {bestDifficultyRun ? (
+                    <dl className="detail-list">
+                      <div>
+                        <dt>Best score</dt>
+                        <dd>{bestDifficultyRun.score}</dd>
+                      </div>
+                      <div>
+                        <dt>Best rating</dt>
+                        <dd>{bestDifficultyRun.stars} / 3 stars</dd>
+                      </div>
+                      <div>
+                        <dt>Best accuracy</dt>
+                        <dd>{formatMetricValue(bestDifficultyRun.performance.accuracyPercent, '%')}</dd>
+                      </div>
+                      <div>
+                        <dt>Best time on target</dt>
+                        <dd>{formatMetricValue(bestDifficultyRun.performance.timeOnTargetMs, ' ms')}</dd>
+                      </div>
+                      <div>
+                        <dt>Previous comparable run</dt>
+                        <dd>
+                          {previousRun
+                            ? `${previousRun.score} score • ${formatOutcome(previousRun.outcome)}`
+                            : 'This is the first saved run on this difficulty.'}
+                        </dd>
+                      </div>
+                    </dl>
+                  ) : (
+                    <p className="panel__supporting-copy">
+                      No run has been saved on this difficulty yet.
+                    </p>
+                  )}
+                </article>
               </div>
-              <div>
-                <dt>End reason</dt>
-                <dd>{formatEndReason(latestRun.endReason)}</dd>
-              </div>
-              <div>
-                <dt>Prompts cleared / shown</dt>
-                <dd>
-                  {formatMetricValue(latestRun.performance.promptsCleared)} /{' '}
-                  {formatMetricValue(latestRun.performance.promptsPresented)}
-                </dd>
-              </div>
-              <div>
-                <dt>Hazards faced</dt>
-                <dd>{latestRun.hazardsFaced}</dd>
-              </div>
-              <div>
-                <dt>Boosts caught</dt>
-                <dd>{latestRun.boostsCaught}</dd>
-              </div>
-              <div>
-                <dt>Time on target</dt>
-                <dd>{formatMetricValue(latestRun.performance.timeOnTargetMs, ' ms')}</dd>
-              </div>
-              <div>
-                <dt>Recorded at</dt>
-                <dd>{new Date(latestRun.recordedAt).toLocaleString()}</dd>
-              </div>
-            </dl>
-          ) : (
-            <p className="panel__supporting-copy">
-              Start and finish a run to populate the first real mission summary here.
-            </p>
-          )}
-        </article>
-
-        <article className="panel">
-          <div className="panel__header">
-            <div>
-              <p className="screen__eyebrow">Best on difficulty</p>
-              <h3>{selectedDifficulty.label} local best</h3>
-            </div>
-            <StatusBadge
-              label={bestDifficultyRun ? `${bestDifficultyRun.score} best score` : 'No best yet'}
-              tone="info"
-            />
-          </div>
-
-          {bestDifficultyRun ? (
-            <dl className="detail-list">
-              <div>
-                <dt>Best score</dt>
-                <dd>{bestDifficultyRun.score}</dd>
-              </div>
-              <div>
-                <dt>Best rating</dt>
-                <dd>{bestDifficultyRun.stars} / 3 stars</dd>
-              </div>
-              <div>
-                <dt>Best accuracy</dt>
-                <dd>{formatMetricValue(bestDifficultyRun.performance.accuracyPercent, '%')}</dd>
-              </div>
-              <div>
-                <dt>Best time on target</dt>
-                <dd>{formatMetricValue(bestDifficultyRun.performance.timeOnTargetMs, ' ms')}</dd>
-              </div>
-              <div>
-                <dt>Previous comparable run</dt>
-                <dd>
-                  {previousRun
-                    ? `${previousRun.score} score • ${formatOutcome(previousRun.outcome)}`
-                    : 'This is the first saved run on this difficulty.'}
-                </dd>
-              </div>
-            </dl>
-          ) : (
-            <p className="panel__supporting-copy">
-              No run has been saved on this difficulty yet.
-            </p>
-          )}
-        </article>
-      </div>
+            ),
+          },
+        ]}
+      />
 
       <div className="button-row">
         <Link className="button" state={{ autoStart: true }} to={APP_ROUTE_PATHS.game}>

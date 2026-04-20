@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { GameRunSummary } from '@features/game';
 import { VIBEN_LOCAL_SAVE_KEY } from '@shared/persistence';
@@ -55,6 +55,10 @@ describe('Results screen save flow', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('1720', { selector: 'strong' })).toBeInTheDocument();
     expect(screen.getByText('84.5%', { selector: 'strong' })).toBeInTheDocument();
+
+    // Switch to the Details tab to see run breakdown
+    fireEvent.click(screen.getByRole('tab', { name: 'Details' }));
+
     expect(
       screen.getByText(
         (_, node) => node?.tagName === 'DD' && hasNormalizedText(node, '14 / 17'),
