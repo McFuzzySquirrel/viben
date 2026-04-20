@@ -5,7 +5,7 @@
  *
  * Produces PNGs in docs/screenshots/ that can be embedded in documentation.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 // ---------------------------------------------------------------------------
 // Seed data — realistic progression state so screens look populated
@@ -186,7 +186,16 @@ function screenshotPath(name: string) {
 }
 
 // ---------------------------------------------------------------------------
-// Tests — each test captures one screen
+// Tab helper: click a tab by its visible label text
+// ---------------------------------------------------------------------------
+
+async function clickTab(page: Page, label: string) {
+  await page.locator(`[role="tab"]:has-text("${label}")`).click();
+  await page.waitForTimeout(300);
+}
+
+// ---------------------------------------------------------------------------
+// Tests — each test captures one screen (desktop)
 // ---------------------------------------------------------------------------
 
 test.describe('Walkthrough screenshots', () => {
@@ -199,12 +208,19 @@ test.describe('Walkthrough screenshots', () => {
     await context.addInitScript(seedStorageScript(SEED_PROGRESSION, SEED_VOICE_PROFILE));
   });
 
-  test('01 — Home screen', async ({ page }) => {
+  test('01 — Home screen (Setup tab)', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('.screen');
-    // Allow any animations to settle
     await page.waitForTimeout(500);
-    await page.screenshot({ path: screenshotPath('01-home'), fullPage: true });
+    await page.screenshot({ path: screenshotPath('01-home-setup'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+
+  test('01b — Home screen (Difficulty tab)', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.screen');
+    await clickTab(page, 'Difficulty');
+    await page.screenshot({ path: screenshotPath('01b-home-difficulty'), fullPage: true });
     await expect(page.locator('.screen')).toBeVisible();
   });
 
@@ -224,19 +240,43 @@ test.describe('Walkthrough screenshots', () => {
     await expect(page.locator('.screen')).toBeVisible();
   });
 
-  test('04 — Results screen', async ({ page }) => {
+  test('04 — Results screen (Summary tab)', async ({ page }) => {
     await page.goto('/results');
     await page.waitForSelector('.screen');
     await page.waitForTimeout(500);
-    await page.screenshot({ path: screenshotPath('04-results'), fullPage: true });
+    await page.screenshot({ path: screenshotPath('04-results-summary'), fullPage: true });
     await expect(page.locator('.screen')).toBeVisible();
   });
 
-  test('05 — Progress screen', async ({ page }) => {
+  test('04b — Results screen (Details tab)', async ({ page }) => {
+    await page.goto('/results');
+    await page.waitForSelector('.screen');
+    await clickTab(page, 'Details');
+    await page.screenshot({ path: screenshotPath('04b-results-details'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+
+  test('05 — Progress screen (Overview tab)', async ({ page }) => {
     await page.goto('/progress');
     await page.waitForSelector('.screen');
     await page.waitForTimeout(500);
-    await page.screenshot({ path: screenshotPath('05-progress'), fullPage: true });
+    await page.screenshot({ path: screenshotPath('05-progress-overview'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+
+  test('05b — Progress screen (Comparison tab)', async ({ page }) => {
+    await page.goto('/progress');
+    await page.waitForSelector('.screen');
+    await clickTab(page, 'Comparison');
+    await page.screenshot({ path: screenshotPath('05b-progress-comparison'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+
+  test('05c — Progress screen (Records tab)', async ({ page }) => {
+    await page.goto('/progress');
+    await page.waitForSelector('.screen');
+    await clickTab(page, 'Records');
+    await page.screenshot({ path: screenshotPath('05c-progress-records'), fullPage: true });
     await expect(page.locator('.screen')).toBeVisible();
   });
 });
@@ -255,11 +295,19 @@ test.describe('Mobile walkthrough screenshots', () => {
     await context.addInitScript(seedStorageScript(SEED_PROGRESSION, SEED_VOICE_PROFILE));
   });
 
-  test('06 — Home screen (mobile)', async ({ page }) => {
+  test('06 — Home screen (mobile, Setup tab)', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('.screen');
     await page.waitForTimeout(500);
     await page.screenshot({ path: screenshotPath('06-home-mobile'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+
+  test('06b — Home screen (mobile, Difficulty tab)', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.screen');
+    await clickTab(page, 'Difficulty');
+    await page.screenshot({ path: screenshotPath('06b-home-difficulty-mobile'), fullPage: true });
     await expect(page.locator('.screen')).toBeVisible();
   });
 
@@ -276,6 +324,22 @@ test.describe('Mobile walkthrough screenshots', () => {
     await page.waitForSelector('.screen');
     await page.waitForTimeout(500);
     await page.screenshot({ path: screenshotPath('08-calibration-mobile'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+
+  test('09 — Results screen (mobile, Summary tab)', async ({ page }) => {
+    await page.goto('/results');
+    await page.waitForSelector('.screen');
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: screenshotPath('09-results-mobile'), fullPage: true });
+    await expect(page.locator('.screen')).toBeVisible();
+  });
+
+  test('10 — Progress screen (mobile, Overview tab)', async ({ page }) => {
+    await page.goto('/progress');
+    await page.waitForSelector('.screen');
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: screenshotPath('10-progress-mobile'), fullPage: true });
     await expect(page.locator('.screen')).toBeVisible();
   });
 });

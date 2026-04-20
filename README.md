@@ -32,13 +32,19 @@ Vib'N turns solfege note matching into an arcade-style rocket flight challenge. 
 
 ### Home — Launch Pad
 
-Pick a difficulty, check your microphone, and launch a singing run. The home screen shows your current setup status at a glance including difficulty, mic permission, save state, and voice profile.
+The home screen uses tabbed panels to separate setup and difficulty selection, keeping each concern focused on both mobile and desktop.
 
-![Home screen — choose difficulty and launch](docs/screenshots/01-home.png)
+**Setup tab** — Check your microphone status, view keyboard tips, and launch a singing run.
+
+![Home screen — Setup tab with mic check and launch](docs/screenshots/01-home-setup.png)
+
+**Difficulty tab** — Pick Easy, Normal, or Hard. Your choice persists locally for next time.
+
+![Home screen — Difficulty tab with card selection](docs/screenshots/01b-home-difficulty.png)
 
 ### Game — Active Mission
 
-The game HUD shows the current solfege prompt, rocket altitude, stability meters, and live mic readout. Sing the prompted note to climb; wrong notes or silence cause drift.
+The game HUD shows the current solfege prompt, rocket altitude, stability meters, and live mic readout. During an active run, secondary panels are hidden so the player can focus on singing without scrolling.
 
 ![Game screen — HUD with prompt, rocket, and meters](docs/screenshots/02-game.png)
 
@@ -50,19 +56,43 @@ Teach the game your singing range one note at a time. Sing each solfege note (Do
 
 ### Results — Run Review
 
-After each run, review your score, star rating, accuracy, and comparison against previous attempts. New milestones and personal bests are highlighted when earned.
+After each run, review your score, milestones, and comparison against previous attempts across two tabs.
 
-![Results screen — score, accuracy, and comparison](docs/screenshots/04-results.png)
+**Summary tab** — Outcome, score, star rating, accuracy, and any new milestones or personal bests.
+
+![Results screen — Summary tab with score and milestones](docs/screenshots/04-results-summary.png)
+
+**Details tab** — Run breakdown, prompts cleared, hazards, and best-on-difficulty comparison.
+
+![Results screen — Details tab with run breakdown](docs/screenshots/04b-results-details.png)
 
 ### Progress — History & Milestones
 
-Track your run history, completion rates, difficulty records, trends, and earned milestones. All data stays local in the browser.
+Track your full run history across three tabs. All data stays local in the browser.
 
-![Progress screen — history, milestones, and records](docs/screenshots/05-progress.png)
+**Overview tab** — Metric cards, recent runs list, and save recovery status.
+
+![Progress screen — Overview tab with metrics and recent runs](docs/screenshots/05-progress-overview.png)
+
+**Comparison tab** — Same-device comparison showing score, accuracy, and time deltas between runs.
+
+![Progress screen — Comparison tab with run deltas](docs/screenshots/05b-progress-comparison.png)
+
+**Records tab** — Difficulty records, completion rates, trends, and earned milestones.
+
+![Progress screen — Records tab with milestones and difficulty records](docs/screenshots/05c-progress-records.png)
 
 ### Mobile Views
 
-tbd
+All screens adapt to narrow viewports with single-column layouts, scrollable tab bars, and touch-friendly 44px minimum targets.
+
+| Home (Setup) | Home (Difficulty) | Game |
+|:---:|:---:|:---:|
+| ![Home mobile](docs/screenshots/06-home-mobile.png) | ![Home difficulty mobile](docs/screenshots/06b-home-difficulty-mobile.png) | ![Game mobile](docs/screenshots/07-game-mobile.png) |
+
+| Calibration | Results | Progress |
+|:---:|:---:|:---:|
+| ![Calibration mobile](docs/screenshots/08-calibration-mobile.png) | ![Results mobile](docs/screenshots/09-results-mobile.png) | ![Progress mobile](docs/screenshots/10-progress-mobile.png) |
 
 ## Getting Started
 
@@ -98,7 +128,7 @@ npm run preview
 
 ```bash
 npm run typecheck    # Type-check with TypeScript
-npm run test         # Run the full test suite (266 tests)
+npm run test         # Run the full test suite (321 tests)
 npm run build        # Production build
 ```
 

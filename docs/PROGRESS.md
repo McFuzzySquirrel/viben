@@ -73,6 +73,21 @@
 - [x] Mobile viewport screenshots (iPhone 14, 390×844) added to Playwright and README
   - Files: `playwright.config.ts`, `scripts/capture-screenshots.spec.ts`, `README.md`, `docs/screenshots/06-home-mobile.png`, `docs/screenshots/07-game-mobile.png`, `docs/screenshots/08-calibration-mobile.png`
 
+### Post-Phase 3: Tabbed Screen Views
+- [x] Reusable `TabPanel` component with WAI-ARIA Tabs pattern, arrow key navigation, and roving tabIndex
+  - Files: `src/shared/components/TabPanel.tsx`, `src/shared/components/TabPanel.test.tsx`
+- [x] HomeScreen split into Setup and Difficulty tabs
+- [x] GameScreen active-run view strips secondary panels for singing focus
+- [x] ResultsScreen split into Summary and Details tabs
+- [x] ProgressScreen split into Overview, Comparison, and Records tabs
+- [x] Tab CSS for desktop, tablet (≤768px), phone (≤480px), and touch targets (pointer: coarse)
+  - Files: `src/styles/global.css`
+- [x] Updated Playwright screenshot spec to capture all tabbed sub-views (desktop + mobile)
+  - Files: `scripts/capture-screenshots.spec.ts`
+- [x] New screenshots: `01-home-setup.png`, `01b-home-difficulty.png`, `04-results-summary.png`, `04b-results-details.png`, `05-progress-overview.png`, `05b-progress-comparison.png`, `05c-progress-records.png`, `06b-home-difficulty-mobile.png`, `09-results-mobile.png`, `10-progress-mobile.png`
+- [x] README updated with tabbed view walkthrough sections and mobile views grid
+- [x] All 321 tests passing (313 original + 8 TabPanel tests)
+
 ## Current Task
 None — all feature work and documentation complete.
 

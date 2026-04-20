@@ -119,7 +119,7 @@ Here's what a run through the game looks like today:
 ### Home:The Launch Pad
 
 <img
-	src="https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/01-home.png"
+	src="https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/01-home-setup.png"
 	alt="Home Screen"
 	style="width: 100%; max-width: 420px; height: auto; display: block; margin: 1rem auto;"
 />
@@ -158,7 +158,7 @@ This is where accessibility meets gameplay. Not everyone's voice fits standard s
 ### Results: Run Review
 
 <img
-	src="https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/04-results.png"
+	src="https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/04-results-summary.png"
 	alt="Results Screen"
 	style="width: 100%; max-width: 420px; height: auto; display: block; margin: 1rem auto;"
 />
@@ -168,7 +168,7 @@ After each run: altitude reached, accuracy percentage, notes hit vs missed, star
 ### Progress: History & Milestones
 
 <img
-	src="https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/05-progress.png"
+	src="https://raw.githubusercontent.com/McFuzzySquirrel/viben/main/docs/screenshots/05-progress-overview.png"
 	alt="Progress Screen"
 	style="width: 100%; max-width: 420px; height: auto; display: block; margin: 1rem auto;"
 />
