@@ -578,6 +578,79 @@ button:focus-visible,
   color: #cbd8eb;
 }
 
+/* ── Tab panel component ── */
+
+.tab-panel {
+  margin-top: 1.5rem;
+}
+
+.tab-panel__list {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0;
+}
+
+.tab-panel__list::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-panel__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: transparent;
+  color: #d8e4f7;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.tab-panel__tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f7fb;
+  transform: none;
+  box-shadow: none;
+}
+
+.tab-panel__tab--active {
+  background: rgba(106, 183, 255, 0.12);
+  border-color: rgba(142, 203, 255, 0.3);
+  color: #8ecbff;
+}
+
+.tab-panel__tab:focus-visible {
+  outline: 3px solid #fbd34d;
+  outline-offset: 2px;
+}
+
+.tab-panel__content {
+  margin-top: 1rem;
+}
+
+.tab-panel__content:focus {
+  outline: none;
+}
+
+.tab-panel__content:focus-visible {
+  outline: 2px solid rgba(142, 203, 255, 0.4);
+  outline-offset: 2px;
+  border-radius: 0.75rem;
+}
+
 /* ── Retro HUD styling ── */
 
 .retro-hud {
@@ -1311,6 +1384,12 @@ button.calibration-note:hover {
   .calibration-progress {
     gap: 0.35rem;
   }
+
+  /* Tab list scrolls horizontally on narrow screens */
+  .tab-panel__tab {
+    font-size: 0.86rem;
+    padding: 0.5rem 0.85rem;
+  }
 }
 
 /* ── F2: Responsive — Phone ≤480px (FT-FR-07, FT-FR-14) ── */
@@ -1412,6 +1491,13 @@ button.calibration-note:hover {
   .frequency-display {
     font-size: 1.5rem;
   }
+
+  /* Tighter tab labels on phones */
+  .tab-panel__tab {
+    font-size: 0.82rem;
+    padding: 0.45rem 0.7rem;
+    min-height: 2.25rem;
+  }
 }
 
 /* ── F2: Touch targets — Coarse pointer (FT-FR-09, FT-NF-04) ── */
@@ -1464,6 +1550,12 @@ button.calibration-note:hover {
   .feature-list li,
   .step-list li {
     padding: 0.15rem 0;
+  }
+
+  /* Touch-friendly tab targets */
+  .tab-panel__tab {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
   }
 }
 
